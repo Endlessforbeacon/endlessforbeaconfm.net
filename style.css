@@ -1,0 +1,27 @@
+body {
+    font-family: Arial, sans-serif;
+    background-image: url('Image/Endless\ For\ Beacon\ New\ Look\ On\ Desktop.webp'); /* Ganti dengan path ke gambar Anda */
+    background-size: cover; /* Membuat gambar menutupi seluruh latar belakang */
+    background-repeat: no-repeat; /* Mencegah gambar berulang */
+    background-position: center center; /* Menempatkan gambar di tengah */
+    background-attachment: fixed; /* Membuat gambar tetap saat discroll (opsional) */
+    color: #fff; /* Mengubah warna teks agar terlihat jelas di atas gambar gelap */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+
+/* Sesuaikan warna teks di dalam container jika perlu */
+.container {
+    background-color: rgba(255, 255, 255, 0.8); /* Tambahkan transparansi agar gambar latar tetap terlihat */
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    color: #333; /* Warna teks untuk container */
+}
+
+h1 {
+    color: #333; /* Warna judul di dalam container */
+}
