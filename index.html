@@ -1,20 +1,29 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Endless For Beacon FM</title>
+    
     <link rel="icon" href="Image/130295.v7.png" type="image/png">
+
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
+        <img src="Image/130295.v7.png" alt="Logo Radio Kami" class="radio-logo">
+
         <h1>Endless For Beacon FM</h1>
         <p>Dengarkan Endless For Beacon FM secara langsung!</p>
+
+        <p>Status: <span id="status-text">Memuat...</span></p>
+
         <audio id="radio-player" controls autoplay>
             <source src="https://stream.zeno.fm/x1wrh2y4jj6uv.mp3" type="audio/mpeg">
             Browser Anda tidak mendukung elemen audio.
         </audio>
     </div>
+
+    <script src="js/script.js"></script>
 </body>
 </html>
