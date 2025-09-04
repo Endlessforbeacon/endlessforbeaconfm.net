@@ -1,27 +1,104 @@
 body {
     font-family: Arial, sans-serif;
-    background-image: url('Image/Endless\ For\ Beacon\ New\ Look\ On\ Desktop.webp'); /* Ganti dengan path ke gambar Anda */
-    background-size: cover; /* Membuat gambar menutupi seluruh latar belakang */
-    background-repeat: no-repeat; /* Mencegah gambar berulang */
-    background-position: center center; /* Menempatkan gambar di tengah */
-    background-attachment: fixed; /* Membuat gambar tetap saat discroll (opsional) */
-    color: #fff; /* Mengubah warna teks agar terlihat jelas di atas gambar gelap */
+
+    /* Properti untuk gambar background */
+    background-image: url('Image/Endless\ For\ Beacon\ New\ Look\ On\ Desktop.webp'); /* ⚠️ Ganti dengan path ke gambar Anda */
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-attachment: fixed;
+
+    /* Properti lain untuk tata letak halaman */
     display: flex;
     justify-content: center;
     align-items: center;
     height: 100vh;
     margin: 0;
+    color: #fff;
+    text-align: center;
 }
 
-/* Sesuaikan warna teks di dalam container jika perlu */
 .container {
-    background-color: rgba(255, 255, 255, 0.8); /* Tambahkan transparansi agar gambar latar tetap terlihat */
-    padding: 2rem;
-    border-radius: 10px;
+    background-color: rgba(255, 255, 255, 0.8);
+    padding: 3rem;
+    border-radius: 15px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    width: 90%;
+    max-width: 500px;
+}
+
+.radio-logo {
+    width: 120px;
+    height: auto;
+    margin-bottom: 25px;
+    border-radius: 50%;
     box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    color: #333; /* Warna teks untuk container */
 }
 
 h1 {
-    color: #333; /* Warna judul di dalam container */
+    color: #333;
+    margin-bottom: 5px;
+}
+
+p {
+    color: #666;
+    font-style: italic;
+}
+
+.now-playing-info {
+    margin-top: 25px;
+    margin-bottom: 25px;
+    text-align: center;
+}
+
+#song-title {
+    margin: 0;
+    color: #333;
+    font-size: 1.5rem;
+}
+
+#artist-name {
+    margin: 0;
+    color: #666;
+    font-size: 1rem;
+}
+
+.controls {
+    margin-top: 25px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+}
+
+.control-btn {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    width: 100%;
+}
+
+.control-btn:hover {
+    background-color: #0056b3;
+}
+
+.volume-control {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+}
+
+#volume-slider {
+    flex-grow: 1;
+}
+
+#status-text {
+    font-weight: bold;
+    color: #4facfe;
 }

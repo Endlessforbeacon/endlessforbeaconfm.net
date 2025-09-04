@@ -1,33 +1,81 @@
-// Dapatkan elemen pemutar audio dan elemen status dari HTML
+// Dapatkan elemen-elemen dari HTML
 const radioPlayer = document.getElementById('radio-player');
+const playPauseBtn = document.getElementById('play-pause-btn');
 const statusText = document.getElementById('status-text');
+const volumeSlider = document.getElementById('volume-slider');
 
-// Event listener saat radio mulai memutar
+const songTitleEl = document.getElementById('song-title');
+const artistNameEl = document.getElementById('artist-name');
+
+// ⚠️ WAJIB: Ganti 'nama-radio-anda' dengan ID stasiun Zeno.FM Anda
+const STREAM_STATUS_URL = 'https://api.zeno.fm/api/v2/stations/endless-for-beacon-fm-nasional/status';
+
+// Fungsi untuk mengambil dan memperbarui metadata
+const updateNowPlaying = async () => {
+    try {
+        const response = await fetch(STREAM_STATUS_URL);
+        const data = await response.json();
+        
+        const nowPlaying = data.title;
+        let songTitle = "Informasi Tidak Tersedia";
+        let artistName = "Tidak Diketahui";
+
+        if (nowPlaying) {
+            const parts = nowPlaying.split(' - ');
+            if (parts.length === 2) {
+                artistName = parts[0];
+                songTitle = parts[1];
+            } else {
+                songTitle = nowPlaying;
+            }
+        }
+        
+        songTitleEl.textContent = songTitle;
+        artistNameEl.textContent = artistName;
+        
+    } catch (error) {
+        console.error("Gagal mengambil metadata:", error);
+        songTitleEl.textContent = "Gagal Memuat Informasi";
+        artistNameEl.textContent = "Coba Lagi Nanti";
+    }
+};
+
+// Kontrol Putar/Jeda
+playPauseBtn.addEventListener('click', () => {
+    if (radioPlayer.paused) {
+        radioPlayer.play();
+        playPauseBtn.textContent = 'Jeda';
+    } else {
+        radioPlayer.pause();
+        playPauseBtn.textContent = 'Putar';
+    }
+});
+
+// Kontrol Volume
+radioPlayer.volume = volumeSlider.value;
+volumeSlider.addEventListener('input', () => {
+    radioPlayer.volume = volumeSlider.value;
+});
+
+// Update status pemutaran
 radioPlayer.addEventListener('play', () => {
     statusText.textContent = 'Memutar';
 });
 
-// Event listener saat radio dijeda
 radioPlayer.addEventListener('pause', () => {
     statusText.textContent = 'Dijeda';
 });
 
-// Event listener saat radio sedang buffering (memuat)
 radioPlayer.addEventListener('waiting', () => {
     statusText.textContent = 'Memuat...';
 });
 
-// Event listener saat radio siap diputar
-radioPlayer.addEventListener('canplay', () => {
-    // Ini akan memastikan status diatur dengan benar saat radio siap
-    if (!radioPlayer.paused) {
-        statusText.textContent = 'Memutar';
-    } else {
-        statusText.textContent = 'Siap Diputar';
-    }
-});
-
-// Event listener jika terjadi kesalahan
 radioPlayer.addEventListener('error', () => {
     statusText.textContent = 'Tidak Terhubung';
 });
+
+// Panggil fungsi saat halaman dimuat
+updateNowPlaying();
+
+// Perbarui setiap 10 detik
+setInterval(updateNowPlaying, 10000);
