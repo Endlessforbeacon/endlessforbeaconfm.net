@@ -7,7 +7,7 @@ const volumeSlider = document.getElementById('volume-slider');
 const songTitleEl = document.getElementById('song-title');
 const artistNameEl = document.getElementById('artist-name');
 
-// ⚠️ WAJIB: Ganti 'nama-radio-anda' dengan ID stasiun Zeno.FM Anda
+// ⚠️ URL Status Anda belum diganti
 const STREAM_STATUS_URL = 'https://api.zeno.fm/api/v2/stations/endless-for-beacon-fm-nasional/status';
 
 // Fungsi untuk mengambil dan memperbarui metadata
@@ -16,17 +16,23 @@ const updateNowPlaying = async () => {
         const response = await fetch(STREAM_STATUS_URL);
         const data = await response.json();
         
-        const nowPlaying = data.title;
         let songTitle = "Informasi Tidak Tersedia";
         let artistName = "Tidak Diketahui";
 
-        if (nowPlaying) {
-            const parts = nowPlaying.split(' - ');
-            if (parts.length === 2) {
-                artistName = parts[0];
-                songTitle = parts[1];
-            } else {
-                songTitle = nowPlaying;
+        // Logic untuk Icecast (versi awal)
+        if (data.icestats && data.icestats.source) {
+            const source = data.icestats.source;
+            if (source.artist && source.title) {
+                artistName = source.artist;
+                songTitle = source.title;
+            } else if (source.title) {
+                const parts = source.title.split(' - ');
+                if (parts.length === 2) {
+                    artistName = parts[0];
+                    songTitle = parts[1];
+                } else {
+                    songTitle = source.title;
+                }
             }
         }
         

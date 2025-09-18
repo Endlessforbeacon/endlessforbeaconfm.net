@@ -1,13 +1,11 @@
 body {
     font-family: Arial, sans-serif;
-
     /* Properti untuk gambar background */
-    background-image: url('Image/Endless\ For\ Beacon\ New\ Look\ On\ Desktop.webp'); /* ⚠️ Ganti dengan path ke gambar Anda */
+    background-image: url('Image/Endless\ For\ Beacon\ New\ Look\ On\ Desktop.webp');
     background-size: cover;
     background-repeat: no-repeat;
     background-position: center center;
     background-attachment: fixed;
-
     /* Properti lain untuk tata letak halaman */
     display: flex;
     justify-content: center;
