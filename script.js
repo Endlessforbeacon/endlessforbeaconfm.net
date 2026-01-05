@@ -1,6 +1,11 @@
-// GANTI DENGAN KODE STREAM ANDA (Contoh link: https://stream.zeno.fm/abcdefg -> kodenya abcdefg)
+/**
+ * KONFIGURASI UTAMA
+ * Ganti 'KODE_UNIK_ANDA' dengan kode di belakang link streaming Zeno Anda.
+ * Contoh: Jika link https://stream.zeno.fm/abc12345, maka STATION_ID = "abc12345"
+ */
 const STATION_ID = "x1wrh2y4jj6uv"; 
 
+// Mengambil Elemen HTML
 const audio = document.getElementById('audioRadio');
 const btn = document.getElementById('btnPlay');
 const imgArt = document.getElementById('trackArt');
@@ -9,9 +14,11 @@ const txtArtist = document.getElementById('penyanyi');
 const volSlider = document.getElementById('volumeSlider');
 const listRecent = document.getElementById('recentList');
 
-let historySongs = [];
+let historySongs = []; // Untuk menyimpan riwayat lagu
 
-// 1. KONEKSI METADATA (ZENO)
+// ==========================================
+// 1. FUNGSI KONEKSI METADATA (ZENO MEDIA)
+// ==========================================
 function connectMetadata() {
     const apiURL = `https://api.zeno.fm/mounts/metadata/subscribe/${x1wrh2y4jj6uv}`;
     const eventSource = new EventSource(apiURL);
@@ -19,73 +26,89 @@ function connectMetadata() {
     eventSource.onmessage = (event) => {
         try {
             const data = JSON.parse(event.data);
-            const nowPlaying = data.stream_info.now_playing;
+            const rawMetadata = data.stream_info.now_playing;
 
-            if (nowPlaying && nowPlaying !== "") {
-                const parts = nowPlaying.split(" - ");
-                const artist = parts[0] ? parts[0].trim() : "Radio Live";
-                const title = parts[1] ? parts[1].trim() : "Streaming";
+            if (rawMetadata && rawMetadata !== "") {
+                let artistName, songTitle;
 
-                txtArtist.innerText = artist;
-                txtTitle.innerText = title;
-
-                // Update Playlist jika lagu berubah
-                if (historySongs.length === 0 || historySongs[0] !== nowPlaying) {
-                    updatePlaylist(nowPlaying);
+                // --- LOGIKA AUTO-SPLIT AMAN ---
+                if (rawMetadata.includes(" - ")) {
+                    // Jika format standar: "Penyanyi - Judul"
+                    const parts = rawMetadata.split(" - ");
+                    artistName = parts[0] ? parts[0].trim() : "Unknown Artist";
+                    songTitle = parts[1] ? parts[1].trim() : "Unknown Title";
+                } else {
+                    // Jika format tidak standar (Hanya satu teks)
+                    artistName = "Radio Live";
+                    songTitle = rawMetadata.trim();
                 }
 
-                // Cari Artwork
-                fetchArtwork(artist, title);
+                // Update Teks di Layar
+                txtArtist.innerText = artistName;
+                txtTitle.innerText = songTitle;
+
+                // Update Playlist jika lagu benar-benar berubah
+                if (historySongs.length === 0 || historySongs[0] !== rawMetadata) {
+                    updatePlaylist(artistName, songTitle, rawMetadata);
+                }
+
+                // Cari Artwork di iTunes
+                fetchArtwork(artistName, songTitle);
             }
         } catch (e) {
-            console.log("Menunggu data...");
+            console.warn("Sedang menunggu data siaran...");
         }
     };
 
     eventSource.onerror = () => {
         eventSource.close();
-        setTimeout(connectMetadata, 5000);
+        setTimeout(connectMetadata, 5000); // Reconnect otomatis jika putus
     };
 }
 
-// 2. CARI ARTWORK (ITUNES DENGAN PEMBERSIH TEKS)
+// ==========================================
+// 2. FUNGSI ARTWORK ITUNES (DENGAN PEMBERSIH)
+// ==========================================
 async function fetchArtwork(artist, title) {
-    // Bersihkan teks dari karakter pengganggu
+    // Membersihkan teks dari gangguan agar iTunes lebih akurat
     const cleanArtist = artist.replace(/\(.*\)|\[.*\]|feat\..*|&.*/gi, "").trim();
     const cleanTitle = title.replace(/\(.*\)|\[.*\]|feat\..*|&.*/gi, "").trim();
 
     try {
         const query = encodeURIComponent(`${cleanArtist} ${cleanTitle}`);
-        const res = await fetch(`https://itunes.apple.com/search?term=${query}&limit=1&entity=song`);
-        const json = await res.json();
+        const response = await fetch(`https://itunes.apple.com/search?term=${query}&limit=1&entity=song`);
+        const data = await response.json();
 
-        if (json.results && json.results.length > 0) {
-            const img = json.results[0].artworkUrl100.replace('100x100', '600x600');
-            imgArt.src = img;
+        if (data.results && data.results.length > 0) {
+            // Berhasil: Ambil gambar 600x600
+            const highRes = data.results[0].artworkUrl100.replace('100x100', '600x600');
+            imgArt.src = highRes;
         } else {
-            // Jika gagal, cari berdasarkan artis saja
-            const resArt = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(cleanArtist)}&limit=1&entity=album`);
-            const jsonArt = await resArt.json();
-            if (jsonArt.results && jsonArt.results.length > 0) {
-                imgArt.src = jsonArt.results[0].artworkUrl100.replace('100x100', '600x600');
+            // Cadangan: Jika lagu tidak ketemu, cari berdasarkan Artis saja
+            const resArtist = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(cleanArtist)}&limit=1&entity=album`);
+            const dataArtist = await resArtist.json();
+            if (dataArtist.results.length > 0) {
+                imgArt.src = dataArtist.results[0].artworkUrl100.replace('100x100', '600x600');
             } else {
-                imgArt.src = "Image/Cuplikan layar 2026-01-01 184625.png";
+                // Default jika semua gagal
+                imgArt.src = "https://via.placeholder.com/300?text=RADIO+LIVE";
             }
         }
-    } catch (e) {
-        imgArt.src = "Image/Cuplikan layar 2026-01-01 184625.png";
+    } catch (error) {
+        imgArt.src = "https://via.placeholder.com/300?text=RADIO+LIVE";
     }
 }
 
-// 3. PLAYLIST RIWAYAT
-function updatePlaylist(fullText) {
+// ==========================================
+// 3. FUNGSI RECENT SONGS (PLAYLIST)
+// ==========================================
+function updatePlaylist(artist, title, fullText) {
     historySongs.unshift(fullText);
-    if (historySongs.length > 5) historySongs.pop();
-    renderPlaylist();
-}
+    if (historySongs.length > 5) historySongs.pop(); // Batasi 5 lagu
 
-function renderPlaylist() {
-    listRecent.innerHTML = "";
+    listRecent.innerHTML = ""; // Bersihkan tampilan
+    
+    // Tampilkan lagu mulai dari index 1 (riwayat lagu sebelumnya)
     if (historySongs.length <= 1) {
         listRecent.innerHTML = '<li class="empty-msg">Menunggu lagu berikutnya...</li>';
         return;
@@ -96,28 +119,33 @@ function renderPlaylist() {
         const li = document.createElement('li');
         li.className = 'recent-item';
         li.innerHTML = `
-            <span class="r-title">${parts[1] || "Live Broadcast"}</span>
+            <span class="r-title">${parts[1] || historySongs[i]}</span>
             <span class="r-artist">${parts[0] || "Radio"}</span>
         `;
         listRecent.appendChild(li);
     }
 }
 
-// 4. CONTROL (PLAY & VOLUME)
+// ==========================================
+// 4. KONTROL AUDIO (PLAY & VOLUME)
+// ==========================================
 btn.addEventListener('click', () => {
     if (audio.paused) {
-        audio.play();
+        audio.play().catch(e => console.error("Gagal memutar:", e));
         btn.innerHTML = '<i class="fas fa-stop"></i> <span>BERHENTI</span>';
         btn.style.background = "#ff4d4d";
     } else {
         audio.pause();
-        audio.load();
+        audio.load(); // Paksa reload agar streaming tetap LIVE (tidak delay)
         btn.innerHTML = '<i class="fas fa-play"></i> <span>PUTAR RADIO</span>';
         btn.style.background = "#1db954";
     }
 });
 
-volSlider.oninput = (e) => { audio.volume = e.target.value; };
+// Kontrol Volume
+volSlider.oninput = (e) => {
+    audio.volume = e.target.value;
+};
 
-// START
+// JALANKAN SAAT HALAMAN DIBUKA
 connectMetadata();
