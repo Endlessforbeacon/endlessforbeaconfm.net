@@ -4,66 +4,71 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Endless For Beacon FM</title>
-
-    <link rel="icon" href="Image/130295.v7.png" type="image/png">
-    
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container">
-        <img src="Image/130295.v7.png" alt="Logo Radio Kami" class="radio-logo">
 
-        <h1>Endless For Beacon FM</h1>
+    <div class="main-wrapper">
         
-        <p>Status: <span id="status-text">Memuat...</span></p>
+        <div class="player-card">
+            <div class="radio-header">
+                <img src="Image/Cuplikan layar 2026-01-01 184625.png" alt="Logo" class="radio-logo">
+                <div class="radio-title-status">
+                    <h1 class="radio-name">Endless For Beacon FM</h1>
+                    <span class="status-live"><span class="dot"></span> LIVE</span>
+                </div>
+            </div>
 
-        <div class="now-playing-info">
-            <div class="text-info">
-                <h2 id="song-title">Memuat...</h2>
-                <p id="artist-name">Memuat...</p>
+            <div class="artwork-container">
+                <div class="glow-effect"></div>
+                <img id="trackArt" src="Image/Cuplikan layar 2026-01-01 184625.png" alt="Album Art">
+            </div>
+
+            <div class="track-info">
+                <h2 id="judul">Menghubungkan...</h2>
+                <h3 id="penyanyi">Sinyal Radio Aktif</h3>
+            </div>
+
+            <audio id="audioRadio">
+                <source src="https://stream.zeno.fm/x1wrh2y4jj6uv" type="audio/mpeg">
+            </audio>
+
+            <button id="btnPlay" class="play-btn">
+                <i class="fas fa-play"></i> <span>PUTAR RADIO</span>
+            </button>
+
+            <div class="volume-box">
+                <i class="fas fa-volume-down"></i>
+                <input type="range" id="volumeSlider" min="0" max="1" step="0.1" value="1">
+                <i class="fas fa-volume-up"></i>
             </div>
         </div>
 
-        <audio id="radio-player">
-            <source src="https://stream.zeno.fm/x1wrh2y4jj6uv.mp3" type="audio/mpeg">
-            Browser Anda tidak mendukung elemen audio.
-        </audio>
-
-        <div class="controls">
-            <button id="play-pause-btn" class="control-btn">Putar</button>
-            
-            <div class="volume-control">
-                <label for="volume-slider">Volume</label>
-                <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="1">
+        <div class="recent-container">
+            <div class="recent-header">
+                <i class="fas fa-history"></i>
+                <span>Lagu Sebelumnya</span>
             </div>
+            <ul id="recentList">
+                <li class="empty-msg">Menunggu lagu berikutnya...</li>
+            </ul>
         </div>
+
+        <footer class="social-footer">
+            <p class="follow-text">Hubungi & Ikuti Kami:</p>
+            <div class="social-row">
+                <a href="https://wa.me/6285257448582" target="_blank" class="social-btn whatsapp" data-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+                <a href="https://instagram.com/endless_for.beacon" target="_blank" class="social-btn instagram" data-label="Instagram"><i class="fab fa-instagram"></i></a>
+                <a href="https://facebook.com/akunanda" target="_blank" class="social-btn facebook" data-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                <a href="https://tiktok.com/@endless.for_beacon06" target="_blank" class="social-btn tiktok" data-label="TikTok"><i class="fab fa-tiktok"></i></a>
+            </div>
+            <p class="copyright">&copy; 2026 <strong>Endless For Beacon Corp.</strong></p>
+        </footer>
+
     </div>
-    
+
     <script src="script.js"></script>
-
-     <footer class="main-footer">
-        <div class="footer-content">
-            <p>&copy; 2025 Endless For Beacon Corp. Semua Hak Cipta Dilindungi.</p>
-            <div class="social-links">
-                <a href="#" target="_blank">Facebook</a>
-                <a href="#" target="_blank">Instagram</a>
-                <a href="#" target="_blank">YouTube</a>
-            </div>
-        </div>
-    </footer>
-
-    <!--Start of Tawk.to Script-->
-<script type="text/javascript">
-var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
-(function(){
-var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
-s1.async=true;
-s1.src='https://embed.tawk.to/68cbe547fdd26519217a2527/1j5e7f8sp';
-s1.charset='UTF-8';
-s1.setAttribute('crossorigin','*');
-s0.parentNode.insertBefore(s1,s0);
-})();
-</script>
-<!--End of Tawk.to Script-->
 </body>
 </html>
