@@ -1,4 +1,4 @@
-// STATION_ID Anda sudah benar
+// Konfigurasi ID Stasiun
 const STATION_ID = "x1wrh2y4jj6uv"; 
 
 const audio = document.getElementById('audioRadio');
@@ -10,15 +10,15 @@ const volSlider = document.getElementById('volumeSlider');
 const listRecent = document.getElementById('recentList');
 
 let historySongs = [];
+let currentMetadata = "";
 
 // ==========================================
-// 1. FUNGSI METADATA (VERSI REVISI TOTAL)
+// 1. KONEKSI METADATA (ZENO SSE)
 // ==========================================
 function connectMetadata() {
-    // Menambahkan parameter cache-buster agar data selalu segar
-    const apiURL = `https://api.zeno.fm/mounts/metadata/subscribe/${x1wrh2y4jj6uv}?_=${Date.now()}`;
+    // Gunakan endpoint metadata Zeno
+    const apiURL = `https://api.zeno.fm/mounts/metadata/subscribe/${STATION_ID}`;
     
-    // Menutup koneksi lama jika ada
     if (window.zenoSource) {
         window.zenoSource.close();
     }
@@ -28,52 +28,55 @@ function connectMetadata() {
     window.zenoSource.onmessage = (event) => {
         try {
             const data = JSON.parse(event.data);
-            // Mengambil field yang tepat dari struktur JSON Zeno
-            const rawMetadata = data.stream_info.now_playing || data.stream_info.title;
+            // Zeno mengirim data dalam stream_info.title atau stream_info.now_playing
+            const rawMetadata = data.stream_info.title || data.stream_info.now_playing;
 
-            if (rawMetadata) {
+            if (rawMetadata && rawMetadata !== currentMetadata) {
+                currentMetadata = rawMetadata;
                 processMetadata(rawMetadata);
             }
         } catch (e) {
-            console.error("JSON Parsing Error", e);
+            console.error("Gagal memproses JSON:", e);
         }
     };
 
-    window.zenoSource.onerror = (err) => {
-        console.warn("Koneksi Metadata Terputus, Mencoba lagi...");
+    window.zenoSource.onerror = () => {
+        console.warn("Koneksi metadata terputus, mencoba menyambung kembali...");
         window.zenoSource.close();
         setTimeout(connectMetadata, 5000); 
     };
 }
 
+// ==========================================
+// 2. PROSES TEKS (ARTIS - JUDUL)
+// ==========================================
 function processMetadata(raw) {
-    let artist, title;
+    let artist = "Endless For Beacon FM";
+    let title = raw;
 
-    // Logika Auto-Split Aman
+    // Pisahkan jika ada tanda " - "
     if (raw.includes(" - ")) {
         const parts = raw.split(" - ");
         artist = parts[0].trim();
         title = parts.slice(1).join(" - ").trim();
-    } else {
-        artist = "Radio Live";
-        title = raw.trim();
     }
 
-    // Update Tampilan
+    // Update Teks di UI
     txtArtist.innerText = artist;
     txtTitle.innerText = title;
 
-    // Update Playlist & Artwork
-    if (historySongs.length === 0 || historySongs[0] !== raw) {
-        updatePlaylist(artist, title, raw);
-        fetchArtwork(artist, title);
-    }
+    // Update Playlist Riwayat
+    updatePlaylist(artist, title, raw);
+    
+    // Cari Gambar Album
+    fetchArtwork(artist, title);
 }
 
 // ==========================================
-// 2. FUNGSI ARTWORK (ITUNES)
+// 3. CARI GAMBAR (ITUNES API)
 // ==========================================
 async function fetchArtwork(artist, title) {
+    // Bersihkan teks dari karakter yang mengganggu pencarian
     const cleanArtist = artist.replace(/\(.*\)|\[.*\]|feat\..*|&.*/gi, "").trim();
     const cleanTitle = title.replace(/\(.*\)|\[.*\]|feat\..*|&.*/gi, "").trim();
 
@@ -83,24 +86,31 @@ async function fetchArtwork(artist, title) {
         const json = await res.json();
 
         if (json.results && json.results.length > 0) {
+            // Ambil gambar kualitas tinggi (600x600)
             const img = json.results[0].artworkUrl100.replace('100x100', '600x600');
             imgArt.src = img;
         } else {
-            imgArt.src = "https://via.placeholder.com/300?text=RADIO+LIVE";
+            // Gambar default jika tidak ditemukan
+            imgArt.src = "https://via.placeholder.com/600x600?text=RADIO+LIVE";
         }
     } catch (e) {
-        imgArt.src = "https://via.placeholder.com/300?text=RADIO+LIVE";
+        imgArt.src = "https://via.placeholder.com/600x600?text=RADIO+LIVE";
     }
 }
 
 // ==========================================
-// 3. FUNGSI PLAYLIST
+// 4. RIWAYAT LAGU (PLAYLIST)
 // ==========================================
 function updatePlaylist(artist, title, full) {
-    historySongs.unshift(full);
-    if (historySongs.length > 5) historySongs.pop();
+    // Tambah ke riwayat jika belum ada
+    if (historySongs[0] !== full) {
+        historySongs.unshift(full);
+        if (historySongs.length > 6) historySongs.pop();
+    }
 
     listRecent.innerHTML = "";
+    
+    // Tampilkan lagu ke-2 dst (lagu sebelumnya)
     if (historySongs.length <= 1) {
         listRecent.innerHTML = '<li class="empty-msg">Menunggu lagu berikutnya...</li>';
         return;
@@ -110,28 +120,33 @@ function updatePlaylist(artist, title, full) {
         const p = historySongs[i].split(" - ");
         const li = document.createElement('li');
         li.className = 'recent-item';
-        li.innerHTML = `<span class="r-title">${p[1] || historySongs[i]}</span><span class="r-artist">${p[0] || "Radio"}</span>`;
+        li.innerHTML = `
+            <span class="r-title">${p[1] || historySongs[i]}</span>
+            <span class="r-artist">${p[0] || "Endless Radio"}</span>
+        `;
         listRecent.appendChild(li);
     }
 }
 
 // ==========================================
-// 4. KONTROL AUDIO
+// 5. KONTROL TOMBOL & VOLUME
 // ==========================================
 btn.addEventListener('click', () => {
     if (audio.paused) {
-        audio.play();
+        audio.play().catch(e => console.error("Gagal memutar:", e));
         btn.innerHTML = '<i class="fas fa-stop"></i> <span>BERHENTI</span>';
         btn.style.background = "#ff4d4d";
     } else {
         audio.pause();
-        audio.load();
+        audio.load(); // Reset buffer agar saat play lagi tidak delay
         btn.innerHTML = '<i class="fas fa-play"></i> <span>PUTAR RADIO</span>';
         btn.style.background = "#1db954";
     }
 });
 
-volSlider.oninput = (e) => { audio.volume = e.target.value; };
+volSlider.oninput = (e) => { 
+    audio.volume = e.target.value; 
+};
 
-// Jalankan
+// Jalankan sistem saat halaman siap
 connectMetadata();
