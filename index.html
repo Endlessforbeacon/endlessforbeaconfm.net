@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Endless For Beacon FM - Radio Player</title>
+    <title>Endless For Beacon FM</title>
+    <link rel="icon" href="data:,">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
@@ -11,10 +12,9 @@
 <body>
 
     <div class="main-wrapper">
-        
         <div class="player-card">
             <div class="radio-header">
-                <img src="Image/Cuplikan layar 2026-01-01 184625.png" alt="Logo" class="radio-logo">
+                <img src="Image/logo.png" onerror="this.src='https://via.placeholder.com/50'" alt="Logo" class="radio-logo">
                 <div class="radio-title-status">
                     <h1 class="radio-name">Endless For Beacon FM</h1>
                     <span class="status-live"><span class="dot"></span> LIVE</span>
@@ -22,13 +22,12 @@
             </div>
 
             <div class="artwork-container">
-                <div class="glow-effect"></div>
-                <img id="trackArt" src="Image/Cuplikan layar 2026-01-01 184625.png" alt="Album Art">
+                <img id="trackArt" src="Image/logo.png" onerror="this.src='https://via.placeholder.com/600'" alt="Album Art">
             </div>
 
             <div class="track-info">
-                <h2 id="judul">Menghubungkan...</h2>
-                <h3 id="penyanyi">Sinyal Radio Aktif</h3>
+                <h2 id="judul">Memuat Judul...</h2>
+                <h3 id="penyanyi">Memuat Artis...</h3>
             </div>
 
             <audio id="audioRadio">
@@ -48,25 +47,12 @@
 
         <div class="recent-container">
             <div class="recent-header">
-                <i class="fas fa-history"></i>
-                <span>Lagu Sebelumnya</span>
+                <i class="fas fa-history"></i> <span>Riwayat Lagu</span>
             </div>
             <ul id="recentList">
-                <li class="empty-msg">Menunggu lagu berikutnya...</li>
+                <li class="empty-msg">Menunggu data...</li>
             </ul>
         </div>
-
-        <footer class="social-footer">
-            <p class="follow-text">Hubungi & Ikuti Kami:</p>
-            <div class="social-row">
-                <a href="https://wa.me/6285257448582" target="_blank" class="social-btn whatsapp"><i class="fab fa-whatsapp"></i></a>
-                <a href="https://instagram.com/endless_for.beacon" target="_blank" class="social-btn instagram"><i class="fab fa-instagram"></i></a>
-                <a href="https://facebook.com/akunanda" target="_blank" class="social-btn facebook"><i class="fab fa-facebook-f"></i></a>
-                <a href="https://tiktok.com/@endless.for_beacon06" target="_blank" class="social-btn tiktok"><i class="fab fa-tiktok"></i></a>
-            </div>
-            <p class="copyright">&copy; 2026 <strong>Endless For Beacon Corp.</strong></p>
-        </footer>
-
     </div>
 
     <script src="script.js"></script>
