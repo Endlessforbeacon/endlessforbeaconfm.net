@@ -1,48 +1,118 @@
+/* RESET GLOBAL */
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
     font-family: 'Poppins', sans-serif;
-    /* Pastikan rename background Anda menjadi bg.png di folder Image */
-    background: #0f0f0f url('Image/bg.png') center/cover fixed;
+    /* Pastikan file background bernama bg.png */
+    background: #121212 url('Image/bg.png') center/cover fixed;
     min-height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
     padding: 20px;
+    color: white;
 }
 
-.main-wrapper { display: flex; flex-direction: column; align-items: center; gap: 20px; width: 100%; }
+.main-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    width: 100%;
+}
 
+/* PLAYER CARD */
 .player-card {
-    background: rgba(0, 0, 0, 0.75);
-    backdrop-filter: blur(15px);
-    width: 100%; max-width: 380px;
-    padding: 30px; border-radius: 30px;
-    text-align: center; color: white;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+    background: rgba(0, 0, 0, 0.75); /* Sedikit lebih gelap agar tulisan jelas */
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    width: 100%;
+    max-width: 380px;
+    padding: 30px;
+    border-radius: 30px;
+    text-align: center;
+    box-shadow: 0 25px 50px rgba(0,0,0,0.5);
 }
 
-.radio-header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; text-align: left; }
-.radio-logo { width: 45px; height: 45px; border-radius: 10px; object-fit: cover; }
+.radio-header { display: flex; align-items: center; gap: 15px; margin-bottom: 25px; text-align: left; }
+.radio-logo { width: 50px; height: 50px; border-radius: 12px; object-fit: cover; border: 1px solid rgba(255,255,255,0.2); }
+.radio-name { font-size: 16px; font-weight: 600; line-height: 1.2; }
+.status-live { font-size: 10px; color: #ff4d4d; font-weight: bold; letter-spacing: 1px; display: flex; align-items: center; gap: 6px; margin-top: 3px; }
+.dot { width: 8px; height: 8px; background: #ff4d4d; border-radius: 50%; display: inline-block; animation: pulse 1s infinite; }
 
-#trackArt { width: 100%; aspect-ratio: 1/1; border-radius: 20px; object-fit: cover; margin-bottom: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
+.artwork-container { position: relative; margin-bottom: 20px; }
+#trackArt { width: 100%; aspect-ratio: 1/1; border-radius: 20px; object-fit: cover; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
 
-#judul { color: #1db954; font-size: 18px; margin-bottom: 5px; }
-#penyanyi { color: #aaa; font-size: 14px; margin-bottom: 20px; font-weight: 300; }
+#judul { color: #1db954; font-size: 18px; margin-bottom: 5px; font-weight: 600; }
+#penyanyi { color: #bbb; font-size: 14px; margin-bottom: 25px; font-weight: 300; }
 
+/* TOMBOL PLAY */
 .play-btn {
-    width: 100%; padding: 15px; border-radius: 50px; border: none;
+    width: 100%; padding: 16px; border-radius: 50px; border: none;
     background: #1db954; color: white; font-weight: bold; cursor: pointer;
     font-size: 16px; display: flex; align-items: center; justify-content: center; gap: 10px;
+    transition: transform 0.2s, background 0.2s;
+}
+.play-btn:active { transform: scale(0.95); }
+
+.volume-box { display: flex; align-items: center; gap: 12px; margin-top: 25px; color: #aaa; }
+input[type=range] { flex: 1; accent-color: #1db954; cursor: pointer; height: 4px; }
+
+/* RIWAYAT LAGU */
+.recent-container {
+    width: 100%; max-width: 380px;
+    background: rgba(0, 0, 0, 0.6);
+    padding: 20px; border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+.recent-header { color: #1db954; font-size: 12px; font-weight: bold; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; text-transform: uppercase; letter-spacing: 1px; }
+#recentList { list-style: none; padding: 0; }
+.recent-item { padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; gap: 2px; }
+.recent-item:last-child { border: none; }
+.r-title { font-size: 13px; color: white; font-weight: 500; }
+.r-artist { font-size: 11px; color: #888; }
+.empty-msg { font-size: 12px; color: #666; font-style: italic; text-align: center; }
+
+/* === STYLE FOOTER & SOSMED BARU === */
+.social-footer {
+    width: 100%; max-width: 380px;
+    text-align: center;
+    margin-top: 10px;
+    padding: 15px;
 }
 
-.volume-box { display: flex; align-items: center; gap: 10px; margin-top: 20px; opacity: 0.7; }
-input[type=range] { flex: 1; accent-color: #1db954; }
+.follow-text {
+    font-size: 11px; color: #aaa; text-transform: uppercase; letter-spacing: 2px;
+    margin-bottom: 15px; font-weight: 600;
+}
 
-.recent-container { width: 100%; max-width: 380px; background: rgba(0,0,0,0.6); padding: 20px; border-radius: 20px; color: white; }
-.recent-item { list-style: none; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.1); }
-.r-title { display: block; font-size: 13px; color: #1db954; }
-.r-artist { font-size: 11px; color: #888; }
+.social-row {
+    display: flex; justify-content: center; gap: 15px; margin-bottom: 20px;
+}
 
-.dot { width: 8px; height: 8px; background: #ff4d4d; border-radius: 50%; display: inline-block; animation: pulse 1s infinite; }
-@keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+.social-btn {
+    width: 45px; height: 45px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 12px;
+    color: white;
+    display: flex; align-items: center; justify-content: center;
+    text-decoration: none;
+    font-size: 22px;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+/* Efek Hover Warna-Warni */
+.social-btn:hover { transform: translateY(-5px); border-color: rgba(255,255,255,0.5); }
+.whatsapp:hover { background: #25D366; box-shadow: 0 0 15px #25D366; }
+.instagram:hover { background: #E1306C; box-shadow: 0 0 15px #E1306C; }
+.facebook:hover { background: #1877F2; box-shadow: 0 0 15px #1877F2; }
+.tiktok:hover { background: #000000; box-shadow: 0 0 15px #ffffff; }
+
+.copyright {
+    font-size: 20px; color: #78b465; line-height: 1.5;
+}
+
+/* ANIMASI */
+@keyframes pulse { 0% { opacity: 1; box-shadow: 0 0 0 0 rgba(255, 77, 77, 0.7); } 70% { opacity: 1; box-shadow: 0 0 0 6px rgba(255, 77, 77, 0); } 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(255, 77, 77, 0); } }
