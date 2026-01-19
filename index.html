@@ -4,30 +4,34 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Endless For Beacon FM</title>
+    
     <link rel="icon" href="data:,">
+    
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://site-assets.fontawesome.com/releases/v6.4.0/css/all.css">
+    
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
     <div class="main-wrapper">
+        
         <div class="player-card">
             <div class="radio-header">
-                <img src="Image/logo.png" onerror="this.src='https://via.placeholder.com/50'" alt="Logo" class="radio-logo">
+                <img src="Image/logo.png" alt="Logo" class="radio-logo" onerror="this.src='https://via.placeholder.com/50'">
                 <div class="radio-title-status">
                     <h1 class="radio-name">Endless For Beacon FM</h1>
-                    <span class="status-live"><span class="dot"></span> LIVE</span>
+                    <span class="status-live"><span class="dot"></span> LIVE ON AIR</span>
                 </div>
             </div>
 
             <div class="artwork-container">
-                <img id="trackArt" src="Image/logo.png" onerror="this.src='https://via.placeholder.com/600'" alt="Album Art">
+                <img id="trackArt" src="Image/logo.png" alt="Album Art" onerror="this.src='https://via.placeholder.com/300?text=RADIO+LIVE'">
             </div>
 
             <div class="track-info">
-                <h2 id="judul">Memuat Judul...</h2>
-                <h3 id="penyanyi">Memuat Artis...</h3>
+                <h2 id="judul">Memuat Data...</h2>
+                <h3 id="penyanyi">Menunggu Sinyal Zeno...</h3>
             </div>
 
             <audio id="audioRadio">
@@ -40,7 +44,7 @@
 
             <div class="volume-box">
                 <i class="fas fa-volume-down"></i>
-                <input type="range" id="volumeSlider" min="0" max="1" step="0.05" value="1">
+                <input type="range" id="volumeSlider" min="0" max="1" step="0.1" value="1">
                 <i class="fas fa-volume-up"></i>
             </div>
         </div>
@@ -50,9 +54,31 @@
                 <i class="fas fa-history"></i> <span>Riwayat Lagu</span>
             </div>
             <ul id="recentList">
-                <li class="empty-msg">Menunggu data...</li>
+                <li class="empty-msg">Belum ada lagu yang diputar</li>
             </ul>
         </div>
+
+        <footer class="social-footer">
+            <p class="follow-text">Request Lagu & Salam Sapa:</p>
+            
+            <div class="social-row">
+                <a href="https://wa.me/6285257448582" target="_blank" class="social-btn whatsapp">
+                    <i class="fab fa-whatsapp"></i>
+                </a>
+                <a href="https://instagram.com/endless_for.beacon" target="_blank" class="social-btn instagram">
+                    <i class="fab fa-instagram"></i>
+                </a>
+                <a href="https://facebook.com/akunanda" target="_blank" class="social-btn facebook">
+                    <i class="fab fa-facebook-f"></i>
+                </a>
+                <a href="https://tiktok.com/@endless.for_beacon06" target="_blank" class="social-btn tiktok">
+                    <i class="fab fa-tiktok"></i>
+                </a>
+            </div>
+
+            <p class="copyright">&copy; 2026 <strong>Endless For Beacon Corp.</strong><br>All Rights Reserved.</p>
+        </footer>
+
     </div>
 
     <script src="script.js"></script>
