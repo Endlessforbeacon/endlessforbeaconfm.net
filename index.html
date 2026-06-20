@@ -5,75 +5,65 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Endless For Beacon FM</title>
     
-    <!-- Google Fonts untuk Tipografi Modern -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
     
-    <!-- Font Awesome (Untuk Logo Resmi WhatsApp & Media Sosial) -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     
-    <!-- SwiperJS CSS (Untuk Slider Jadwal Acara) -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
     
-    <!-- File CSS Internal Anda -->
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <!-- ================= STASIUN NAVIGASI (HEADER WITH CLOCK) ================= -->
     <header class="main-header">
-        <!-- Sisi Kiri: Identitas Brand Radio -->
-        <div class="brand-container">
-            <img src="Image/Logo.png" alt="Beacon FM Logo" class="station-logo">
-            <div class="brand-text">
-                <span class="station-name">Endless For Beacon FM</span>
-                <span class="station-slogan">The Smile Of The Stand Out For The Radio</span>
+        <div class="header-inner">
+            <div class="brand-container">
+                <img src="Image/Logo.png" alt="Beacon FM Logo" class="station-logo">
+                <div class="brand-text">
+                    <span class="station-name">Endless For Beacon FM</span>
+                    <span class="station-slogan">The Smile Of The Stand Out For The Radio</span>
+                </div>
+            </div>
+
+            <div class="header-clock-container">
+                <div class="header-clock-zone">
+                    <span class="h-zone-label">WIB</span>
+                    <span id="nav-clock-wib" class="h-zone-time">00:00:00</span>
+                </div>
+                <div class="header-clock-zone active-h-zone"> <span class="h-zone-label">WITA</span>
+                    <span id="nav-clock-wita" class="h-zone-time">00:00:00</span>
+                </div>
+                <div class="header-clock-zone">
+                    <span class="h-zone-label">WIT</span>
+                    <span id="nav-clock-wit" class="h-zone-time">00:00:00</span>
+                </div>
+            </div>
+
+            <div class="header-action-container">
+                <a href="https://wa.me/6285257448582?text=Halo%20Endless%20For%20Beacon%20FM,%20Saya%20Mau%20Request%20Lagu%20Dong%21+%0AJudul+Lagu%3A+%0APenyanyi%3A+%0A"
+                   target="_blank" 
+                   class="whatsapp-request-btn">
+                    <i class="fab fa-whatsapp wa-icon-brand"></i> <span>Request Lagu</span>
+                </a>
             </div>
         </div>
-
-        <!-- Sisi Tengah: Jam 3 Zona Waktu Indonesia (WIB, WITA, WIT) -->
-        <div class="header-clock-container">
-            <div class="header-clock-zone">
-                <span class="h-zone-label">WIB</span>
-                <span id="nav-clock-wib" class="h-zone-time">00:00</span>
-            </div>
-            <div class="header-clock-zone active-h-zone"> <!-- WITA disorot hijau sebagai basis Makassar -->
-                <span class="h-zone-label">WITA</span>
-                <span id="nav-clock-wita" class="h-zone-time">00:00</span>
-            </div>
-            <div class="header-clock-zone">
-                <span class="h-zone-label">WIT</span>
-                <span id="nav-clock-wit" class="h-zone-time">00:00</span>
-            </div>
-        </div>
-
-        <!-- Sisi Kanan: Tombol Request Lagu WhatsApp -->
-        <a href="https://wa.me/6285257448582?text=Halo%20Endless%20For%20Beacon%20FM,%20Saya%20Mau%20Request%20Lagu%20Dong%21+%0AJudul+Lagu%3A+%0APenyanyi%3A+%0A"
-           target="_blank" 
-           class="whatsapp-request-btn">
-            <i class="fab fa-whatsapp wa-icon-brand"></i> Request Lagu
-        </a>
     </header>
 
-    <!-- ================= KONTEN UTAMA (PLAYER, ANNIVERSARY & SLIDER) ================= -->
     <div class="main-content-wrapper">
         
-        <!-- COMPONENT 1: KAPSUL STREAMING PLAYER (Mendukung Sticky/Melayang saat Scroll) -->
         <div class="prambors-style-player">
-            <!-- Sisi Kiri: Album Art Bulat -->
             <div class="player-artwork-area">
                 <img src="Image/Logo.png" alt="Artwork" id="radio-logo">
             </div>
             
-            <!-- Tengah: Detail Judul & Penyanyi -->
             <div class="player-info-area">
                 <div class="listener-count">🔴 SIARAN LANGSUNG</div>
                 <h1 id="song-title">Memuat Judul...</h1>
                 <p id="song-artist">Endless For Beacon FM</p>
             </div>
             
-            <!-- Sisi Kanan: Slider Volume & Tombol Kontrol -->
             <div class="player-controls-area">
                 <div class="volume-box">
                     <span class="vol-icon">🔈</span>
@@ -83,10 +73,8 @@
             </div>
         </div>
 
-        <!-- COMPONENT 2: ELEMEN 3RD ANNIVERSARY (THE STAND OUT TRIO) -->
         <section class="anniversary-section">
             <div class="anniversary-container">
-                <!-- Aksen 3 Garis Vertikal Pararel -->
                 <div class="trio-bars">
                     <span class="bar"></span>
                     <span class="bar"></span>
@@ -97,7 +85,6 @@
                 <h2 class="anniversary-title">THE STAND OUT TRIO</h2>
                 <p class="anniversary-slogan">Let's Tuning In to the Future.</p>
 
-                <!-- Countdown Timer Display -->
                 <div class="countdown-display">
                     <div class="countdown-box">
                         <span id="days">00</span>
@@ -120,7 +107,6 @@
                     </div>
                 </div>
 
-                <!-- Spesifikasi Teknis Radio -->
                 <div class="tech-specs">
                     <span>⚡ CURATED BY CODE</span>
                     <span>•</span>
@@ -131,73 +117,61 @@
             </div>
         </section>
 
-        <!-- COMPONENT 3: CAROUSEL SLIDER JADWAL ACARA (UKURAN LEBIH RINGKAS & MINIMALIS) -->
         <div class="schedule-container">
             <h2 class="schedule-title">Jadwal Acara & Poster Info</h2>
             
             <div class="swiper schedule-swiper">
                 <div class="swiper-wrapper">
                     
-                    <!-- Slide 1: Morning Brew -->
                     <div class="swiper-slide">
                         <img src="Image/Program/Morning Brew.png" alt="Jadwal Acara 1">
                         <div class="slide-info-box">
                             <h3 class="show-title">Morning Brew</h3>
-                            <p class="show-description">Sebuah Program Utama Di Pagi Hari Yang Akan Memulai pagi kamu dengan asupan semangat yang tepat! Morning Brew hadir nemenin Beacon Listeners Untuk scrolling linimasa, bersiap ke sekolah, kampus, atau ngejar deadline kantor. Disini kita muterin playlist penuh energi, bahas tren pop culture yang lagi viral, info game terbaru, hingga obrolan kocak seputar keseharian. Booster paling pas buat mengubah pagi yang mager jadi penuh ambisi!</p>
+                            <p class="show-description">Sebuah Program Utama Di Pagi Hari Yang Akan Memulai pagi kamu dengan asupan semangat yang tepat! Morning Brew hadir nemenin Kamu Untuk scrolling linimasa, bersiap ke sekolah, kampus, atau ngejar deadline kantor.</p>
                             <span class="show-time">Senin - Jumat | 08:00 - 12:00 WITA</span>
                         </div>
                     </div>
                     
-                    <!-- Slide 2: Screen To Sounds -->
                     <div class="swiper-slide">
                         <img src="Image/Program/Screen To Sounds.png" alt="Jadwal Acara 2">
                         <div class="slide-info-box">
                             <h3 class="show-title">Screen To Sounds</h3>
-                            <p class="show-description">Program Acara Di Sore Hari Yang Bisa Ubah momen sore kamu jadi lebih sinematik! Program ini pas banget buat nemenin Beacon Listeners yang baru kelar jam sekolah, pulang ngampus, atau selesai beraktivitas. Kita bakal menjelajahi dunia sinema lewat soundtrack film Box Office legendaris, lagu hits dari series yang lagi trending, hingga musik tema game open-world favoritmu. Teman terbaik di kala nongkrong sore atau di tengah kemacetan kota.</p>
+                            <p class="show-description">Program Acara Di Sore Hari Yang Bisa Ubah momen sore kamu jadi lebih sinematik! Program ini pas banget buat nemenin Beacon Listeners yang baru kelar jam sekolah, pulang ngampus, atau selesai beraktivitas.</p>
                             <span class="show-time">Senin - Jumat | 17:00 - 20:00 WITA</span>
                         </div>
                     </div>
                     
-                    <!-- Slide 3: Endless For Beacon Throwback -->
                     <div class="swiper-slide">
                         <img src="Image/Program/Endless For Beacon Throwback.jpeg" alt="Jadwal Acara 3">
                         <div class="slide-info-box">
                             <h3 class="show-title">Endless For Beacon Throwback</h3>
-                            <p class="show-description">Ini Dia Program Segmen Andalannya Endless For Beacon FM setiap hari Kamis! Kita bakal muter mesin waktu buat menyajikan lagu-lagu terbaik dari era 90-an Ke Atas, 2000-an, Sampai tahun 2018 ke bawah. Siap-siap Deh Beacon Listeners Bernostalgia total bareng vibe jaman MTV Indonesia, masa kejayaan warnet dan rental PS, sampai memori manis masa sekolah yang penuh cerita. Penuh energi dan sing-along seharian!</p>
+                            <p class="show-description">Ini Dia Program Segmen Andalannya Endless For Beacon FM setiap hari Kamis! Kita bakal muter mesin waktu buat menyajikan lagu-lagu terbaik dari era 90-an Ke Atas, 2000-an, Sampai tahun 2018 ke bawah.</p>
                             <span class="show-time">Setiap Kamis | 10:00 - 19:00 WITA</span>
                         </div>
                     </div>
 
-                    <!-- Slide 4: Coming Soon Project -->
                     <div class="swiper-slide">
                         <img src="Image/images.jpg" alt="Coming Soon Project">
                         <div class="slide-info-box">
                             <h3 class="show-title">✨ Something New Is Coming!</h3>
-                            <p class="show-description">Nantikan Info Terbaru Kami Mengenai Jadwal Program Acara, Event, Info Terbaru Dari Kami Yahhh Karena Bakalan Ada kejutan besar yang lagi kita siapkan di balik layar! Ssst... Endless For Beacon FM bakal kedatangan program baru, Event Baru & Info Terbaru yang Pasti super seru, interaktif, dan pastinya bakal nemenin hari-hari kamu jadi jauh lebih stand out. Kira-kira project rahasia apa yang lagi kita racik? Stay Tune terus Yahhh Beacon Listeners dan siap-siap buat kejutan seru ke depannya!</p>
+                            <p class="show-description">Nantikan Info Terbaru Kami Mengenai Jadwal Program Acara, Info Terbaru Dari Kami Yahhh Karena Bakalan Ada kejutan besar yang lagi kita siapkan di balik layar! Stay Tune terus Yahhh Beacon Listeners.</p>
                             <span class="show-time">Segera Hadir | Stay Tuned!</span>
                         </div>
                     </div>
                     
                 </div>
                 
-                <!-- Navigasi Panah Kiri - Kanan -->
                 <div class="swiper-button-next"></div>
                 <div class="swiper-button-prev"></div>
-                
-                <!-- Navigasi Titik Indikator Bawah -->
                 <div class="swiper-pagination"></div>
             </div>
         </div>
 
     </div>
 
-    <!-- ================= STATION FOOTER ================= -->
     <footer class="station-footer">
         <div class="footer-content">
-            <!-- Bagian Kiri: Hak Cipta -->
             <p class="copyright-text">&copy; 2026 <strong>Endless For Beacon Corp</strong>. All Rights Reserved.</p>
-            
-            <!-- Bagian Kanan: Tautan Media Sosial -->
             <div class="footer-socials">
                 <a href="#" target="_blank" title="Instagram"><i class="fab fa-instagram"></i></a>
                 <a href="https://www.youtube.com/@EndlessForBeacon" target="_blank" title="YouTube"><i class="fab fa-youtube"></i></a>
@@ -206,12 +180,9 @@
         </div>
     </footer>
 
-    <!-- Elemen Audio Default Browser (Disembunyikan) -->
     <audio id="radio-player"></audio>
 
-    <!-- SwiperJS Engine Script -->
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
-    <!-- File Logic JavaScript Internal Anda -->
     <script src="script.js"></script>
 </body>
 </html>
