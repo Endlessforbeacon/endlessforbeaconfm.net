@@ -103,7 +103,6 @@ volumeSlider.addEventListener('input', () => {
     else audioStream.volume = volumeSlider.value;
 });
 
-// ================= DIGI-CLOCK NAVIGASI 3 ZONA WAKTU INDONESIA =================
 function updateNavigationClocks() {
     const now = new Date();
     const options = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
@@ -113,7 +112,6 @@ function updateNavigationClocks() {
     document.getElementById('nav-clock-wit').innerText = new Intl.DateTimeFormat('en-US', { ...options, timeZone: 'Asia/Jayapura' }).format(now);
 }
 
-// ================= COUNTDOWN TIMER 3RD ANNIVERSARY (6 JULI 2026) =================
 function initAnniversaryCountdown() {
     const targetDate = new Date("2026-07-06T00:00:00+08:00").getTime();
     setInterval(() => {
@@ -132,12 +130,6 @@ function initAnniversaryCountdown() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-    new Swiper('.schedule-swiper', {
-        loop: true,
-        autoplay: { delay: 4500, disableOnInteraction: false },
-        pagination: { el: '.swiper-pagination', clickable: true },
-        navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' },
-    });
     updateNavigationClocks();
     setInterval(updateNavigationClocks, 1000);
     initAnniversaryCountdown();

@@ -10,9 +10,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
-    
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -32,7 +29,8 @@
                     <span class="h-zone-label">WIB</span>
                     <span id="nav-clock-wib" class="h-zone-time">00:00:00</span>
                 </div>
-                <div class="header-clock-zone active-h-zone"> <span class="h-zone-label">WITA</span>
+                <div class="header-clock-zone active-h-zone">
+                    <span class="h-zone-label">WITA</span>
                     <span id="nav-clock-wita" class="h-zone-time">00:00:00</span>
                 </div>
                 <div class="header-clock-zone">
@@ -72,6 +70,59 @@
                 <button id="play-btn" class="play-pause-circle">▶</button>
             </div>
         </div>
+
+        <section class="schedule-grid-section">
+            <div class="section-header">
+                <span class="section-tagline">📅 STATION PROGRAM</span>
+                <h2 class="section-main-title">Jadwal Acara Pekan Ini</h2>
+            </div>
+            
+            <div class="schedule-cards-grid">
+                <div class="program-card">
+                    <div class="p-card-banner">
+                        <img src="Image/Program/Morning Brew.png" alt="Morning Brew Banner" onerror="this.src='Image/Logo.png'">
+                    </div>
+                    <div class="p-card-content">
+                        <div class="p-card-time">Senin - Jumat 🕒 08:00 - 12:00 WITA</div>
+                        <h3 class="p-card-title">Morning Brew</h3>
+                        <p class="p-card-desc">Sebuah Program Utama Di Pagi Hari Yang Akan Memulai pagi kamu dengan asupan semangat yang tepat! Morning Brew hadir nemenin Beacon Listeners Untuk scrolling linimasa, bersiap ke sekolah, kampus, atau ngejar deadline kantor. Disini kita muterin playlist penuh energi, bahas tren pop culture yang lagi viral, info game terbaru, hingga obrolan kocak seputar keseharian. Booster paling pas buat mengubah pagi yang mager jadi penuh ambisi!</p>
+                    </div>
+                </div>
+                
+                <div class="program-card highlight-card">
+                    <div class="p-card-banner">
+                        <img src="Image/Program/Screen To Sounds.png" alt="Screen To Sounds Banner" onerror="this.src='Image/Logo.png'">
+                    </div>
+                    <div class="p-card-content">
+                        <div class="p-card-time">Senin - Jumat 🕒 17:00 - 20:00 WITA</div>
+                        <h3 class="p-card-title">Screen To Sounds</h3>
+                        <p class="p-card-desc">Program Acara Di Sore Hari Yang Bisa Ubah momen sore kamu jadi lebih sinematik! Program ini pas banget buat nemenin Beacon Listeners yang baru kelar jam sekolah, pulang ngampus, atau selesai beraktivitas. Kita bakal menjelajahi dunia sinema lewat soundtrack film Box Office legendaris, lagu hits dari series yang lagi trending, hingga musik tema game open-world favoritmu. Teman terbaik di kala nongkrong sore atau di tengah kemacetan kota.</p>
+                    </div>
+                </div>
+                
+                <div class="program-card">
+                    <div class="p-card-banner">
+                        <img src="Image/Program/Endless For Beacon Throwback.jpeg" alt="Thursday Throwback Banner" onerror="this.src='Image/Logo.png'">
+                    </div>
+                    <div class="p-card-content">
+                        <div class="p-card-time">Setiap Kamis 🕒 10:00 - 19:00 WITA</div>
+                        <h3 class="p-card-title">Thursday Throwback</h3>
+                        <p class="p-card-desc">Ini Dia Program Segmen Andalannya Endless For Beacon FM setiap hari Kamis! Kita bakal muter mesin waktu buat menyajikan lagu-lagu terbaik dari era 90-an Ke Atas, 2000-an, Sampai tahun 2018 ke bawah. Siap-siap Deh Beacon Listeners Bernostalgia total bareng vibe jaman MTV Indonesia, masa kejayaan warnet dan rental PS, sampai memori manis masa sekolah yang penuh cerita. Penuh energi dan sing-along seharian!</p>
+                    </div>
+                </div>
+                
+                <div class="program-card">
+                    <div class="p-card-banner">
+                        <img src="Image/Program/Coming Soon.jpg" alt="Late Night Vibe Banner" onerror="this.src='Image/Logo.png'">
+                    </div>
+                    <div class="p-card-content">
+                        <div class="p-card-time">Segera Hadir 🕒 Stay Tuned!</div>
+                        <h3 class="p-card-title">Late Night Vibe</h3>
+                        <p class="p-card-desc">Nantikan Info Terbaru Kami Mengenai Jadwal Program Acara, Event, Info Terbaru Dari Kami Yahhh Karena Bakalan Ada kejutan besar yang lagi kita siapkan di balik layar! Ssst... Endless For Beacon FM bakal kedatangan program baru, Event Baru & Info Terbaru yang Pasti super seru, interaktif, dan pastinya bakal nemenin hari-hari kamu jadi jauh lebih stand out. Kira-kira project rahasia apa yang lagi kita racik? Stay Tune terus Yahhh Beacon Listeners dan siap-siap buat kejutan seru ke depannya!</p>
+                    </div>
+                </div>
+            </div>
+        </section>
 
         <section class="anniversary-section">
             <div class="anniversary-container">
@@ -117,53 +168,21 @@
             </div>
         </section>
 
-        <div class="schedule-container">
-            <h2 class="schedule-title">Jadwal Acara & Poster Info</h2>
-            
-            <div class="swiper schedule-swiper">
-                <div class="swiper-wrapper">
-                    
-                    <div class="swiper-slide">
-                        <img src="Image/Program/Morning Brew.png" alt="Jadwal Acara 1">
-                        <div class="slide-info-box">
-                            <h3 class="show-title">Morning Brew</h3>
-                            <p class="show-description">Sebuah Program Utama Di Pagi Hari Yang Akan Memulai pagi kamu dengan asupan semangat yang tepat! Morning Brew hadir nemenin Beacon Listeners Untuk scrolling linimasa, bersiap ke sekolah, kampus, atau ngejar deadline kantor. Disini kita muterin playlist penuh energi, bahas tren pop culture yang lagi viral, info game terbaru, hingga obrolan kocak seputar keseharian. Booster paling pas buat mengubah pagi yang mager jadi penuh ambisi!</p>
-                            <span class="show-time">Senin - Jumat | 08:00 - 12:00 WITA</span>
-                        </div>
-                    </div>
-                    
-                    <div class="swiper-slide">
-                        <img src="Image/Program/Screen To Sounds.png" alt="Jadwal Acara 2">
-                        <div class="slide-info-box">
-                            <h3 class="show-title">Screen To Sounds</h3>
-                            <p class="show-description">Program Acara Di Sore Hari Yang Bisa Ubah momen sore kamu jadi lebih sinematik! Program ini pas banget buat nemenin Beacon Listeners yang baru kelar jam sekolah, pulang ngampus, atau selesai beraktivitas. Kita bakal menjelajahi dunia sinema lewat soundtrack film Box Office legendaris, lagu hits dari series yang lagi trending, hingga musik tema game open-world favoritmu. Teman terbaik di kala nongkrong sore atau di tengah kemacetan kota.</p>
-                            <span class="show-time">Senin - Jumat | 17:00 - 20:00 WITA</span>
-                        </div>
-                    </div>
-                    
-                    <div class="swiper-slide">
-                        <img src="Image/Program/Endless For Beacon Throwback.jpeg" alt="Jadwal Acara 3">
-                        <div class="slide-info-box">
-                            <h3 class="show-title">Endless For Beacon Throwback</h3>
-                            <p class="show-description">Ini Dia Program Segmen Andalannya Endless For Beacon FM setiap hari Kamis! Kita bakal muter mesin waktu buat menyajikan lagu-lagu terbaik dari era 90-an Ke Atas, 2000-an, Sampai tahun 2018 ke bawah. Siap-siap Deh Beacon Listeners Bernostalgia total bareng vibe jaman MTV Indonesia, masa kejayaan warnet dan rental PS, sampai memori manis masa sekolah yang penuh cerita. Penuh energi dan sing-along seharian!</p>
-                            <span class="show-time">Setiap Kamis | 10:00 - 19:00 WITA</span>
-                        </div>
-                    </div>
-
-                    <div class="swiper-slide">
-                        <img src="Image/images.jpg" alt="Coming Soon Project">
-                        <div class="slide-info-box">
-                            <h3 class="show-title">✨ Something New Is Coming!</h3>
-                            <p class="show-description">Nantikan Info Terbaru Kami Mengenai Jadwal Program Acara, Event, Info Terbaru Dari Kami Yahhh Karena Bakalan Ada kejutan besar yang lagi kita siapkan di balik layar! Ssst... Endless For Beacon FM bakal kedatangan program baru, Event Baru & Info Terbaru yang Pasti super seru, interaktif, dan pastinya bakal nemenin hari-hari kamu jadi jauh lebih stand out. Kira-kira project rahasia apa yang lagi kita racik? Stay Tune terus Yahhh Beacon Listeners dan siap-siap buat kejutan seru ke depannya!</p>
-                            <span class="show-time">Segera Hadir | Stay Tuned!</span>
-                        </div>
-                    </div>
-                    
-                </div>
+        <div class="quiz-core-container quiz-coming-soon-mode">
+            <div class="quiz-teaser-content">
+                <div class="quiz-core-badge">🚀 COMING SOON</div>
+                <h2 class="teaser-title">Beacon Interactive Quiz</h2>
+                <p class="teaser-desc">Asah otak, seru-seruan bareng pendengar lain, dan siap-siap bawa pulang hadiah menarik. Fitur kuis interaktif ini lagi disiapin khusus buat kamu menjelang HUT!</p>
                 
-                <div class="swiper-button-next"></div>
-                <div class="swiper-button-prev"></div>
-                <div class="swiper-pagination"></div>
+                <div class="locked-quiz-preview">
+                    <div class="preview-item">❓ Soal Acak</div>
+                    <div class="preview-item">⏱️ Sistem Waktu</div>
+                    <div class="preview-item">🎁 Hadiah Keren</div>
+                </div>
+
+                <div class="teaser-footer">
+                    <span class="pantau-text">Pantau terus keseruannya hanya di <strong>Endless For Beacon FM</strong>!</span>
+                </div>
             </div>
         </div>
 
@@ -182,7 +201,6 @@
 
     <audio id="radio-player"></audio>
 
-    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
