@@ -1,489 +1,200 @@
 /* ==========================================================================
    1. RESET & BASE GLOBAL STYLE
    ========================================================================== */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-}
-
-body {
-    background: #0f0f11;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center; 
-    justify-content: flex-start;
-    background-image: linear-gradient(rgba(10, 10, 12, 0.8), rgba(10, 10, 12, 0.8)), url('Image/bg.png');
-    background-size: cover;
-    background-position: center;
-    background-attachment: fixed;
-    overflow-x: hidden;
-    position: relative;
-    padding-bottom: 140px; 
-}
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+body { background: #0f0f11; min-height: 100vh; display: flex; flex-direction: column; background-image: linear-gradient(rgba(10, 10, 12, 0.82), rgba(10, 10, 12, 0.82)), url('Image/bg.png'); background-size: cover; background-position: center; background-attachment: fixed; padding-bottom: 220px; position: relative; overflow-x: hidden; }
 
 /* ==========================================================================
-   2. MAIN HEADER & RESPONSIVE NAVIGATION
+   2. MAIN HEADER NAVBAR
    ========================================================================== */
-.main-header {
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 20px 0;
-    z-index: 10;
-}
-
-.header-inner {
-    width: 100%;
-    max-width: 1200px;
-    padding: 0 24px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 20px;
-}
-
-.brand-container {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-}
-
-.station-logo {
-    width: 50px;
-    height: 50px;
-    object-fit: cover;
-    border-radius: 10px;
-    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
-}
-
+.main-header { width: 100%; background: rgba(11, 11, 13, 0.8); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255, 255, 255, 0.04); position: fixed; top: 0; left: 0; z-index: 1000; }
+.header-inner { max-width: 1400px; margin: 0 auto; padding: 14px 40px; display: flex; justify-content: space-between; align-items: center; }
+.brand-container { display: flex; align-items: center; gap: 14px; }
+.station-logo { height: 42px; width: 42px; object-fit: contain; }
 .brand-text { display: flex; flex-direction: column; }
-.station-name { color: #ffffff; font-size: 18px; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase; }
-.station-slogan { color: #a0a0ab; font-size: 11px; font-weight: 600; letter-spacing: 1.2px; text-transform: uppercase; margin-top: 2px; }
+.station-name { font-size: 16px; font-weight: 800; color: #ffffff; letter-spacing: -0.3px; }
+.station-slogan { font-size: 11px; color: #64748b; font-weight: 500; margin-top: 1px; }
+.header-action-container { display: flex; align-items: center; gap: 12px; }
 
-.header-clock-container {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-    background: rgba(255, 255, 255, 0.04);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    padding: 8px 18px;
-    border-radius: 30px;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-}
+.login-trigger-btn { display: flex; align-items: center; gap: 8px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: #ffffff; padding: 10px 18px; border-radius: 25px; font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+.login-trigger-btn:hover { background: rgba(255, 255, 255, 0.1); }
+.whatsapp-request-btn { display: flex; align-items: center; gap: 8px; background: #10b981; color: #ffffff; text-decoration: none; padding: 10px 18px; border-radius: 25px; font-size: 13px; font-weight: 700; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2); }
+.whatsapp-request-btn:hover { background: #059669; }
 
-.header-clock-zone { display: flex; align-items: center; gap: 6px; opacity: 0.4; transition: opacity 0.3s ease; }
-.header-clock-zone.active-h-zone { opacity: 1; }
-.h-zone-label { color: #a0a0ab; font-size: 10px; font-weight: 800; }
-.header-clock-zone.active-h-zone .h-zone-label { color: #10b981; }
-.h-zone-time { color: #ffffff; font-size: 13px; font-weight: 700; font-family: monospace; }
-
-.header-action-container { display: flex; align-items: center; }
-
-.whatsapp-request-btn {
-    background: rgba(255, 255, 255, 0.08);
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    color: #ffffff;
-    text-decoration: none;
-    padding: 11px 22px;
-    border-radius: 50px;
-    font-size: 14px;
-    font-weight: 700;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    transition: all 0.3s ease;
-    white-space: nowrap;
-}
-
-.whatsapp-request-btn:hover { background: #25d366; border-color: #25d366; }
-.wa-icon-brand { font-size: 18px; color: #25d366; }
+/* LOGGED IN USER STYLES */
+.logged-user-wrapper { display: none; align-items: center; gap: 10px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); padding: 5px 14px 5px 6px; border-radius: 30px; }
+.user-avatar-img { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; border: 1px solid rgba(255, 255, 255, 0.2); }
+.user-name-span { color: #ffffff; font-size: 13px; font-weight: 700; max-width: 100px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.logout-action-btn { background: none; border: none; color: #64748b; font-size: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 4px; }
+.logout-action-btn:hover { color: #ef4444; }
 
 /* ==========================================================================
-   3. MAIN CONTENT WRAPPER
+   3. CONTENT CONTENT WRAPPER LAYOUT
    ========================================================================== */
-.main-content-wrapper {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 35px;
-    width: 100%;
-    max-width: 640px; 
-    margin-top: 10px;
-    padding: 0 20px;   
-}
+.main-content-wrapper { max-width: 1200px; margin: 100px auto 40px auto; padding: 0 20px; display: flex; flex-direction: column; gap: 50px; width: 100%; }
 
 /* ==========================================================================
-   4. KAPSUL STREAMING PLAYER
+   4. CAPSULE STREAMING PLAYER
    ========================================================================== */
-.prambors-style-player {
-    background: #ffffff;
-    display: flex;
-    align-items: center;
-    padding: 14px 26px;
-    border-radius: 100px;
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
-    width: 100%; 
-    gap: 18px;
-    position: sticky;
-    top: 25px;
-    z-index: 999;
-}
-
-.player-artwork-area { width: 65px; height: 65px; border-radius: 50%; overflow: hidden; flex-shrink: 0; }
-#radio-logo { width: 100%; height: 100%; object-fit: cover; }
-.player-info-area { flex-grow: 1; overflow: hidden; display: flex; flex-direction: column; }
-.listener-count { font-size: 10px; font-weight: 800; color: #ef4444; text-transform: uppercase; margin-bottom: 3px; }
-
-#song-title {
-    color: #0f0f11;
-    font-size: 19px;
-    font-weight: 800;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-#song-artist { color: #64748b; font-size: 13px; font-weight: 600; }
-.player-controls-area { display: flex; align-items: center; gap: 16px; flex-shrink: 0; }
-.volume-box { display: flex; align-items: center; gap: 6px; }
-
-.volume-slider {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 55px; 
-    height: 6px; 
-    background: #000000 !important; 
-    border-radius: 10px;
-    outline: none;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.volume-slider::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 14px;
-    height: 14px;
-    border-radius: 50%;
-    background: #10b981; 
-    box-shadow: 0 0 10px rgba(16, 185, 129, 0.6); 
-    cursor: pointer;
-}
-
-.play-pause-circle {
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
-    border: none;
-    background: #0f0f11;
-    color: #ffffff;
-    font-size: 15px;
-    cursor: pointer;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
+.prambors-style-player { width: 100%; background: linear-gradient(135deg, #18181c 0%, #121215 100%); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 80px; padding: 16px 40px 16px 20px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3); }
+.player-artwork-area { width: 72px; height: 72px; border-radius: 50%; overflow: hidden; background: #000; border: 2px solid rgba(255, 255, 255, 0.1); flex-shrink: 0; }
+.player-artwork-area img { width: 100%; height: 100%; object-fit: cover; }
+.player-info-area { flex-grow: 1; margin-line-start: 24px; min-width: 0; }
+.listener-count { font-size: 11px; font-weight: 800; color: #ef4444; letter-spacing: 1px; margin-bottom: 4px; }
+#song-title { font-size: 22px; font-weight: 800; color: #ffffff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#song-artist { font-size: 14px; color: #94a3b8; font-weight: 500; }
+.player-controls-area { display: flex; align-items: center; gap: 30px; flex-shrink: 0; }
+.volume-box { display: flex; align-items: center; gap: 10px; background: rgba(255, 255, 255, 0.03); padding: 8px 16px; border-radius: 30px; }
+.volume-slider { width: 80px; height: 4px; outline: none; }
+.play-pause-circle { width: 64px; height: 64px; border-radius: 50%; background: #ffffff; border: none; font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.play-pause-circle:hover { background: #10b981; color: #ffffff; }
 
 /* ==========================================================================
-   5. STYLING JADWAL PROGRAM MODEL CARD GRID + BANNER MEDIA (DIPERBARUI)
+   5. SCHEDULE CARDS GRID
    ========================================================================== */
-.schedule-grid-section {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-}
-
-.section-header { text-align: left; padding-left: 6px; }
-.section-tagline { font-size: 10px; font-weight: 800; color: #10b981; letter-spacing: 1.5px; text-transform: uppercase; }
+.schedule-grid-section { width: 100%; display: flex; flex-direction: column; gap: 20px; }
+.section-tagline { font-size: 10px; font-weight: 800; color: #10b981; letter-spacing: 1.5px; }
 .section-main-title { font-size: 20px; font-weight: 800; color: #ffffff; margin-top: 4px; }
-
-.schedule-cards-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr); 
-    gap: 18px;
-    width: 100%;
-}
-
-.program-card {
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.06);
-    border-radius: 20px;
-    overflow: hidden; /* Memotong sudut gambar agar mengikuti border-radius kartu */
-    display: flex;
-    flex-direction: column;
-    transition: all 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-}
-
-/* Efek Hover Angkat Kartu & Besarkan Gambar Sedikit */
-.program-card:hover {
-    transform: translateY(-6px);
-    background: rgba(255, 255, 255, 0.05);
-    border-color: rgba(255, 255, 255, 0.15);
-    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.35);
-}
-
-.program-card:hover .p-card-banner img {
-    transform: scale(1.05);
-}
-
-/* Desain Wadah Banner Gambar */
-.p-card-banner {
-    width: 100%;
-    height: 130px; /* Tinggi banner seragam */
-    overflow: hidden;
-    background: #18181b;
-    position: relative;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-}
-
-.p-card-banner img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover; /* Agar gambar tidak gepeng */
-    transition: transform 0.5s ease;
-}
-
-/* Wadah Teks Informasi Program */
-.p-card-content {
-    padding: 18px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    flex-grow: 1;
-}
-
-.program-card.highlight-card {
-    border-color: rgba(16, 185, 129, 0.35);
-    background: linear-gradient(180deg, rgba(255,255,255,0.03) 0%, rgba(16,185,129,0.02) 100%);
-}
-
-.p-card-time { font-size: 11px; font-weight: 700; color: #10b981; letter-spacing: 0.5px; }
+.schedule-cards-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; width: 100%; }
+.program-card { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 20px; overflow: hidden; display: flex; flex-direction: column; transition: all 0.3s; }
+.program-card:hover { transform: translateY(-4px); border-color: rgba(255, 255, 255, 0.15); }
+.p-card-banner { width: 100%; height: 130px; overflow: hidden; background: #18181b; }
+.p-card-banner img { width: 100%; height: 100%; object-fit: cover; }
+.p-card-content { padding: 18px; display: flex; flex-direction: column; gap: 8px; }
+.program-card.highlight-card { border-color: rgba(16, 185, 129, 0.3); }
+.p-card-time { font-size: 11px; font-weight: 700; color: #10b981; }
 .p-card-title { font-size: 16px; font-weight: 800; color: #ffffff; }
 .p-card-desc { font-size: 12.5px; color: #94a3b8; line-height: 1.6; }
 
 /* ==========================================================================
-   6. 3RD ANNIVERSARY BOX SECTION
+   6. ROAD TO 3RD ANNIVERSARY COUNTDOWN
    ========================================================================== */
-.anniversary-section {
-    background-color: rgba(19, 19, 22, 0.7);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    width: 100%;
-    padding: 26px 20px;
-    text-align: center;
-    border-radius: 24px;
-    border: 1px solid rgba(16, 185, 129, 0.2);
-    color: #ffffff;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-}
-
+.anniversary-section { background: rgba(19, 19, 22, 0.7); backdrop-filter: blur(10px); width: 100%; padding: 26px 20px; text-align: center; border-radius: 24px; border: 1px solid rgba(16, 185, 129, 0.2); }
 .trio-bars { display: flex; justify-content: center; gap: 5px; margin-bottom: 12px; }
-.trio-bars .bar {
-    width: 3.5px;
-    height: 18px;
-    background-color: #10b981;
-    display: inline-block;
-    border-radius: 2px;
-    animation: pulseBars 1.5s infinite ease-in-out;
-}
-.trio-bars .bar:nth-child(2) { animation-delay: 0.2s; height: 26px; }
-.trio-bars .bar:nth-child(3) { animation-delay: 0.4s; }
-
-@keyframes pulseBars {
-    0%, 100% { transform: scaleY(1); opacity: 0.5; }
-    50% { transform: scaleY(1.2); opacity: 1; box-shadow: 0 0 8px #10b981; }
-}
-
-.anniversary-badge {
-    background-color: rgba(16, 185, 129, 0.1);
-    color: #10b981;
-    font-size: 10px;
-    font-weight: 800;
-    letter-spacing: 2px;
-    padding: 5px 14px;
-    border-radius: 20px;
-    display: inline-block;
-    border: 1px solid rgba(16, 185, 129, 0.25);
-    margin-bottom: 12px;
-}
-
-.anniversary-title { font-size: 24px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; }
+.trio-bars .bar { width: 3.5px; height: 18px; background: #10b981; border-radius: 2px; }
+.anniversary-badge { background: rgba(16, 185, 129, 0.1); color: #10b981; font-size: 10px; font-weight: 800; letter-spacing: 2px; padding: 5px 14px; border-radius: 20px; display: inline-block; margin-bottom: 12px; }
+.anniversary-title { font-size: 24px; font-weight: 800; }
 .anniversary-slogan { font-size: 12px; color: #94a3b8; margin-bottom: 22px; }
-.countdown-display { display: flex; justify-content: center; align-items: center; gap: 10px; margin-bottom: 22px; }
-
-.countdown-box {
-    background: rgba(0, 0, 0, 0.3);
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    padding: 10px 14px;
-    border-radius: 12px;
-    min-width: 68px;
-}
-
-.countdown-box span { display: block; font-size: 20px; font-weight: 700; font-family: monospace; }
-.countdown-box label { font-size: 8px; color: #64748b; font-weight: 700; display: block; }
-.countdown-divider { font-size: 18px; font-weight: bold; color: #475569; animation: blink 1s infinite; }
-
-@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
-.tech-specs { font-size: 10px; color: #475569; letter-spacing: 1px; font-weight: 700; }
+.countdown-display { display: flex; justify-content: center; align-items: center; gap: 10px; }
+.countdown-box { background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.05); padding: 10px 14px; border-radius: 12px; min-width: 68px; }
+.countdown-box span { display: block; font-size: 20px; font-weight: 700; font-family: monospace; color: #ffffff; }
+.countdown-box label { font-size: 8px; color: #64748b; font-weight: 700; }
+.countdown-divider { font-size: 18px; font-weight: bold; color: #475569; }
 
 /* ==========================================================================
-   7. INTERACTIVE CORE QUIZ - COMING SOON VARIANT
+   7. INTERACTIVE KUIS & LEADERBOARD GRID COMPONENT (BARU!)
    ========================================================================== */
-.quiz-core-container.quiz-coming-soon-mode {
-    background: linear-gradient(135deg, rgba(19, 19, 22, 0.75), rgba(24, 24, 27, 0.75));
-    backdrop-filter: blur(15px);
-    -webkit-backdrop-filter: blur(15px);
-    width: 100%;
-    border-radius: 24px;
-    border: 1px solid rgba(16, 185, 129, 0.15);
-    padding: 30px 20px;
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
-    color: #ffffff;
-    text-align: center;
-    position: relative;
-    overflow: hidden;
-}
+.quiz-interactive-section { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 24px; width: 100%; }
+.quiz-card-box, .leaderboard-card-box { background: rgba(20, 20, 23, 0.8); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 24px; padding: 26px; display: flex; flex-direction: column; }
+.quiz-card-box { border-color: rgba(16, 185, 129, 0.15); }
 
-.quiz-teaser-content { position: relative; z-index: 2; }
-.quiz-core-badge {
-    background: rgba(16, 185, 129, 0.1);
-    color: #10b981;
-    font-size: 9px;
-    font-weight: 800;
-    letter-spacing: 1.5px;
-    padding: 5px 12px;
-    border-radius: 20px;
-    display: inline-block;
-    margin-bottom: 12px;
-    border: 1px solid rgba(16, 185, 129, 0.2);
-}
+.quiz-box-header { margin-bottom: 20px; }
+.quiz-badge { background: rgba(16, 185, 129, 0.1); color: #10b981; font-size: 9px; font-weight: 800; letter-spacing: 1px; padding: 4px 10px; border-radius: 12px; display: inline-block; margin-bottom: 8px; }
+#quiz-question-title { font-size: 18px; font-weight: 800; color: #ffffff; line-height: 1.4; }
 
-.teaser-title {
-    font-size: 22px;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    background: linear-gradient(to right, #ffffff, #a0a0ab);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-}
+.quiz-inner-body { display: flex; flex-direction: column; gap: 16px; flex-grow: 1; justify-content: center; }
+#quiz-notice-text { color: #94a3b8; font-size: 13px; line-height: 1.6; }
 
-.teaser-desc { font-size: 13px; color: #94a3b8; line-height: 1.6; margin: 12px auto 24px auto; max-width: 460px; }
-.locked-quiz-preview { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 24px; }
-.preview-item {
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    padding: 12px 8px;
-    border-radius: 12px;
-    font-size: 12px;
-    font-weight: 700;
-    color: #a0a0ab;
-}
+.quiz-primary-btn, .quiz-secondary-btn { width: 100%; background: #10b981; color: #ffffff; font-weight: 700; font-size: 14px; padding: 12px; border: none; border-radius: 14px; cursor: pointer; transition: all 0.2s; }
+.quiz-primary-btn:disabled { background: rgba(255, 255, 255, 0.04); color: #475569; cursor: not-allowed; border: 1px solid rgba(255, 255, 255, 0.02); }
+.quiz-secondary-btn { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); }
+.quiz-secondary-btn:hover { background: rgba(255, 255, 255, 0.1); }
 
-.teaser-footer { border-top: 1px solid rgba(255, 255, 255, 0.06); padding-top: 16px; }
-.pantau-text { font-size: 12px; color: #64748b; }
-.pantau-text strong { color: #10b981; }
+/* GAMEPLAY TIMING & BUTTONS */
+.quiz-timer-container { width: 100%; height: 6px; background: rgba(255, 255, 255, 0.05); border-radius: 3px; overflow: hidden; }
+#quiz-timer-bar { height: 100%; width: 100%; background: #10b981; cubic-bezier(0, 0, 1, 1); }
+.quiz-options-list { display: flex; flex-direction: column; gap: 10px; }
+.option-btn { width: 100%; text-align: left; padding: 14px 20px; background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 14px; color: #e2e8f0; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.15s; }
+.option-btn:hover { background: rgba(16, 185, 129, 0.08); border-color: #10b981; color: #ffffff; }
+
+/* VIEW RESULTS */
+.score-announcement { text-align: center; padding: 20px 0; }
+#quiz-result-status { font-size: 16px; font-weight: 800; color: #ffffff; }
+.final-score-circle { width: 90px; height: 90px; border-radius: 50%; background: rgba(16, 185, 129, 0.1); border: 2px solid #10b981; display: flex; align-items: center; justify-content: center; margin: 16px auto; }
+.final-score-circle span { font-size: 32px; font-weight: 800; color: #10b981; font-family: monospace; }
+.score-announcement p { font-size: 12px; color: #64748b; }
+
+/* LEADERBOARD VIEW STYLES */
+.leaderboard-header { margin-bottom: 16px; }
+.leaderboard-header h3 { font-size: 16px; font-weight: 800; color: #ffffff; }
+.lb-subtitle { font-size: 11px; color: #64748b; font-weight: 600; }
+.leaderboard-table-wrapper { width: 100%; overflow-x: auto; }
+.leaderboard-table { width: 100%; border-collapse: collapse; }
+.leaderboard-table th { font-size: 11px; text-transform: uppercase; color: #475569; padding: 10px 8px; border-bottom: 1px solid rgba(255, 255, 255, 0.04); font-weight: 800; }
+.leaderboard-table td { padding: 10px 8px; border-bottom: 1px solid rgba(255, 255, 255, 0.02); color: #e2e8f0; font-size: 13px; font-weight: 600; vertical-align: middle; }
+
+.lb-rank-cell { text-align: center; font-weight: 800 !important; font-family: monospace; font-size: 14px !important; }
+.rank-1 { color: #f59e0b !important; }
+.rank-2 { color: #94a3b8 !important; }
+.rank-3 { color: #b45309 !important; }
+
+.lb-profile-identity { display: flex; align-items: center; gap: 10px; }
+.lb-avatar { width: 26px; height: 26px; border-radius: 50%; object-fit: cover; background: #27272a; }
+.lb-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 130px; }
+.lb-score-cell { text-align: right; font-family: monospace; font-weight: 800; color: #10b981; font-size: 14px !important; }
 
 /* ==========================================================================
-   8. STATION FOOTER STYLE
+   8. STATION FOOTER WITH INTEGRATED CLOCKS
    ========================================================================== */
-.station-footer {
-    width: 100%;
-    background: rgba(19, 19, 22, 0.85);
-    backdrop-filter: blur(12px);
-    border-top: 1px solid rgba(255, 255, 255, 0.05);
-    padding: 20px 40px;
-    position: absolute;
-    bottom: 0;
-    left: 0;
-}
+.station-footer { width: 100%; background: rgba(15, 15, 18, 0.95); backdrop-filter: blur(12px); border-top: 1px solid rgba(255, 255, 255, 0.05); padding: 30px 40px; position: absolute; bottom: 0; left: 0; display: flex; flex-direction: column; gap: 20px; }
+.footer-top-row { max-width: 1300px; width: 100%; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; }
+.copyright-text { color: #475569; font-size: 13px; }
 
-.footer-content {
-    max-width: 1200px;
-    margin: 0 auto;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 15px;
-}
+/* 3 Zona Waktu Terintegrasi Baru */
+.footer-clock-container { display: flex; align-items: center; background: rgba(0, 0, 0, 0.2); border: 1px solid rgba(255, 255, 255, 0.03); padding: 4px; border-radius: 20px; }
+.footer-clock-zone { display: flex; align-items: center; gap: 8px; padding: 4px 14px; border-radius: 14px; }
+.active-f-zone { background: rgba(16, 185, 129, 0.06); border: 1px solid rgba(16, 185, 129, 0.15); }
+.f-zone-label { font-size: 10px; font-weight: 800; color: #475569; }
+.active-f-zone .f-zone-label { color: #10b981; }
+.f-zone-time { font-family: monospace; font-size: 13px; font-weight: 700; color: #475569; }
+.active-f-zone .f-zone-time { color: #10b981; }
 
-.copyright-text { color: #64748b; font-size: 13px; }
 .footer-socials { display: flex; gap: 18px; }
-.footer-socials a { color: #64748b; font-size: 16px; }
+.footer-socials a { color: #475569; font-size: 16px; transition: color 0.2s; }
+.footer-socials a:hover { color: #10b981; }
+
+.footer-bottom-row { max-width: 1300px; width: 100%; margin: 0 auto; border-top: 1px solid rgba(255, 255, 255, 0.03); padding-top: 16px; display: flex; justify-content: center; }
+.footer-shortcuts-container { display: flex; align-items: center; gap: 14px; }
+.shortcut-label { font-size: 11px; color: #475569; font-weight: 800; text-transform: uppercase; }
+.footer-shortcut-link { display: flex; align-items: center; gap: 6px; text-decoration: none; background: rgba(255, 255, 255, 0.02); padding: 4px 12px; border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.04); }
+.footer-shortcut-link img { height: 18px; width: 18px; border-radius: 50%; }
+.branch-name-tag { font-size: 11px; color: #94a3b8; font-weight: 600; }
 
 /* ==========================================================================
-   9. MEDIA QUERIES (OPTIMASI VERSI HP / SMARTPHONE)
+   9. LOGIN BOX MODAL OVERLAY
    ========================================================================== */
-@media (max-width: 768px) {
-    .header-inner { flex-direction: column; align-items: center; justify-content: center; gap: 16px; padding: 0 16px; }
-    .brand-container { flex-direction: column; text-align: center; gap: 8px; }
-    .station-slogan { font-size: 10px; }
-    .header-clock-container { width: 100%; max-width: 340px; justify-content: space-around; padding: 8px 14px; }
-    .header-action-container { width: 100%; max-width: 340px; }
-    .whatsapp-request-btn { width: 100%; justify-content: center; font-size: 13px; padding: 10px 16px; }
-}
+.login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(10, 10, 12, 0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); z-index: 2000; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: all 0.3s; }
+.login-overlay.show-modal { opacity: 1; pointer-events: auto; }
+.login-box-container { background: #131316; border: 1px solid rgba(16, 185, 129, 0.2); width: 100%; max-width: 400px; padding: 40px 30px; border-radius: 24px; position: relative; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6); }
+.close-modal-x { position: absolute; top: 20px; right: 20px; background: none; border: none; color: #64748b; font-size: 28px; cursor: pointer; }
+.close-modal-x:hover { color: #ef4444; }
+.login-header-area { text-align: center; margin-bottom: 24px; }
+.login-brand-logo { height: 50px; width: 50px; margin-bottom: 12px; }
+.login-header-area h3 { font-size: 20px; font-weight: 800; color: #ffffff; }
+.login-header-area p { font-size: 12px; color: #64748b; margin-top: 4px; }
+.google-btn-wrapper { display: flex; justify-content: center; margin: 24px 0 10px 0; }
+.login-status-msg { text-align: center; font-size: 13px; margin-top: 15px; font-weight: 600; min-height: 20px; }
+.msg-success { color: #10b981; }
 
+/* ==========================================================================
+   10. RESPONSIVE DESIGN ADJUSTMENTS
+   ========================================================================== */
+@media (max-width: 992px) {
+    .quiz-interactive-section { grid-template-columns: 1fr; }
+    .footer-top-row { flex-direction: column; text-align: center; gap: 16px; }
+}
 @media (max-width: 576px) {
-    body { padding-bottom: 180px; }
-
-    .prambors-style-player {
-        padding: 10px 16px;
-        border-radius: 100px;
-        gap: 12px;
-        top: 15px;
-    }
-
-    .player-artwork-area { width: 45px; height: 45px; }
-    #song-title { font-size: 14px; }
-    #song-artist { font-size: 11px; }
-    .listener-count { font-size: 8px; margin-bottom: 0; }
-    .player-controls-area { gap: 10px; }
-    .volume-slider { width: 45px !important; height: 5px; }
-    .play-pause-circle { width: 36px; height: 36px; font-size: 12px; }
-
-    /* Otomatis Ubah Grid Menjadi List 1 Kolom Ke Bawah Di HP */
-    .schedule-cards-grid {
-        grid-template-columns: 1fr;
-        gap: 14px;
-    }
-
-    .p-card-banner {
-        height: 150px; /* Di HP dibikin sedikit lebih tinggi proporsional */
-    }
-
-    .program-card { border-radius: 16px; }
-    .p-card-content { padding: 16px; }
-    .p-card-title { font-size: 15px; }
-    .p-card-desc { font-size: 12px; }
-
-    .quiz-core-container.quiz-coming-soon-mode { padding: 24px 16px; }
-    .teaser-title { font-size: 18px; }
-    .teaser-desc { font-size: 11.5px; line-height: 1.5; }
-    .locked-quiz-preview { grid-template-columns: 1fr; gap: 8px; }
-    .preview-item { padding: 10px; font-size: 11.5px; }
-
-    .anniversary-section { padding: 20px 14px; }
-    .anniversary-title { font-size: 20px; }
-    .countdown-display { gap: 5px; }
-    .countdown-box { min-width: 58px; padding: 8px 4px; }
-    .countdown-box span { font-size: 16px; }
-    .station-footer { padding: 15px 20px; }
-    .footer-content { flex-direction: column; text-align: center; }
-}
-
-@media (max-width: 360px) {
-    .countdown-box { min-width: 50px; }
-    .countdown-box span { font-size: 14px; }
-    .header-clock-container { gap: 10px; }
-    .h-zone-time { font-size: 12px; }
-    .volume-slider { width: 35px !important; }
+    body { padding-bottom: 260px; }
+    .header-inner { padding: 10px 14px; }
+    .station-name { font-size: 13px; }
+    .station-slogan { font-size: 9px; }
+    .login-trigger-btn span, .logout-action-btn span { display: none; }
+    .user-name-span { max-width: 60px; font-size: 11px; }
+    .whatsapp-request-btn { padding: 8px 14px !important; border-radius: 20px !important; font-size: 11px; }
+    .prambors-style-player { position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%); width: calc(100% - 32px); max-width: 440px; z-index: 999; border-radius: 40px; padding: 10px 18px; }
+    .player-artwork-area { width: 46px; height: 46px; }
+    #song-title { font-size: 14px; max-width: 150px; }
+    .volume-box { display: none; }
+    .play-pause-circle { width: 44px; height: 44px; font-size: 14px; }
+    .footer-clock-container { flex-wrap: wrap; justify-content: center; gap: 4px; }
 }
