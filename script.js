@@ -280,7 +280,7 @@ const loginMessage = document.getElementById('login-message');
 
 function initGoogleSignIn() {
     google.accounts.id.initialize({
-        client_id: "YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com", // Ganti dengan Google Client ID aslimu
+        client_id: "969783269309-99n69ig4hfbcpnvkn2dr0k86stbfejs2.apps.googleusercontent.com", // Ganti dengan Google Client ID aslimu
         callback: handleCredentialResponse
     });
 
