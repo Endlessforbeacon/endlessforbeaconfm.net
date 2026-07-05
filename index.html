@@ -31,17 +31,10 @@
             </div>
 
             <div class="header-action-container">
-                <!-- KONDISI 1: TAMPIL SEBELUM LOGIN -->
-                <button id="nav-login-btn" class="login-trigger-btn" onclick="openLoginModal()">
-                    <i class="fas fa-sign-in-alt"></i> <span>Login</span>
-                </button>
-
-                <!-- KONDISI 2: TAMPIL SETELAH LOGIN -->
-                <div id="user-profile-area" class="logged-user-wrapper">
-                    <img id="user-avatar" src="" alt="Avatar" class="user-avatar-img">
-                    <span id="user-display-name" class="user-name-span"></span>
-                    <button id="nav-logout-btn" class="logout-action-btn" onclick="handleSignOut()">
-                        <i class="fas fa-sign-out-alt"></i> <span>Logout</span>
+                <!-- KONDISI AUTHENTICATION TERINTEGRASI -->
+                <div id="navbar-auth-section">
+                    <button id="nav-login-btn" class="login-trigger-btn" onclick="openLoginModal()">
+                        <i class="fas fa-sign-in-alt"></i> <span>Login</span>
                     </button>
                 </div>
 
@@ -93,7 +86,7 @@
                     <div class="p-card-content">
                         <div class="p-card-time">Senin - Jumat 🕒 08:00 - 12:00 WITA</div>
                         <h3 class="p-card-title">Morning Brew</h3>
-                        <p class="p-card-desc">Sebuah Program Utama Di Pagi Hari Yang Akan Memulai pagi kamu dengan asupan semangat yang tepat! Playlist penuh energi, tren pop culture viral, info game terbaru, hingga obrolan kocak seputar keseharian.</p>
+                        <p class="p-card-desc">Sebuah Program Utama Di Pagi Hari Yang Akan Memulai pagi kamu dengan asupan semangat yang tepat! Morning Brew hadir nemenin Beacon Listeners Untuk scrolling linimasa, bersiap ke sekolah, kampus, atau ngejar deadline kantor. Disini kita muterin playlist penuh energi, bahas tren pop culture yang lagi viral, info game terbaru, hingga obrolan kocak seputar keseharian. Booster paling pas buat mengubah pagi yang mager jadi penuh ambisi!</p>
                     </div>
                 </div>
                 
@@ -105,7 +98,7 @@
                     <div class="p-card-content">
                         <div class="p-card-time">Senin - Jumat 🕒 17:00 - 20:00 WITA</div>
                         <h3 class="p-card-title">Screen To Sounds</h3>
-                        <p class="p-card-desc">Program Acara Di Sore Hari Yang Bisa Ubah momen sore kamu jadi lebih sinematik lewat soundtrack film Box Office legendaris, series trending, hingga musik tema game open-world favoritmu.</p>
+                        <p class="p-card-desc">Program Acara Di Sore Hari Yang Bisa Ubah momen sore kamu jadi lebih sinematik! Program ini pas banget buat nemenin Beacon Listeners yang baru kelar jam sekolah, pulang ngampus, atau selesai beraktivitas. Kita bakal menjelajahi dunia sinema lewat soundtrack film Box Office legendaris, lagu hits dari series yang lagi trending, hingga musik tema game open-world favoritmu. Teman terbaik di kala nongkrong sore atau di tengah kemacetan kota.</p>
                     </div>
                 </div>
                 
@@ -116,8 +109,8 @@
                     </div>
                     <div class="p-card-content">
                         <div class="p-card-time">Setiap Kamis 🕒 10:00 - 19:00 WITA</div>
-                        <h3 class="p-card-title">Thursday Throwback</h3>
-                        <p class="p-card-desc">Muter mesin waktu buat menyajikan lagu-lagu terbaik dari era 90-an Ke Atas, 2000-an, Sampai tahun 2018 ke bawah. Bernostalgia total bareng vibe jaman MTV Indonesia.</p>
+                        <h3 class="p-card-title">Endless For Beacon Throwback</h3>
+                        <p class="p-card-desc">Ini Dia Program Segmen Andalannya Endless For Beacon FM setiap hari Kamis! Kita bakal muter mesin waktu buat menyajikan lagu-lagu terbaik dari era 90-an Ke Atas, 2000-an, Sampai tahun 2018 ke bawah. Siap-siap Deh Beacon Listeners Bernostalgia total bareng vibe jaman MTV Indonesia, masa kejayaan warnet dan rental PS, sampai memori manis masa sekolah yang penuh cerita. Penuh energi dan sing-along seharian!</p>
                     </div>
                 </div>
                 
@@ -129,7 +122,7 @@
                     <div class="p-card-content">
                         <div class="p-card-time">Sabtu & Minggu 🕒 07:00 - 10:00 WITA</div>
                         <h3 class="p-card-title">Asia Pop 40</h3>
-                        <p class="p-card-desc">Asia Pop 40 adalah program chart show regional terbesar di Asia yang mengulas 40 lagu pop paling hits. Rumah baru bagi pergerakan musik pop internasional di udara!</p>
+                        <p class="p-card-desc">Asia Pop 40 adalah program tangga lagu radio regional pertama dan terbesar di Asia yang menghitung mundur 40 lagu terpopuler di kawasan Asia-Pasifik setiap minggunya. Dipandu oleh Joey Chou, program berdurasi 3 jam ini menyusun peringkat hit internasional dan Asia berdasarkan data akurat dari Spotify, Apple Music, YouTube, dan tren viral TikTok. Selain memutar lagu, program ini juga menghadirkan wawancara eksklusif bersama musisi dunia, prediksi lagu baru, serta info konser terbaru di Asia.</p>
                     </div>
                 </div>
             </div>
@@ -159,12 +152,15 @@
             </div>
         </section>
 
-        <!-- SISTEM KUIS INTERAKTIF & LEADERBOARD (KINI AKTIF!) -->
+        <!-- SISTEM KUIS INTERAKTIF & LEADERBOARD (ONLINE NETWORK INTEGRATED) -->
         <section class="quiz-interactive-section">
             <!-- SISI KIRI: SISTEM KUIS -->
             <div class="quiz-card-box">
                 <div class="quiz-box-header">
-                    <span class="quiz-badge">🎮 BEACON INTERACTIVE QUIZ</span>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <span class="quiz-badge">🎮 BEACON INTERACTIVE QUIZ</span>
+                        <span id="question-points-badge" class="points-badge" style="display: none;">Maks Poin: 0</span>
+                    </div>
                     <h2 id="quiz-question-title">Silahkan Login Terlebih Dahulu</h2>
                 </div>
 
@@ -185,24 +181,48 @@
                         <button class="option-btn" onclick="checkQuizAnswer(2)"></button>
                         <button class="option-btn" onclick="checkQuizAnswer(3)"></button>
                     </div>
+                    <!-- Feedback Status Jawaban -->
+                    <div id="quiz-feedback" class="feedback-container"></div>
                 </div>
 
-                <!-- Tampilan Hasil Skor Kuis -->
+                <!-- Tampilan Hasil Skor Kuis / Klaim Hadiah -->
                 <div id="quiz-result-view" class="quiz-inner-body" style="display: none;">
                     <div class="score-announcement">
                         <h4 id="quiz-result-status">Selesai!</h4>
                         <div class="final-score-circle"><span id="final-score-val">0</span></div>
-                        <p>Skor kamu telah berhasil disimpan ke papan peringkat global.</p>
+                        <p id="quiz-result-desc">Skor kamu telah berhasil disimpan ke papan peringkat global.</p>
+                        
+                        <!-- Panel Klaim Hadiah Top 3 -->
+                        <div id="reward-claim-panel" class="reward-panel" style="display: none;">
+                            <div class="reward-icon">🎁</div>
+                            <h5>Selamat! Anda Masuk Top 3 Besar</h5>
+                            <p>Kuis resmi ditutup. Silakan masukkan nomor dompet digital Anda untuk klaim saldo tunai gratis!</p>
+                            <div class="reward-input-group">
+                                <select id="ewallet-type">
+                                    <option value="DANA">DANA</option>
+                                    <option value="OVO">OVO</option>
+                                    <option value="GOPAY">GOPAY</option>
+                                    <option value="SHOPEEPAY">ShopeePay</option>
+                                </select>
+                                <input type="number" id="ewallet-number" placeholder="Contoh: 0852xxxxxx">
+                            </div>
+                            <button class="claim-submit-btn" onclick="submitRewardClaim()">Klaim Uang Tunai</button>
+                        </div>
                     </div>
-                    <button class="quiz-secondary-btn" onclick="resetQuizGameplay()">Main Lagi</button>
+                    <button id="quiz-retry-btn" class="quiz-secondary-btn" onclick="resetQuizGameplay()">Main Lagi</button>
                 </div>
             </div>
 
             <!-- SISI KANAN: LEADERBOARD BOARD -->
             <div class="leaderboard-card-box">
                 <div class="leaderboard-header">
-                    <h3>🏆 Papan Peringkat</h3>
-                    <span class="lb-subtitle">Top Score Beacon Listeners</span>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <h3>🏆 Papan Peringkat</h3>
+                            <span class="lb-subtitle">Top Score Beacon Listeners</span>
+                        </div>
+                        <span class="online-status-indicator">📡 LIVE ONLINE</span>
+                    </div>
                 </div>
                 <div class="leaderboard-table-wrapper">
                     <table class="leaderboard-table">
@@ -214,7 +234,7 @@
                             </tr>
                         </thead>
                         <tbody id="leaderboard-rows-inject">
-                            <!-- Data baris akan diinjeksi lewat JavaScript -->
+                            <!-- Data baris dimuat via js -->
                         </tbody>
                     </table>
                 </div>
@@ -230,7 +250,6 @@
                 <p class="copyright-text">&copy; 2026 <strong>Endless For Beacon Corp</strong>. All Rights Reserved.</p>
             </div>
 
-            <!-- Pindahan 3 Zona Waktu Sekarang Berada Di Sini -->
             <div class="footer-clock-container">
                 <div class="footer-clock-zone">
                     <span class="f-zone-label">WIB</span>
@@ -277,7 +296,9 @@
                 <h3>Endless For Beacon FM</h3>
                 <p>Masuk untuk mengakses fitur interaktif dari Endless For Beacon FM</p>
             </div>
-            <div class="google-btn-wrapper"><div id="google-login-btn"></div></div>
+            <div class="google-btn-wrapper">
+                <div id="google-login-btn"></div>
+            </div>
             <div id="login-message" class="login-status-msg"></div>
         </div>
     </div>

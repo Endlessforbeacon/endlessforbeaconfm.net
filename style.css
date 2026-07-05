@@ -21,15 +21,14 @@ body { background: #0f0f11; min-height: 100vh; display: flex; flex-direction: co
 .whatsapp-request-btn { display: flex; align-items: center; gap: 8px; background: #10b981; color: #ffffff; text-decoration: none; padding: 10px 18px; border-radius: 25px; font-size: 13px; font-weight: 700; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2); }
 .whatsapp-request-btn:hover { background: #059669; }
 
-/* LOGGED IN USER STYLES */
-.logged-user-wrapper { display: none; align-items: center; gap: 10px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); padding: 5px 14px 5px 6px; border-radius: 30px; }
-.user-avatar-img { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; border: 1px solid rgba(255, 255, 255, 0.2); }
-.user-name-span { color: #ffffff; font-size: 13px; font-weight: 700; max-width: 100px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.logout-action-btn { background: none; border: none; color: #64748b; font-size: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 4px; }
+.user-profile-nav-container { display: flex; align-items: center; gap: 12px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); padding: 5px 14px 5px 6px; border-radius: 30px; animation: slideIn 0.3s ease-out; }
+.user-avatar-img { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; border: 2px solid #10b981; }
+.user-name-span { color: #ffffff; font-size: 13px; font-weight: 700; max-width: 110px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.logout-action-btn { background: none; border: none; color: #64748b; font-size: 11px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 4px; margin-left: 4px; }
 .logout-action-btn:hover { color: #ef4444; }
 
 /* ==========================================================================
-   3. CONTENT CONTENT WRAPPER LAYOUT
+   3. CONTENT WRAPPER LAYOUT
    ========================================================================== */
 .main-content-wrapper { max-width: 1200px; margin: 100px auto 40px auto; padding: 0 20px; display: flex; flex-direction: column; gap: 50px; width: 100%; }
 
@@ -82,18 +81,20 @@ body { background: #0f0f11; min-height: 100vh; display: flex; flex-direction: co
 .countdown-divider { font-size: 18px; font-weight: bold; color: #475569; }
 
 /* ==========================================================================
-   7. INTERACTIVE KUIS & LEADERBOARD GRID COMPONENT (BARU!)
+   7. INTERACTIVE KUIS & LEADERBOARD GRID COMPONENT
    ========================================================================== */
 .quiz-interactive-section { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 24px; width: 100%; }
-.quiz-card-box, .leaderboard-card-box { background: rgba(20, 20, 23, 0.8); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 24px; padding: 26px; display: flex; flex-direction: column; }
+.quiz-card-box, .leaderboard-card-box { background: rgba(20, 20, 23, 0.8); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 24px; padding: 26px; display: flex; flex-direction: column; position: relative; }
 .quiz-card-box { border-color: rgba(16, 185, 129, 0.15); }
 
 .quiz-box-header { margin-bottom: 20px; }
-.quiz-badge { background: rgba(16, 185, 129, 0.1); color: #10b981; font-size: 9px; font-weight: 800; letter-spacing: 1px; padding: 4px 10px; border-radius: 12px; display: inline-block; margin-bottom: 8px; }
-#quiz-question-title { font-size: 18px; font-weight: 800; color: #ffffff; line-height: 1.4; }
+.quiz-badge { background: rgba(16, 185, 129, 0.1); color: #10b981; font-size: 9px; font-weight: 800; letter-spacing: 1px; padding: 4px 10px; border-radius: 12px; display: inline-block; }
+.points-badge { background: rgba(245, 158, 11, 0.15); color: #f59e0b; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 12px; border: 1px solid rgba(245, 158, 11, 0.3); }
+#quiz-question-title { font-size: 18px; font-weight: 800; color: #ffffff; line-height: 1.4; margin-top: 8px; }
 
 .quiz-inner-body { display: flex; flex-direction: column; gap: 16px; flex-grow: 1; justify-content: center; }
 #quiz-notice-text { color: #94a3b8; font-size: 13px; line-height: 1.6; }
+#quiz-notice-text strong { color: #ffffff; }
 
 .quiz-primary-btn, .quiz-secondary-btn { width: 100%; background: #10b981; color: #ffffff; font-weight: 700; font-size: 14px; padding: 12px; border: none; border-radius: 14px; cursor: pointer; transition: all 0.2s; }
 .quiz-primary-btn:disabled { background: rgba(255, 255, 255, 0.04); color: #475569; cursor: not-allowed; border: 1px solid rgba(255, 255, 255, 0.02); }
@@ -102,22 +103,43 @@ body { background: #0f0f11; min-height: 100vh; display: flex; flex-direction: co
 
 /* GAMEPLAY TIMING & BUTTONS */
 .quiz-timer-container { width: 100%; height: 6px; background: rgba(255, 255, 255, 0.05); border-radius: 3px; overflow: hidden; }
-#quiz-timer-bar { height: 100%; width: 100%; background: #10b981; cubic-bezier(0, 0, 1, 1); }
+#quiz-timer-bar { height: 100%; width: 100%; background: #10b981; transition: width 1s linear; }
 .quiz-options-list { display: flex; flex-direction: column; gap: 10px; }
 .option-btn { width: 100%; text-align: left; padding: 14px 20px; background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 14px; color: #e2e8f0; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.15s; }
-.option-btn:hover { background: rgba(16, 185, 129, 0.08); border-color: #10b981; color: #ffffff; }
+.option-btn:hover { background: rgba(255, 255, 255, 0.04); border-color: rgba(255, 255, 255, 0.2); }
 
-/* VIEW RESULTS */
-.score-announcement { text-align: center; padding: 20px 0; }
+/* FEEDBACK VALIDASI JAWABAN STYLES */
+.correct-choice { background: rgba(16, 185, 129, 0.15) !important; border-color: #10b981 !important; color: #10b981 !important; }
+.wrong-choice { background: rgba(239, 68, 68, 0.15) !important; border-color: #ef4444 !important; color: #ef4444 !important; }
+
+.feedback-container { text-align: center; font-size: 13px; font-weight: 700; min-height: 20px; padding: 6px; border-radius: 8px; transition: all 0.3s; }
+.feedback-correct { color: #10b981; background: rgba(16, 185, 129, 0.08); }
+.feedback-wrong { color: #ef4444; background: rgba(239, 68, 68, 0.08); }
+
+/* VIEW RESULTS & PANEL HADIAH E-WALLET */
+.score-announcement { text-align: center; padding: 10px 0; }
 #quiz-result-status { font-size: 16px; font-weight: 800; color: #ffffff; }
 .final-score-circle { width: 90px; height: 90px; border-radius: 50%; background: rgba(16, 185, 129, 0.1); border: 2px solid #10b981; display: flex; align-items: center; justify-content: center; margin: 16px auto; }
 .final-score-circle span { font-size: 32px; font-weight: 800; color: #10b981; font-family: monospace; }
-.score-announcement p { font-size: 12px; color: #64748b; }
+#quiz-result-desc { font-size: 12.5px; color: #94a3b8; line-height: 1.5; margin-bottom: 10px; }
+
+.reward-panel { background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.25); border-radius: 16px; padding: 20px; margin-top: 20px; text-align: center; animation: slideIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+.reward-icon { font-size: 28px; margin-bottom: 6px; }
+.reward-panel h5 { font-size: 14px; font-weight: 800; color: #f59e0b; text-transform: uppercase; }
+.reward-panel p { font-size: 11.5px; color: #94a3b8; line-height: 1.5; margin: 6px 0 14px 0; }
+.reward-input-group { display: flex; gap: 8px; margin-bottom: 12px; }
+.reward-input-group select { background: #18181c; border: 1px solid rgba(255, 255, 255, 0.1); color: #fff; padding: 10px; border-radius: 8px; font-size: 12px; font-weight: 600; outline: none; }
+.reward-input-group input { flex-grow: 1; background: #18181c; border: 1px solid rgba(255, 255, 255, 0.1); color: #fff; padding: 10px; border-radius: 8px; font-size: 12px; outline: none; }
+.reward-input-group input:focus { border-color: #f59e0b; }
+.claim-submit-btn { width: 100%; background: #f59e0b; color: #131316; font-weight: 800; font-size: 13px; padding: 11px; border: none; border-radius: 8px; cursor: pointer; transition: all 0.2s; text-transform: uppercase; }
+.claim-submit-btn:hover { background: #d97706; }
 
 /* LEADERBOARD VIEW STYLES */
 .leaderboard-header { margin-bottom: 16px; }
 .leaderboard-header h3 { font-size: 16px; font-weight: 800; color: #ffffff; }
 .lb-subtitle { font-size: 11px; color: #64748b; font-weight: 600; }
+.online-status-indicator { font-size: 9px; font-weight: 800; color: #10b981; background: rgba(16, 185, 129, 0.1); padding: 3px 8px; border-radius: 20px; border: 1px solid rgba(16, 185, 129, 0.2); letter-spacing: 0.5px; }
+
 .leaderboard-table-wrapper { width: 100%; overflow-x: auto; }
 .leaderboard-table { width: 100%; border-collapse: collapse; }
 .leaderboard-table th { font-size: 11px; text-transform: uppercase; color: #475569; padding: 10px 8px; border-bottom: 1px solid rgba(255, 255, 255, 0.04); font-weight: 800; }
@@ -140,7 +162,6 @@ body { background: #0f0f11; min-height: 100vh; display: flex; flex-direction: co
 .footer-top-row { max-width: 1300px; width: 100%; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; }
 .copyright-text { color: #475569; font-size: 13px; }
 
-/* 3 Zona Waktu Terintegrasi Baru */
 .footer-clock-container { display: flex; align-items: center; background: rgba(0, 0, 0, 0.2); border: 1px solid rgba(255, 255, 255, 0.03); padding: 4px; border-radius: 20px; }
 .footer-clock-zone { display: flex; align-items: center; gap: 8px; padding: 4px 14px; border-radius: 14px; }
 .active-f-zone { background: rgba(16, 185, 129, 0.06); border: 1px solid rgba(16, 185, 129, 0.15); }
@@ -161,7 +182,7 @@ body { background: #0f0f11; min-height: 100vh; display: flex; flex-direction: co
 .branch-name-tag { font-size: 11px; color: #94a3b8; font-weight: 600; }
 
 /* ==========================================================================
-   9. LOGIN BOX MODAL OVERLAY
+   9. LOGIN BOX MODAL OVERLAY & ANIMATIONS
    ========================================================================== */
 .login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(10, 10, 12, 0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); z-index: 2000; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: all 0.3s; }
 .login-overlay.show-modal { opacity: 1; pointer-events: auto; }
@@ -172,9 +193,23 @@ body { background: #0f0f11; min-height: 100vh; display: flex; flex-direction: co
 .login-brand-logo { height: 50px; width: 50px; margin-bottom: 12px; }
 .login-header-area h3 { font-size: 20px; font-weight: 800; color: #ffffff; }
 .login-header-area p { font-size: 12px; color: #64748b; margin-top: 4px; }
-.google-btn-wrapper { display: flex; justify-content: center; margin: 24px 0 10px 0; }
+.google-btn-wrapper { display: flex; justify-content: center; margin: 24px 0 10px 0; min-height: 45px; width: 100%; }
 .login-status-msg { text-align: center; font-size: 13px; margin-top: 15px; font-weight: 600; min-height: 20px; }
 .msg-success { color: #10b981; }
+
+/* ANIMATION COMPONENT UPGRADES */
+.loading-spinner {
+    width: 18px;
+    height: 18px;
+    border: 2.5px solid rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    border-top-color: #10b981;
+    animation: spinRotate 0.8s linear infinite;
+}
+
+@keyframes spinRotate { to { transform: rotate(360deg); } }
+@keyframes slideIn { from { transform: translateX(30px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+@keyframes toastSlideIn { from { transform: translateY(40px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
 /* ==========================================================================
    10. RESPONSIVE DESIGN ADJUSTMENTS
