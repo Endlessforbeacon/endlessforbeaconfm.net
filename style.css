@@ -81,74 +81,56 @@ body { background: #0f0f11; min-height: 100vh; display: flex; flex-direction: co
 .countdown-divider { font-size: 18px; font-weight: bold; color: #475569; }
 
 /* ==========================================================================
-   7. INTERACTIVE KUIS & LEADERBOARD GRID COMPONENT
+   7. INTERACTIVE INTERFACE SECTION (KUIS COMING SOON & LIVE CHAT AREA)
    ========================================================================== */
-.quiz-interactive-section { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 24px; width: 100%; }
-.quiz-card-box, .leaderboard-card-box { background: rgba(20, 20, 23, 0.8); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 24px; padding: 26px; display: flex; flex-direction: column; position: relative; }
-.quiz-card-box { border-color: rgba(16, 185, 129, 0.15); }
+.interactive-grid-section { display: grid; grid-template-columns: 1fr 1.1fr; gap: 24px; width: 100%; }
+.quiz-card-box, .chat-card-box { background: rgba(20, 20, 23, 0.8); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 24px; padding: 26px; display: flex; flex-direction: column; position: relative; height: 450px; }
 
-.quiz-box-header { margin-bottom: 20px; }
+/* KUIS COMING SOON AREA */
+.coming-soon-box { border-color: rgba(239, 68, 68, 0.15); text-align: center; }
+.lock-icon-container { font-size: 48px; margin: 30px auto 15px auto; color: #ef4444; filter: drop-shadow(0 0 10px rgba(239, 68, 68, 0.2)); }
+.quiz-box-header { margin-bottom: 20px; text-align: left; }
 .quiz-badge { background: rgba(16, 185, 129, 0.1); color: #10b981; font-size: 9px; font-weight: 800; letter-spacing: 1px; padding: 4px 10px; border-radius: 12px; display: inline-block; }
-.points-badge { background: rgba(245, 158, 11, 0.15); color: #f59e0b; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 12px; border: 1px solid rgba(245, 158, 11, 0.3); }
 #quiz-question-title { font-size: 18px; font-weight: 800; color: #ffffff; line-height: 1.4; margin-top: 8px; }
-
 .quiz-inner-body { display: flex; flex-direction: column; gap: 16px; flex-grow: 1; justify-content: center; }
-#quiz-notice-text { color: #94a3b8; font-size: 13px; line-height: 1.6; }
+#quiz-notice-text { color: #94a3b8; font-size: 13px; line-height: 1.6; text-align: center; padding: 0 10px; }
 #quiz-notice-text strong { color: #ffffff; }
+.quiz-primary-btn { width: 100%; background: #ef4444 !important; color: #ffffff; font-weight: 800; font-size: 13px; letter-spacing: 1px; padding: 14px; border: none; border-radius: 14px; cursor: not-allowed; }
 
-.quiz-primary-btn, .quiz-secondary-btn { width: 100%; background: #10b981; color: #ffffff; font-weight: 700; font-size: 14px; padding: 12px; border: none; border-radius: 14px; cursor: pointer; transition: all 0.2s; }
-.quiz-primary-btn:disabled { background: rgba(255, 255, 255, 0.04); color: #475569; cursor: not-allowed; border: 1px solid rgba(255, 255, 255, 0.02); }
-.quiz-secondary-btn { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); }
-.quiz-secondary-btn:hover { background: rgba(255, 255, 255, 0.1); }
+/* LIVE CHAT BOX AREA */
+.chat-card-box { border-color: rgba(16, 185, 129, 0.15); }
+.chat-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid rgba(255, 255, 255, 0.04); padding-bottom: 12px; }
+.chat-header-identity h3 { font-size: 16px; font-weight: 800; color: #ffffff; }
+.chat-subtitle { font-size: 11px; color: #64748b; font-weight: 500; }
+.online-status-indicator { background: rgba(16, 185, 129, 0.1); color: #10b981; font-size: 10px; font-weight: 800; padding: 4px 10px; border-radius: 20px; border: 1px solid rgba(16, 185, 129, 0.2); }
 
-/* GAMEPLAY TIMING & BUTTONS */
-.quiz-timer-container { width: 100%; height: 6px; background: rgba(255, 255, 255, 0.05); border-radius: 3px; overflow: hidden; }
-#quiz-timer-bar { height: 100%; width: 100%; background: #10b981; transition: width 1s linear; }
-.quiz-options-list { display: flex; flex-direction: column; gap: 10px; }
-.option-btn { width: 100%; text-align: left; padding: 14px 20px; background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 14px; color: #e2e8f0; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.15s; }
-.option-btn:hover { background: rgba(255, 255, 255, 0.04); border-color: rgba(255, 255, 255, 0.2); }
+/* CHAT MESSAGES PANEL */
+.chat-messages-container { flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 14px; padding-right: 6px; margin-bottom: 16px; }
+.chat-messages-container::-webkit-scrollbar { width: 4px; }
+.chat-messages-container::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
 
-/* FEEDBACK VALIDASI JAWABAN STYLES */
-.correct-choice { background: rgba(16, 185, 129, 0.15) !important; border-color: #10b981 !important; color: #10b981 !important; }
-.wrong-choice { background: rgba(239, 68, 68, 0.15) !important; border-color: #ef4444 !important; color: #ef4444 !important; }
+.chat-system-notice { text-align: center; font-size: 11px; color: #475569; background: rgba(0, 0, 0, 0.2); padding: 8px 12px; border-radius: 10px; line-height: 1.4; border: 1px dashed rgba(255, 255, 255, 0.03); }
 
-.feedback-container { text-align: center; font-size: 13px; font-weight: 700; min-height: 20px; padding: 6px; border-radius: 8px; transition: all 0.3s; }
-.feedback-correct { color: #10b981; background: rgba(16, 185, 129, 0.08); }
-.feedback-wrong { color: #ef4444; background: rgba(239, 68, 68, 0.08); }
+.chat-msg-row { display: flex; gap: 10px; align-items: flex-start; animation: chatBubbleFade 0.25s ease-out; }
+.chat-msg-avatar { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; background: #27272a; border: 1px solid rgba(255, 255, 255, 0.05); }
+.chat-msg-content-box { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.04); padding: 10px 14px; border-radius: 0 16px 16px 16px; max-width: 85%; }
+.chat-msg-username { display: block; font-size: 11px; font-weight: 800; color: #94a3b8; margin-bottom: 2px; }
+.chat-msg-text { font-size: 12.5px; color: #e2e8f0; line-height: 1.4; word-break: break-word; }
 
-/* VIEW RESULTS & PANEL HADIAH E-WALLET */
-.score-announcement { text-align: center; padding: 10px 0; }
-#quiz-result-status { font-size: 16px; font-weight: 800; color: #ffffff; }
-.final-score-circle { width: 90px; height: 90px; border-radius: 50%; background: rgba(16, 185, 129, 0.1); border: 2px solid #10b981; display: flex; align-items: center; justify-content: center; margin: 16px auto; }
-.final-score-circle span { font-size: 32px; font-weight: 800; color: #10b981; font-family: monospace; }
-#quiz-result-desc { font-size: 12.5px; color: #94a3b8; line-height: 1.5; margin-bottom: 10px; }
+/* CHAT PESAN SAYA (ME) STYLES */
+.chat-msg-me { flex-direction: row-reverse; }
+.chat-msg-me .chat-msg-content-box { background: rgba(16, 185, 129, 0.12); border-color: rgba(16, 185, 129, 0.2); border-radius: 16px 0 16px 16px; }
+.chat-msg-me .chat-msg-username { color: #10b981; text-align: right; }
 
-.reward-panel { background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.25); border-radius: 16px; padding: 20px; margin-top: 20px; text-align: center; animation: slideIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-.reward-icon { font-size: 28px; margin-bottom: 6px; }
-.reward-panel h5 { font-size: 14px; font-weight: 800; color: #f59e0b; text-transform: uppercase; }
-.reward-panel p { font-size: 11.5px; color: #94a3b8; line-height: 1.5; margin: 6px 0 14px 0; }
-.reward-input-group { display: flex; gap: 8px; margin-bottom: 12px; }
-.reward-input-group select { background: #18181c; border: 1px solid rgba(255, 255, 255, 0.1); color: #fff; padding: 10px; border-radius: 8px; font-size: 12px; font-weight: 600; outline: none; }
-.reward-input-group input { flex-grow: 1; background: #18181c; border: 1px solid rgba(255, 255, 255, 0.1); color: #fff; padding: 10px; border-radius: 8px; font-size: 12px; outline: none; }
-.reward-input-group input:focus { border-color: #f59e0b; }
-.claim-submit-btn { width: 100%; background: #f59e0b; color: #131316; font-weight: 800; font-size: 13px; padding: 11px; border: none; border-radius: 8px; cursor: pointer; transition: all 0.2s; text-transform: uppercase; }
-.claim-submit-btn:hover { background: #d97706; }
+/* CHAT INPUT PANEL STYLE */
+.chat-input-wrapper { display: flex; gap: 8px; background: #131316; padding: 6px; border-radius: 14px; border: 1px solid rgba(255, 255, 255, 0.05); }
+.chat-input-wrapper input { flex-grow: 1; background: none; border: none; outline: none; padding: 10px 12px; color: #fff; font-size: 13px; }
+.chat-input-wrapper input:disabled { cursor: not-allowed; opacity: 0.5; }
+.chat-input-wrapper button { background: #10b981; color: #fff; border: none; width: 38px; height: 38px; border-radius: 10px; cursor: pointer; transition: background 0.2s; display: flex; align-items: center; justify-content: center; font-size: 13px; }
+.chat-input-wrapper button:hover { background: #059669; }
+.chat-input-wrapper button:disabled { background: rgba(255, 255, 255, 0.03); color: #475569; cursor: not-allowed; }
 
-/* LEADERBOARD VIEW STYLES */
-.leaderboard-table-wrapper { width: 100%; overflow-x: auto; }
-.leaderboard-table { width: 100%; border-collapse: collapse; }
-.leaderboard-table th { font-size: 11px; text-transform: uppercase; color: #475569; padding: 10px 8px; border-bottom: 1px solid rgba(255, 255, 255, 0.04); font-weight: 800; }
-.leaderboard-table td { padding: 10px 8px; border-bottom: 1px solid rgba(255, 255, 255, 0.02); color: #e2e8f0; font-size: 13px; font-weight: 600; vertical-align: middle; }
-
-.lb-rank-cell { text-align: center; font-weight: 800 !important; font-family: monospace; font-size: 14px !important; }
-.rank-1 { color: #f59e0b !important; }
-.rank-2 { color: #94a3b8 !important; }
-.rank-3 { color: #b45309 !important; }
-
-.lb-profile-identity { display: flex; align-items: center; gap: 10px; }
-.lb-avatar { width: 26px; height: 26px; border-radius: 50%; object-fit: cover; background: #27272a; }
-.lb-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 130px; }
-.lb-score-cell { text-align: right; font-family: monospace; font-weight: 800; color: #10b981; font-size: 14px !important; }
+@keyframes chatBubbleFade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
 
 /* ==========================================================================
    8. STATION FOOTER WITH INTEGRATED CLOCKS
@@ -192,7 +174,6 @@ body { background: #0f0f11; min-height: 100vh; display: flex; flex-direction: co
 .login-status-msg { text-align: center; font-size: 13px; margin-top: 15px; font-weight: 600; min-height: 20px; }
 .msg-success { color: #10b981; }
 
-/* ANIMATION COMPONENT UPGRADES */
 .loading-spinner { width: 18px; height: 18px; border: 2.5px solid rgba(255, 255, 255, 0.2); border-radius: 50%; border-top-color: #10b981; animation: spinRotate 0.8s linear infinite; }
 
 @keyframes spinRotate { to { transform: rotate(360deg); } }
@@ -203,7 +184,8 @@ body { background: #0f0f11; min-height: 100vh; display: flex; flex-direction: co
    10. RESPONSIVE DESIGN ADJUSTMENTS
    ========================================================================== */
 @media (max-width: 992px) {
-    .quiz-interactive-section { grid-template-columns: 1fr; }
+    .interactive-grid-section { grid-template-columns: 1fr; }
+    .quiz-card-box, .chat-card-box { height: 400px; }
     .footer-top-row { flex-direction: column; text-align: center; gap: 16px; }
 }
 @media (max-width: 576px) {

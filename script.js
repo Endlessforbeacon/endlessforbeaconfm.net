@@ -127,278 +127,76 @@ function initAnniversaryCountdown() {
     }, 1000);
 }
 
-// ================= MANAGEMENT JADWAL KUIS (ONLINE SYSTEM) =================
-const QUIZ_SCHEDULE = {
-    openTime: new Date("2026-07-06T07:00:00+08:00").getTime(),
-    closeTime: new Date("2026-07-06T19:59:59+08:00").getTime()
-};
+// ================= MANAGEMENT LIVE CHAT ENGINE =================
+const chatMessagesContainer = document.getElementById("chat-box-messages");
+const chatInputField = document.getElementById("chat-input-field");
+const sendChatBtn = document.getElementById("send-chat-btn");
 
-function formatQuizDateText(timestamp) {
-    return new Intl.DateTimeFormat('id-ID', {
-        day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Makassar'
-    }).format(new Date(timestamp)) + " WITA";
-}
-
-function checkQuizAvailability() {
-    const startBtn = document.getElementById("start-quiz-btn");
-    const noticeText = document.getElementById("quiz-notice-text");
-    const questionTitle = document.getElementById("quiz-question-title");
-    
-    if (!startBtn || !noticeText) return;
-    const currentTime = Date.now();
-
-    if (currentTime < QUIZ_SCHEDULE.openTime) {
-        startBtn.setAttribute("disabled", "true");
-        questionTitle.innerText = "🔒 Kuis Belum Dibuka";
-        noticeText.innerHTML = `Halo! Kuis edisi mingguan saat ini belum dimulai.<br><br>📅 <strong>Akan Dibuka Pada:</strong> ${formatQuizDateText(QUIZ_SCHEDULE.openTime)}`;
-    } else if (currentTime > QUIZ_SCHEDULE.closeTime) {
-        startBtn.setAttribute("disabled", "true");
-        questionTitle.innerText = "🚫 Kuis Sudah Ditutup";
-        noticeText.innerHTML = `Mohon maaf! Batas waktu pengerjaan kuis periode ini telah berakhir.<br><br>📅 <strong>Telah Ditutup Pada:</strong> ${formatQuizDateText(QUIZ_SCHEDULE.closeTime)}<br>Nantikan pengumuman pemenang kuis interaktif di Leaderboard!`;
-    } else {
-        startBtn.removeAttribute("disabled");
-        questionTitle.innerText = "Beacon Interactive Quiz";
-        noticeText.innerHTML = `Sesi aktif terdeteksi. Bersiaplah menjawab serangkaian pertanyaan seputar musik global dan program Endless For Beacon FM!<br><br>⏳ <strong>Batas Waktu Pengisian:</strong> s/d ${formatQuizDateText(QUIZ_SCHEDULE.closeTime)}`;
-    }
-}
-
-// ================= DATABASE SOAL KUIS + FITUR POIN SPESIFIK =================
-const QUIZ_DATABASE = {
-    multipleChoice: [
-    { id: "mg-1", level: "Easy", maxPoints: 5, question: "Apa nama stasiun radio yang sedang merayakan ulang tahunnya yang ke-3?", options: ["A. Beacon Modern Radio", "B. Endless For Beacon FM", "C. Flikk Radio", "D. Nusantara Feed Station"], answer: "B" },
-    { id: "mg-2", level: "Easy", maxPoints: 5, question: "Ulang tahun yang keberapa yang dirayakan oleh Endless For Beacon FM pada tahun 2026 ini?", options: ["A. Ke-1", "B. Ke-2", "C. Ke-3", "D. Ke-5"], answer: "C" },
-    { id: "mg-3", level: "Easy", maxPoints: 5, question: "Apa tema utama yang diusung dalam perayaan HUT ke-3 Endless For Beacon FM?", options: ["A. Back to the Y2K Vibes", "B. Let's Tuning In To The Future", "C. Endless Music, Endless Horizon", "D. Digitalization of Radio"], answer: "B" },
-    { id: "mg-4", level: "Easy", maxPoints: 5, question: "Di kota manakah stasiun flagship (pusat) dari Endless For Beacon FM berada?", options: ["A. Jakarta", "B. Medan", "C. Makassar", "D. Surabaya"], answer: "C" },
-    { id: "mg-5", level: "Easy", maxPoints: 5, question: "Berdasarkan tema 'Let's Tuning In To The Future', fokus utama dari perayaan ini adalah memandang ke arah...", options: ["A. Masa lalu (Sejarah)", "B. Masa kini (Evaluasi)", "C. Masa depan (Inovasi & Teknologi)", "D. Masa kejayaan media cetak"], answer: "C" },
-    { id: "mg-6", level: "Easy", maxPoints: 5, question: "Pada bulan apa perayaan HUT 3rd Anniversary Endless For Beacon FM ini diselenggarakan?", options: ["A. Januari", "B. April", "C. Juli", "D. Desember"], answer: "C" },
-    { id: "mg-7", level: "Easy", maxPoints: 5, question: "Media utama yang digunakan pendengar untuk menikmati keseruan rangkaian acara HUT ke-3 ini adalah melalui...", options: ["A. Gelombang radio FM dan platform streaming digital", "B. Layar bioskop seluruh Indonesia", "C. Media cetak koran nasional", "D. Saluran TV kabel berlangganan"], answer: "A" },
-    { id: "mg-8", level: "Medium", maxPoints: 10, question: "Kata 'Tuning In' dalam tema 'Let's Tuning In To The Future' secara harfiah dalam dunia radio berarti...", options: ["A. Mematikan siaran", "B. Menyelaraskan/mencari frekuensi", "C. Mengubah nama stasiun", "D. Merekam suara"], answer: "B" },
-    { id: "mg-9", level: "Medium", maxPoints: 10, question: "Selain siaran lokal di kota flagship-nya, Endless For Beacon FM juga menjangkau pendengar di berbagai wilayah melalui sistem...", options: ["A. Siaran Monolog", "B. National Feed (Umpan Nasional)", "C. Gelombang Pendek (Shortwave)", "D. Radio Komunitas Terbatas"], answer: "B" },
-    { id: "mg-10", level: "Medium", maxPoints: 10, question: "Dengan mengusung tema masa depan, Endless For Beacon FM ingin membuktikan bahwa media radio tetap...", options: ["A. Kuno dan tidak berubah", "B. Relevan, adaptif, dan terus berinovasi", "C. Bergantung penuh pada pemutar pita kaset manual", "D. Hanya bisa didengarkan lewat perangkat analog jadul"], answer: "B" },
-    { id: "mg-11", level: "Medium", maxPoints: 10, question: "Salah satu bentuk adaptasi masa depan yang dilakukan radio modern saat ini adalah menyebarluaskan siaran analog melalui...", options: ["A. Piringan hitam komersial", "B. Audio internet streaming digital", "C. Layanan pesan singkat SMS pembaca", "D. Panggilan telepon interaktif kabel"], answer: "B" },
-    { id: "mg-12", level: "Medium", maxPoints: 10, question: "Konsep visual yang paling cocok untuk mendukung tema 'Let’s Tuning In To The Future' pada materi promosi atau grafis HUT ke-3 adalah...", options: ["A. Kerajinan tradisional dan anyaman", "B. Elemen futuristik, neon digital, dan estetika modern/cyber", "C. Gaya klasik era 1920-an (Hitam Putih)", "D. Corak batik megamendung"], answer: "B" },
-    { id: "mg-13", level: "Medium", maxPoints: 10, question: "Program spesial yang paling mencerminkan kata 'The Future' dalam HUT kali ini adalah program yang membahas tentang...", options: ["A. Kilas balik lagu-lagu era 60-an", "B. Perkembangan teknologi, AI, tren masa depan, dan musik modern", "C. Sejarah berdirinya pemancar radio pertama di dunia", "D. Tutorial merawat perangkat radio kuno"], answer: "B" },
-    { id: "mg-14", level: "Hard", maxPoints: 15, question: "Apa esensi filosofis dari penggabungan kata 'Endless' (Tanpa Batas) dengan tema 'Let's Tuning In To The Future'?", options: ["A. Keinginan untuk bersiaran tanpa jeda iklan sama sekali", "B. Komitmen stasiun untuk terus mengudara melintasi batas waktu menuju masa depan yang tak terbatas", "C. Batasan jangkauan radio yang hanya berpusat di satu titik kota saja", "D. Harapan agar perangkat pemancar tidak pernah mati selamanya"], answer: "B" },
-    { id: "mg-15", level: "Hard", maxPoints: 15, question: "Dari sisi manajemen program (programming), tantangan terbesar dalam merealisasikan tema 'Let's Tuning In To The Future' pada jaringan nasional (national feed) adalah...", options: ["A. Memilih lagu lokal saja tanpa lagu internasional", "B. Menyinkronkan visi siaran masa depan agar relevan bagi audiens regional maupun nasional", "C. Mengurangi durasi siaran menjadi hanya 1 jam per hari", "D. Menghilangkan fungsi penyiar secara total dari studio"], answer: "B" },
-    { id: "mg-16", level: "Hard", maxPoints: 15, question: "Dalam merancang ekosistem penyiaran masa depan yang selaras dengan tema HUT, integrasi teknologi apa yang paling relevan untuk menunjang performa studio siaran?", options: ["A. Penggunaan piringan hitam otomatis", "B. Otomasi sistem siaran modern (automation software) terintegrasi dengan distribusi digital", "C. Menggunakan interaksi lewat surat pos kilat", "D. Membatasi siaran hanya melalui jalur pemancar AM gelombang pendek"], answer: "B" },
-    { id: "mg-17", level: "Hard", maxPoints: 15, question: "Konsep siaran masa depan yang dicerminkan dalam tema kali ini menuntut stasiun radio untuk memperluas jangkauan (reach) melalui strategi...", options: ["A. Mengurangi jumlah stasiun jaringan", "B. Pendekatan multi-platform (On-Air, Digital Streaming, dan Social Media)", "C. Berhenti menggunakan koneksi internet", "D. Menjual pemancar radio ke pihak lain"], answer: "B" },
-    { id: "mg-18", level: "Hard", maxPoints: 15, question: "Jika dikaitkan dengan strategi branding yang visioner, elemen apa yang dibawa ke dalam DNA perayaan HUT ke-3 Endless For Beacon FM?", options: ["A. Nuansa yang santai, lambat, dan melankolis", "B. Nuansa yang dinamis, modern, berenergi tinggi, dan penuh terobosan baru", "C. Konsep pedesaan yang sepi dan tradisional", "D. Gaya penyiaran formal kaku ala radio berita zaman dulu"], answer: "B" },
-    { id: "mg-19", level: "Hard", maxPoints: 15, question: "Struktur playlist lagu khusus yang mencerminkan 'Tuning In To The Future' dalam perayaan ini sebaiknya disusun dengan cara...", options: ["A. Memutar lagu yang sama berulang-ulang selama 24 jam", "B. Mengombinasikan hits masa kini dengan lagu-lagu berenergi tinggi yang visioner dan modern", "C. Hanya memutar instrumen musik klasik tanpa vokal", "D. Menghilangkan musik dan hanya menyisakan suara statis (noise)"], answer: "B" },
-    { id: "mg-20", level: "Hard", maxPoints: 15, question: "Apa target jangka panjang yang ingin dicapai Endless For Beacon FM lewat momentum 3rd Anniversary bertema masa depan ini?", options: ["A. Menutup stasiun setelah acara selesai", "B. Menjadi trendsetter media penyiaran modern yang menjembatani radio konvensional ke era digital masa depan", "C. Fokus menjadi stasiun radio khusus pemutaran lagu lama saja", "D. Memindahkan seluruh studio fisik ke luar negeri"], answer: "B" }
-  ],
-  fillInTheBlank: [] // Data isian singkat diabaikan dalam gameplay tipe pilihan ganda
-};
-
-let currentQuestionIndex = 0;
-let userAccumulatedScore = 0;
-let quizTimerTicker = null;
-let quizTimeRemaining = 10; 
-let isAnsweringBlocked = false;
-
-// Simulated Online Network Database
-let globalOnlineUsers = [
-    { name: "Rian Makassar", avatar: "", score: 85 },
-    { name: "Fadel_Pro", avatar: "", score: 70 },
-    { name: "Siti_BeaconFans", avatar: "", score: 55 },
-    { name: "Andi_Edge", avatar: "", score: 40 }
+// Simulasi bot penonton otomatis masuk berkala biar chat seru
+const simulatedUsers = ["Rian_Makassar", "Fadel_Pro", "Siti_BeaconFans", "Andi_Edge"];
+const simulatedTexts = [
+    "Keren banget lagunya asli! 🔥",
+    "Salam dari Kendari, dengerin terus Screen To Sounds!",
+    "Request lagu Muse dong min setelah ini 🙏",
+    "Gila vibesnya berasa nonton MTV jaman dulu bgt yaa ✨",
+    "Endless For Beacon mantap suaranya jernih poll."
 ];
 
-// ================= LOGIKA ONLINE ENGINE KUIS & LEADERBOARD =================
-function renderLeaderboardTable() {
-    let localRecords = JSON.parse(localStorage.getItem("beacon_leaderboard_data")) || [];
-    let mergedLeaderboard = [...localRecords];
-    globalOnlineUsers.forEach(onlineUser => {
-        if (!mergedLeaderboard.some(user => user.name === onlineUser.name)) {
-            mergedLeaderboard.push(onlineUser);
-        }
-    });
-
-    mergedLeaderboard.sort((x, y) => y.score - x.score);
-
-    const tbody = document.getElementById("leaderboard-rows-inject");
-    tbody.innerHTML = "";
-
-    mergedLeaderboard.forEach((player, idx) => {
-        const rank = idx + 1;
-        const avatarSrc = player.avatar ? player.avatar : "Image/Logo.png";
-        
-        let rankClass = "";
-        if (rank === 1) rankClass = "rank-1";
-        else if (rank === 2) rankClass = "rank-2";
-        else if (rank === 3) rankClass = "rank-3";
-
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-            <td class="lb-rank-cell ${rankClass}">${rank}</td>
-            <td>
-                <div class="lb-profile-identity">
-                    <img src="${avatarSrc}" alt="Avatar" class="lb-avatar">
-                    <span class="lb-name">${player.name} ${player.isCurrentUser ? '<small style="color:#10b981;">(Anda)</small>' : ''}</span>
-                </div>
-            </td>
-            <td class="lb-score-cell">${player.score} Poin</td>
-        `;
-        tbody.appendChild(tr);
-    });
-
-    return mergedLeaderboard;
+function triggerSimulatedChat() {
+    if (!chatMessagesContainer) return;
+    const randomUser = simulatedUsers[Math.floor(Math.random() * simulatedUsers.length)];
+    const randomText = simulatedTexts[Math.floor(Math.random() * simulatedTexts.length)];
+    appendChatMessage(randomUser, randomText, "Image/Logo.png", false);
 }
+setInterval(triggerSimulatedChat, 12000); // Simulasi chat masuk setiap 12 detik
 
-function startQuizGameplay() {
-    document.getElementById("quiz-start-view").style.display = "none";
-    document.getElementById("quiz-gameplay-view").style.display = "flex";
-    document.getElementById("question-points-badge").style.display = "inline-block";
-    currentQuestionIndex = 0;
-    userAccumulatedScore = 0;
-    loadQuizQuestion();
-}
-
-function loadQuizQuestion() {
-    const questionsList = QUIZ_DATABASE.multipleChoice;
-
-    if (currentQuestionIndex >= questionsList.length) {
-        finishQuizGameplay();
-        return;
-    }
-
-    isAnsweringBlocked = false;
-    clearInterval(quizTimerTicker);
-    quizTimeRemaining = 10;
-    document.getElementById("quiz-timer-bar").style.width = "100%";
-    document.getElementById("quiz-feedback").className = "feedback-container";
-    document.getElementById("quiz-feedback").innerText = "";
-
-    const currentQuestion = questionsList[currentQuestionIndex];
-    document.getElementById("quiz-question-title").innerText = `${currentQuestionIndex + 1}. ${currentQuestion.question}`;
-    document.getElementById("question-points-badge").innerText = `Maks Poin: ${currentQuestion.maxPoints}`;
-
-    const optionButtons = document.querySelectorAll(".quiz-options-list .option-btn");
-    optionButtons.forEach((btn, idx) => {
-        btn.innerText = currentQuestion.options[idx];
-        btn.className = "option-btn"; 
-    });
-
-    quizTimerTicker = setInterval(() => {
-        quizTimeRemaining--;
-        document.getElementById("quiz-timer-bar").style.width = `${(quizTimeRemaining / 10) * 100}%`;
-        
-        if (quizTimeRemaining <= 0) {
-            clearInterval(quizTimerTicker);
-            showAnswerFeedback(false, 0); 
-        }
-    }, 1000);
-}
-
-function checkQuizAnswer(selectedIdx) {
-    if (isAnsweringBlocked) return;
-    isAnsweringBlocked = true;
-    clearInterval(quizTimerTicker);
-
-    const currentQuestion = QUIZ_DATABASE.multipleChoice[currentQuestionIndex];
-    const optionButtons = document.querySelectorAll(".quiz-options-list .option-btn");
+function appendChatMessage(username, messageText, avatar, isMe = false) {
+    if (!chatMessagesContainer) return;
     
-    const indexToLetter = ["A", "B", "C", "D"];
-    const selectedLetter = indexToLetter[selectedIdx];
+    const messageNode = document.createElement("div");
+    messageNode.className = isMe ? "chat-msg-row chat-msg-me" : "chat-msg-row";
     
-    let isCorrect = (selectedLetter === currentQuestion.answer);
-    let pointsEarned = 0;
-
-    if (isCorrect) {
-        pointsEarned = Math.round((quizTimeRemaining / 10) * currentQuestion.maxPoints);
-        if (pointsEarned < 5) pointsEarned = 5; 
-        userAccumulatedScore += pointsEarned;
-        optionButtons[selectedIdx].classList.add("correct-choice");
-    } else {
-        optionButtons[selectedIdx].classList.add("wrong-choice");
-        const correctOptionIdx = indexToLetter.indexOf(currentQuestion.answer);
-        if (correctOptionIdx !== -1) {
-            optionButtons[correctOptionIdx].classList.add("correct-choice");
-        }
-    }
-
-    showAnswerFeedback(isCorrect, pointsEarned);
+    messageNode.innerHTML = `
+        <img src="${avatar}" alt="User Avatar" class="chat-msg-avatar">
+        <div class="chat-msg-content-box">
+            <span class="chat-msg-username">${username}</span>
+            <p class="chat-msg-text">${messageText}</p>
+        </div>
+    `;
+    chatMessagesContainer.appendChild(messageNode);
+    chatMessagesContainer.scrollTop = chatMessagesContainer.scrollHeight; // Auto-scroll down
 }
 
-function showAnswerFeedback(isCorrect, points) {
-    const feedbackEl = document.getElementById("quiz-feedback");
-    if (isCorrect) {
-        feedbackEl.className = "feedback-container feedback-correct";
-        feedbackEl.innerText = `🟢 Benar! Berhasil mendapatkan +${points} Poin.`;
-    } else {
-        feedbackEl.className = "feedback-container feedback-wrong";
-        feedbackEl.innerText = `🔴 Salah! Anda mendapatkan 0 Poin dari soal ini.`;
-    }
-
-    setTimeout(() => {
-        currentQuestionIndex++;
-        loadQuizQuestion();
-    }, 2000); 
-}
-
-function finishQuizGameplay() {
-    clearInterval(quizTimerTicker);
-    document.getElementById("quiz-gameplay-view").style.display = "none";
-    document.getElementById("question-points-badge").style.display = "none";
-    document.getElementById("quiz-result-view").style.display = "flex";
-    document.getElementById("quiz-question-title").innerText = "Kuis Selesai!";
-    document.getElementById("final-score-val").innerText = userAccumulatedScore;
-
+function sendLiveChatMessage() {
+    const text = chatInputField.value.trim();
+    if (!text) return;
+    
     const savedUser = localStorage.getItem("user_logged_in");
     if (savedUser) {
         const userData = JSON.parse(savedUser);
-        let localRecords = JSON.parse(localStorage.getItem("beacon_leaderboard_data")) || [];
-        
-        const existingUserIdx = localRecords.findIndex(r => r.name === userData.name);
-        if (existingUserIdx !== -1) {
-            if (userAccumulatedScore > localRecords[existingUserIdx].score) {
-                localRecords[existingUserIdx].score = userAccumulatedScore;
-            }
-        } else {
-            localRecords.push({ name: userData.name, avatar: userData.avatarUrl, score: userAccumulatedScore, isCurrentUser: true });
-        }
-        localStorage.setItem("beacon_leaderboard_data", JSON.stringify(localRecords));
-        
-        const finalLeaderboard = renderLeaderboardTable();
-        const userRankIndex = finalLeaderboard.findIndex(player => player.name === userData.name);
-        const currentGlobalTime = Date.now();
-
-        if (currentGlobalTime > QUIZ_SCHEDULE.closeTime && userRankIndex !== -1 && userRankIndex < 3) {
-            document.getElementById("reward-claim-panel").style.display = "block";
-            document.getElementById("quiz-result-desc").innerText = `Luar biasa! Anda mengakhiri turnamen kuis ini di peringkat ke-${userRankIndex + 1} global.`;
-        } else if (currentGlobalTime <= QUIZ_SCHEDULE.closeTime && userRankIndex !== -1 && userRankIndex < 3) {
-            document.getElementById("quiz-result-desc").innerHTML = `🔥 Skor Anda saat ini mengamankan posisi <strong>Top 3 Besar</strong>! Tombol klaim hadiah E-Wallet akan otomatis aktif di panel ini setelah kuis resmi ditutup pada pukul 19:59 WITA.`;
-        }
+        appendChatMessage(userData.name, text, userData.avatarUrl, true);
+        chatInputField.value = "";
     }
 }
 
-function submitRewardClaim() {
-    const ewalletType = document.getElementById("ewallet-type").value;
-    const ewalletNum = document.getElementById("ewallet-number").value;
+// listener enter key untuk kirim chat
+chatInputField?.addEventListener("keypress", (e) => {
+    if (e.key === "Enter") sendLiveChatMessage();
+});
 
-    if (!ewalletNum) {
-        alert("Mohon masukkan nomor handphone E-Wallet valid Anda!");
-        return;
-    }
-
-    alert(`✅ Data Klaim Berhasil Dikirim!\nHadiah saldo tunai akan diproses otomatis ke Akun ${ewalletType} (${ewalletNum}) dalam maksimal 1x24 jam kerja.`);
-    document.getElementById("reward-claim-panel").style.display = "none";
-}
-
-function resetQuizGameplay() {
-    document.getElementById("quiz-result-view").style.display = "none";
-    document.getElementById("reward-claim-panel").style.display = "none";
-    document.getElementById("quiz-start-view").style.display = "flex";
-    
-    const savedUser = localStorage.getItem("user_logged_in");
-    if (savedUser) {
-        checkQuizAvailability();
+function syncInteractiveComponentsState(isLoggedIn, userName = "") {
+    if (isLoggedIn) {
+        chatInputField.removeAttribute("disabled");
+        sendChatBtn.removeAttribute("disabled");
+        chatInputField.placeholder = `Ketik pesan sebagai ${userName}...`;
     } else {
-        document.getElementById("quiz-question-title").innerText = "Silahkan Login Terlebih Dahulu";
-        document.getElementById("quiz-notice-text").innerText = "Kamu harus masuk menggunakan akun Google untuk dapat mengikuti kuis mingguan dan mencatatkan namamu di papan peringkat teratas.";
+        chatInputField.setAttribute("disabled", "true");
+        sendChatBtn.setAttribute("disabled", "true");
+        chatInputField.placeholder = "Silahkan login untuk ikut live chat...";
     }
 }
 
-// ================= INTEGRASI UPGRADE SYSTEM GOOGLE SIGN-IN =================
+// ================= INTEGRASI LAYER GOOGLE SIGN-IN =================
 const loginModal = document.getElementById('login-modal');
 const closeLoginBtn = document.getElementById('close-login-btn');
 const loginMessage = document.getElementById('login-message');
@@ -453,7 +251,7 @@ function displayUserProfile(name, avatarUrl) {
             </div>
         `;
     }
-    checkQuizAvailability();
+    syncInteractiveComponentsState(true, name);
 }
 
 function handleSignOut() {
@@ -468,10 +266,7 @@ function handleSignOut() {
         `;
     }
     
-    const startBtn = document.getElementById("start-quiz-btn");
-    if (startBtn) startBtn.setAttribute("disabled", "true");
-    
-    resetQuizGameplay();
+    syncInteractiveComponentsState(false);
     showToastNotification("Kamu telah keluar dari Endless For Beacon FM.");
 }
 
@@ -513,7 +308,7 @@ function closeLoginModal() {
     loginMessage.innerText = ""; 
 }
 
-closeLoginBtn.addEventListener('click', closeLoginModal);
+closeLoginBtn?.addEventListener('click', closeLoginModal);
 window.addEventListener('click', (e) => { if (e.target === loginModal) closeLoginModal(); });
 
 // ================= LIFE INITIALIZATION DOM LOADED =================
@@ -523,11 +318,12 @@ document.addEventListener("DOMContentLoaded", () => {
     initAnniversaryCountdown();
     checkAutoDJStatus();
     initGoogleSignIn();
-    renderLeaderboardTable(); 
 
     const savedUser = localStorage.getItem("user_logged_in");
     if (savedUser) {
         const userData = JSON.parse(savedUser);
         displayUserProfile(userData.name, userData.avatarUrl);
+    } else {
+        syncInteractiveComponentsState(false);
     }
 });
