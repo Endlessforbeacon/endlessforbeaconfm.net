@@ -135,11 +135,6 @@ body { background: #0f0f11; min-height: 100vh; display: flex; flex-direction: co
 .claim-submit-btn:hover { background: #d97706; }
 
 /* LEADERBOARD VIEW STYLES */
-.leaderboard-header { margin-bottom: 16px; }
-.leaderboard-header h3 { font-size: 16px; font-weight: 800; color: #ffffff; }
-.lb-subtitle { font-size: 11px; color: #64748b; font-weight: 600; }
-.online-status-indicator { font-size: 9px; font-weight: 800; color: #10b981; background: rgba(16, 185, 129, 0.1); padding: 3px 8px; border-radius: 20px; border: 1px solid rgba(16, 185, 129, 0.2); letter-spacing: 0.5px; }
-
 .leaderboard-table-wrapper { width: 100%; overflow-x: auto; }
 .leaderboard-table { width: 100%; border-collapse: collapse; }
 .leaderboard-table th { font-size: 11px; text-transform: uppercase; color: #475569; padding: 10px 8px; border-bottom: 1px solid rgba(255, 255, 255, 0.04); font-weight: 800; }
@@ -198,14 +193,7 @@ body { background: #0f0f11; min-height: 100vh; display: flex; flex-direction: co
 .msg-success { color: #10b981; }
 
 /* ANIMATION COMPONENT UPGRADES */
-.loading-spinner {
-    width: 18px;
-    height: 18px;
-    border: 2.5px solid rgba(255, 255, 255, 0.2);
-    border-radius: 50%;
-    border-top-color: #10b981;
-    animation: spinRotate 0.8s linear infinite;
-}
+.loading-spinner { width: 18px; height: 18px; border: 2.5px solid rgba(255, 255, 255, 0.2); border-radius: 50%; border-top-color: #10b981; animation: spinRotate 0.8s linear infinite; }
 
 @keyframes spinRotate { to { transform: rotate(360deg); } }
 @keyframes slideIn { from { transform: translateX(30px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }

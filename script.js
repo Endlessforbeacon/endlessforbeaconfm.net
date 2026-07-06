@@ -186,28 +186,7 @@ const QUIZ_DATABASE = {
     { id: "mg-19", level: "Hard", maxPoints: 15, question: "Struktur playlist lagu khusus yang mencerminkan 'Tuning In To The Future' dalam perayaan ini sebaiknya disusun dengan cara...", options: ["A. Memutar lagu yang sama berulang-ulang selama 24 jam", "B. Mengombinasikan hits masa kini dengan lagu-lagu berenergi tinggi yang visioner dan modern", "C. Hanya memutar instrumen musik klasik tanpa vokal", "D. Menghilangkan musik dan hanya menyisakan suara statis (noise)"], answer: "B" },
     { id: "mg-20", level: "Hard", maxPoints: 15, question: "Apa target jangka panjang yang ingin dicapai Endless For Beacon FM lewat momentum 3rd Anniversary bertema masa depan ini?", options: ["A. Menutup stasiun setelah acara selesai", "B. Menjadi trendsetter media penyiaran modern yang menjembatani radio konvensional ke era digital masa depan", "C. Fokus menjadi stasiun radio khusus pemutaran lagu lama saja", "D. Memindahkan seluruh studio fisik ke luar negeri"], answer: "B" }
   ],
-  fillInTheBlank: [
-    { id: "is-1", level: "Easy", maxPoints: 5, question: "Endless For Beacon FM merayakan ulang tahunnya yang ke-_______ pada tahun 2026 ini.", acceptedAnswers: ["3", "tiga"] },
-    { id: "is-2", level: "Easy", maxPoints: 5, question: "Tema besar yang diusung pada perayaan ulang tahun kali ini adalah 'Let’s Tuning In To The _______'.", acceptedAnswers: ["future"] },
-    { id: "is-3", level: "Easy", maxPoints: 5, question: "Kota yang menjadi basis utama atau stasiun flagship dari Endless For Beacon FM adalah _______.", acceptedAnswers: ["makassar"] },
-    { id: "is-4", level: "Easy", maxPoints: 5, question: "Perayaan hari jadi ke-3 Endless For Beacon FM diselenggarakan pada bulan _______.", acceptedAnswers: ["juli"] },
-    { id: "is-5", level: "Easy", maxPoints: 5, question: "Media penyiaran yang dijalankan oleh Beacon Network ini bergerak menggunakan frekuensi gelombang _______.", acceptedAnswers: ["radio", "fm"] },
-    { id: "is-6", level: "Easy", maxPoints: 5, question: "Singkatan 'FM' pada nama Endless For Beacon FM memiliki kepanjangan _______.", acceptedAnswers: ["frequency modulation"] },
-    { id: "is-7", level: "Easy", maxPoints: 5, question: "Melalui siaran khusus HUT ke-3, stasiun radio mengajak pendengar setia mendengarkan musik lewat jalur udara (On-Air) dan media online berupa _______.", acceptedAnswers: ["live streaming", "audio streaming", "streaming"] },
-    { id: "is-8", level: "Medium", maxPoints: 10, question: "Melalui jaringan _______ feed, keseruan program HUT ke-3 Endless For Beacon FM dapat dipancarkan meluas ke seluruh Indonesia.", acceptedAnswers: ["national", "nasional"] },
-    { id: "is-9", level: "Medium", maxPoints: 10, question: "Kata 'Tuning In' dalam dunia radio merujuk pada aktivitas pendengar dalam menyelaraskan atau mencari _______ stasiun radio.", acceptedAnswers: ["frekuensi", "gelombang"] },
-    { id: "is-10", level: "Medium", maxPoints: 10, question: "Konsep perayaan yang menekankan kemajuan teknologi merupakan perwujudan dari salah satu sifat masa depan, yaitu sifat _______ media.", acceptedAnswers: ["inovatif", "adaptif", "modern"] },
-    { id: "is-11", level: "Medium", maxPoints: 10, question: "Warna-warna lampu yang identik dengan tema masa depan (Future) dan sering dipakai dalam visual grafis teknologi adalah warna-warna _______.", acceptedAnswers: ["neon", "cyber", "elektrik", "futuristik"] },
-    { id: "is-12", level: "Medium", maxPoints: 10, question: "Sebagai pemilik dan operator radio, tantangan dalam mengusung tema masa depan adalah menjaga kualitas audio siaran agar tetap bersih dari gangguan sinyal atau _______.", acceptedAnswers: ["noise", "interferensi", "distorsi"] },
-    { id: "is-13", level: "Medium", maxPoints: 10, question: "Musik-musik yang diputar selama program spesial HUT ke-3 ini didominasi oleh genre yang dinamis seperti rock, pop modern, ataupun _______.", acceptedAnswers: ["edm", "electronic dance music"] },
-    { id: "is-14", level: "Hard", maxPoints: 15, question: "Dalam konteks operasional radio masa depan, pengelolaan urutan lagu dan materi siaran selama event HUT dikelola secara presisi melalui file log dalam aplikasi radio _______.", acceptedAnswers: ["automation", "otomasi"] },
-    { id: "is-15", level: "Hard", maxPoints: 15, question: "Tema 'Let's Tuning In To The Future' membuktikan bahwa stasiun radio masa depan tidak lagi kaku, melainkan sangat adaptif terhadap perkembangan dunia _______.", acceptedAnswers: ["digital", "teknologi"] },
-    { id: "is-16", level: "Hard", maxPoints: 15, question: "Arti kata 'Beacon' pada nama stasiun radio memiliki makna filosofis sebagai _______ yang memandu arah tren dunia penyiaran modern.", acceptedAnswers: ["menara suar", "cahaya pemandu", "mercusuar"] },
-    { id: "is-17", level: "Hard", maxPoints: 15, question: "Proses distribusi audio dari studio pusat di Makassar menuju pemancar-pemancar jaringan nasional (National Feed) membutuhkan koneksi yang stabil agar tidak terjadi kendala _______ audio.", acceptedAnswers: ["delay", "keterlambatan", "lag"] },
-    { id: "is-18", level: "Hard", maxPoints: 15, question: "Semangat masa depan dalam HUT kali ini menuntut seluruh kru kreatif Endless For Beacon FM untuk melahirkan format program udara yang segar dan bersifat _______ dengan pendengar.", acceptedAnswers: ["interaktif", "dua arah"] },
-    { id: "is-19", level: "Hard", maxPoints: 15, question: "Karakteristik utama dari target audiens baru yang disasar lewat tema modern dan futuristik ini adalah kalangan muda yang sangat melek teknologi, atau sering disebut kaum _______ native.", acceptedAnswers: ["digital"] },
-    { id: "is-20", level: "Hard", maxPoints: 15, question: "Kombinasi kata 'Endless' dan visi masa depan menegaskan tekad stasiun bahwa konsistensi untuk menyajikan hiburan terbaik di udara tidak akan pernah mengalami _______.", acceptedAnswers: ["batas", "henti"] }
-  ]
+  fillInTheBlank: [] // Data isian singkat diabaikan dalam gameplay tipe pilihan ganda
 };
 
 let currentQuestionIndex = 0;
@@ -216,7 +195,7 @@ let quizTimerTicker = null;
 let quizTimeRemaining = 10; 
 let isAnsweringBlocked = false;
 
-// Simulated Online Network Database (Untuk sinkronisasi peringkat user lain)
+// Simulated Online Network Database
 let globalOnlineUsers = [
     { name: "Rian Makassar", avatar: "", score: 85 },
     { name: "Fadel_Pro", avatar: "", score: 70 },
@@ -227,8 +206,6 @@ let globalOnlineUsers = [
 // ================= LOGIKA ONLINE ENGINE KUIS & LEADERBOARD =================
 function renderLeaderboardTable() {
     let localRecords = JSON.parse(localStorage.getItem("beacon_leaderboard_data")) || [];
-    
-    // Satukan data lokal dengan simulasi data network online user lain
     let mergedLeaderboard = [...localRecords];
     globalOnlineUsers.forEach(onlineUser => {
         if (!mergedLeaderboard.some(user => user.name === onlineUser.name)) {
@@ -236,7 +213,6 @@ function renderLeaderboardTable() {
         }
     });
 
-    // Sortir peringkat berdasarkan skor tertinggi
     mergedLeaderboard.sort((x, y) => y.score - x.score);
 
     const tbody = document.getElementById("leaderboard-rows-inject");
@@ -278,7 +254,9 @@ function startQuizGameplay() {
 }
 
 function loadQuizQuestion() {
-    if (currentQuestionIndex >= QUIZ_DATABASE.length) {
+    const questionsList = QUIZ_DATABASE.multipleChoice;
+
+    if (currentQuestionIndex >= questionsList.length) {
         finishQuizGameplay();
         return;
     }
@@ -290,14 +268,14 @@ function loadQuizQuestion() {
     document.getElementById("quiz-feedback").className = "feedback-container";
     document.getElementById("quiz-feedback").innerText = "";
 
-    const currentQuestion = QUIZ_DATABASE[currentQuestionIndex];
-    document.getElementById("quiz-question-title").innerText = `${currentQuestionIndex + 1}. ${currentQuestion.q}`;
+    const currentQuestion = questionsList[currentQuestionIndex];
+    document.getElementById("quiz-question-title").innerText = `${currentQuestionIndex + 1}. ${currentQuestion.question}`;
     document.getElementById("question-points-badge").innerText = `Maks Poin: ${currentQuestion.maxPoints}`;
 
     const optionButtons = document.querySelectorAll(".quiz-options-list .option-btn");
     optionButtons.forEach((btn, idx) => {
-        btn.innerText = currentQuestion.a[idx];
-        btn.className = "option-btn"; // Reset style button
+        btn.innerText = currentQuestion.options[idx];
+        btn.className = "option-btn"; 
     });
 
     quizTimerTicker = setInterval(() => {
@@ -306,7 +284,7 @@ function loadQuizQuestion() {
         
         if (quizTimeRemaining <= 0) {
             clearInterval(quizTimerTicker);
-            showAnswerFeedback(false, 0); // Waktu habis = Salah, dapat 0 poin
+            showAnswerFeedback(false, 0); 
         }
     }, 1000);
 }
@@ -316,21 +294,26 @@ function checkQuizAnswer(selectedIdx) {
     isAnsweringBlocked = true;
     clearInterval(quizTimerTicker);
 
-    const currentQuestion = QUIZ_DATABASE[currentQuestionIndex];
+    const currentQuestion = QUIZ_DATABASE.multipleChoice[currentQuestionIndex];
     const optionButtons = document.querySelectorAll(".quiz-options-list .option-btn");
     
-    let isCorrect = (selectedIdx === currentQuestion.correct);
+    const indexToLetter = ["A", "B", "C", "D"];
+    const selectedLetter = indexToLetter[selectedIdx];
+    
+    let isCorrect = (selectedLetter === currentQuestion.answer);
     let pointsEarned = 0;
 
     if (isCorrect) {
-        // Kalkulasi poin berdasarkan sisa waktu pengerjaan
         pointsEarned = Math.round((quizTimeRemaining / 10) * currentQuestion.maxPoints);
-        if (pointsEarned < 5) pointsEarned = 5; // Minimal poin jika menjawab benar di detik terakhir
+        if (pointsEarned < 5) pointsEarned = 5; 
         userAccumulatedScore += pointsEarned;
         optionButtons[selectedIdx].classList.add("correct-choice");
     } else {
         optionButtons[selectedIdx].classList.add("wrong-choice");
-        optionButtons[currentQuestion.correct].classList.add("correct-choice");
+        const correctOptionIdx = indexToLetter.indexOf(currentQuestion.answer);
+        if (correctOptionIdx !== -1) {
+            optionButtons[correctOptionIdx].classList.add("correct-choice");
+        }
     }
 
     showAnswerFeedback(isCorrect, pointsEarned);
@@ -349,7 +332,7 @@ function showAnswerFeedback(isCorrect, points) {
     setTimeout(() => {
         currentQuestionIndex++;
         loadQuizQuestion();
-    }, 2000); // Jeda 2 detik untuk melihat status jawaban sebelum lanjut
+    }, 2000); 
 }
 
 function finishQuizGameplay() {
@@ -375,12 +358,10 @@ function finishQuizGameplay() {
         }
         localStorage.setItem("beacon_leaderboard_data", JSON.stringify(localRecords));
         
-        // Cek Peringkat Global untuk Validasi Hadiah E-Wallet Top 3
         const finalLeaderboard = renderLeaderboardTable();
         const userRankIndex = finalLeaderboard.findIndex(player => player.name === userData.name);
         const currentGlobalTime = Date.now();
 
-        // VALIDASI: Kuis sudah ditutup dan masuk posisi Top 3 (index 0, 1, atau 2)
         if (currentGlobalTime > QUIZ_SCHEDULE.closeTime && userRankIndex !== -1 && userRankIndex < 3) {
             document.getElementById("reward-claim-panel").style.display = "block";
             document.getElementById("quiz-result-desc").innerText = `Luar biasa! Anda mengakhiri turnamen kuis ini di peringkat ke-${userRankIndex + 1} global.`;
