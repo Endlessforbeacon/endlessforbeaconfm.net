@@ -23,10 +23,10 @@
     <header class="main-header">
         <div class="header-inner">
             <div class="brand-container">
-                <img src="Image/Logo.png" alt="Beacon FM Logo" class="station-logo">
+                <img src="Image/Logo.png" alt="Beacon FM Logo" class="station-logo" id="header-station-logo">
                 <div class="brand-text">
-                    <span class="station-name">Endless For Beacon FM</span>
-                    <span class="station-slogan">The Smile Of The Stand Out For The Radio</span>
+                    <span class="station-name" id="header-station-name">Endless For Beacon FM</span>
+                    <span class="station-slogan" id="header-station-slogan">The Smile Of The Stand Out For The Radio</span>
                 </div>
             </div>
 
@@ -49,14 +49,20 @@
 
     <div class="main-content-wrapper">
         
-        <!-- CAPSULE STREAMING PLAYER -->
+        <!-- CAPSULE STREAMING PLAYER DENGAN BRANCH SELECTOR -->
         <div class="prambors-style-player">
             <div class="player-artwork-area">
                 <img src="Image/Logo.png" alt="Artwork" id="radio-logo">
             </div>
             
             <div class="player-info-area">
-                <div class="listener-count">🔴 SIARAN LANGSUNG</div>
+                <!-- PILIHAN CABANG STASIUN -->
+                <div class="station-branch-selector">
+                    <button class="branch-pill active" onclick="switchStation('makassar')" id="pill-makassar">Makassar</button>
+                    <button class="branch-pill" onclick="switchStation('denpasar')" id="pill-denpasar">Denpasar</button>
+                    <button class="branch-pill" onclick="switchStation('surabaya')" id="pill-surabaya">Surabaya</button>
+                </div>
+                <div class="listener-count" id="live-indicator">🔴 SIARAN LANGSUNG - MAKASSAR</div>
                 <h1 id="song-title">Memuat Judul...</h1>
                 <p id="song-artist">Endless For Beacon FM</p>
             </div>
@@ -110,128 +116,117 @@
                     <div class="p-card-content">
                         <div class="p-card-time">Setiap Kamis 🕒 10:00 - 19:00 WITA</div>
                         <h3 class="p-card-title">Endless For Beacon Throwback</h3>
-                        <p class="p-card-desc">Ini Dia Program Segmen Andalannya Endless For Beacon FM setiap hari Kamis! Kita bakal muter mesin waktu buat menyajikan lagu-lagu terbaik dari era 90-an Ke Atas, 2000-an, Sampai tahun 2018 ke bawah...</p>
-                    </div>
-                </div>
-                
-                <!-- Card 4 -->
-                <div class="program-card">
-                    <div class="p-card-banner">
-                        <img src="Image/Program/Asia Pop 40.jpg" alt="Asia Pop Banner" onerror="this.src='Image/Logo.png'">
-                    </div>
-                    <div class="p-card-content">
-                        <div class="p-card-time">Sabtu & Minggu 🕒 07:00 - 10:00 WITA</div>
-                        <h3 class="p-card-title">Asia Pop 40</h3>
-                        <p class="p-card-desc">Asia Pop 40 adalah program tangga lagu radio regional pertama dan terbesar di Asia yang menghitung mundur 40 lagu terpopuler di kawasan Asia-Pasifik setiap minggunya...</p>
+                        <p class="p-card-desc">Ini Dia Program Segmen Andalannya Endless For Beacon FM setiap hari Kamis! Kita bakal muter mesin waktu buat menyajikan lagu-lagu terbaik...</p>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- COUNTDOWN ANNIVERSARY -->
+        <!-- ROAD TO 3RD ANNIVERSARY COUNTDOWN -->
         <section class="anniversary-section">
-            <div class="anniversary-container">
-                <div class="trio-bars">
-                    <span class="bar"></span>
-                    <span class="bar"></span>
-                    <span class="bar"></span>
-                </div>
-                <div class="anniversary-badge">ROAD TO 3RD ANNIVERSARY</div>
-                <h2 class="anniversary-title">THE STAND OUT TRIO</h2>
-                <p class="anniversary-slogan">Let's Tuning In to the Future.</p>
-
-                <div class="countdown-display">
-                    <div class="countdown-box"><span id="days">00</span><label>DAYS</label></div>
-                    <div class="countdown-divider">:</div>
-                    <div class="countdown-box"><span id="hours">00</span><label>HOURS</label></div>
-                    <div class="countdown-divider">:</div>
-                    <div class="countdown-box"><span id="minutes">00</span><label>MINUTES</label></div>
-                    <div class="countdown-divider">:</div>
-                    <div class="countdown-box"><span id="seconds">00</span><label>SECONDS</label></div>
-                </div>
+            <div class="trio-bars">
+                <div class="bar"></div>
+                <div class="bar"></div>
+                <div class="bar"></div>
             </div>
-        </section>
-
-        <!-- TWO COLUMN LAYOUT: KUIS COMING SOON & LIVE CHAT -->
-        <section class="interactive-grid-section">
-            <!-- SISI KIRI: SISTEM KUIS (COMING SOON) -->
-            <div class="quiz-card-box coming-soon-box">
-                <div class="quiz-box-header">
-                    <span class="quiz-badge">🎮 BEACON INTERACTIVE QUIZ</span>
-                    <h2 id="quiz-question-title">Kuis Segera Kembali!</h2>
-                </div>
-                <div class="quiz-inner-body">
-                    <div class="lock-icon-container">🔒</div>
-                    <p id="quiz-notice-text">
-                        Kuis seputar <strong>HUT Endless For Beacon FM yang ke-3 Tahun</strong> telah resmi berakhir. 
-                        Terima kasih atas partisipasi luar biasa dari para Beacon Listeners! Pantau terus halaman ini untuk kuis dan event interaktif seru berikutnya.
-                    </p>
-                    <button id="start-quiz-btn" class="quiz-primary-btn" disabled>COMING SOON</button>
-                </div>
-            </div>
-
-            <!-- SISI KANAN: LIVE CHAT WINDOW -->
-            <div class="chat-card-box">
-                <div class="chat-header">
-                    <div class="chat-header-identity">
-                        <h3>💬 Live Chat Room</h3>
-                        <span class="chat-subtitle">Ngobrol bareng Beacon Listeners</span>
-                    </div>
-                    <span class="online-status-indicator">📡 LIVE ONLINE</span>
-                </div>
-                
-                <!-- Box Isi Pesan -->
-                <div class="chat-messages-container" id="chat-box-messages">
-                    <div class="chat-system-notice">Selamat datang di Live Chat Room Endless For Beacon FM! Silakan masuk untuk mulai mengirim pesan.</div>
-                </div>
-
-                <!-- Input Chat System -->
-                <div class="chat-input-wrapper">
-                    <input type="text" id="chat-input-field" placeholder="Ketik pesan kamu di sini..." disabled>
-                    <button id="send-chat-btn" onclick="sendLiveChatMessage()" disabled><i class="fas fa-paper-plane"></i></button>
-                </div>
-            </div>
-        </section>
-
-    </div>
-
-    <!-- FOOTER STATION -->
-    <footer class="station-footer">
-        <div class="footer-top-row">
-            <div class="footer-left-block">
-                <p class="copyright-text">&copy; 2026 <strong>Endless For Beacon Corp</strong>. All Rights Reserved.</p>
-            </div>
-
-            <div class="footer-clock-container">
-                <div class="footer-clock-zone">
-                    <span class="f-zone-label">WIB</span>
-                    <span id="nav-clock-wib" class="f-zone-time">00:00</span>
-                </div>
-                <div class="footer-clock-zone active-f-zone">
-                    <span class="f-zone-label">WITA</span>
-                    <span id="nav-clock-wita" class="f-zone-time">00:00</span>
-                </div>
-                <div class="footer-clock-zone">
-                    <span class="f-zone-label">WIT</span>
-                    <span id="nav-clock-wit" class="f-zone-time">00:00</span>
-                </div>
-            </div>
+            <span class="anniversary-badge">ANNIVERSARY COUNTDOWN</span>
+            <h2 class="anniversary-title">Road To 3rd Anniversary Endless For Beacon FM</h2>
+            <p class="anniversary-slogan">Terus Bersama Menjadi Bagian dari Senyuman Radio yang Berdiri Keluar!</p>
             
-            <div class="footer-socials">
-                <a href="https://www.instagram.com/endless_for.beacon" target="_blank"><i class="fab fa-instagram"></i></a>
-                <a href="https://www.youtube.com/@EndlessForBeacon" target="_blank"><i class="fab fa-youtube"></i></a>
-                <a href="https://www.tiktok.com/@endless.for_beacon06" target="_blank"><i class="fab fa-tiktok"></i></a>
+            <div class="countdown-display">
+                <div class="countdown-box">
+                    <span id="days">00</span>
+                    <label>Hari</label>
+                </div>
+                <div class="countdown-box">
+                    <span id="hours">00</span>
+                    <label>Jam</label>
+                </div>
+                <div class="countdown-box">
+                    <span id="minutes">00</span>
+                    <label>Menit</label>
+                </div>
+                <div class="countdown-box">
+                    <span id="seconds">00</span>
+                    <label>Detik</label>
+                </div>
+            </div>
+        </section>
+
+        <!-- INTERACTIVE LAYER (LIVE CHAT & KUIS SELEKTIF) -->
+        <div class="interactive-grid-section">
+            <!-- BOX KUIS -->
+            <div class="quiz-card-box">
+                <div class="box-inner-header">
+                    <h3>🎯 Kuis Interaktif</h3>
+                    <p>Uji pengetahuanmu dan kumpulkan poin!</p>
+                </div>
+                <div id="quiz-auth-lock" class="feature-blur-lock">
+                    <div class="lock-inner-notice">
+                        <i class="fas fa-lock"></i>
+                        <h4>Fitur Terkunci</h4>
+                        <p>Silakan login menggunakan Akun Google terlebih dahulu di bar navigasi atas untuk mengikuti kuis seru.</p>
+                    </div>
+                </div>
+                <div id="quiz-active-area" class="quiz-body-content" style="display:none;">
+                    <!-- Diisi dinamis oleh JavaScript -->
+                </div>
+            </div>
+
+            <!-- BOX LIVE CHAT -->
+            <div class="chat-card-box">
+                <div class="box-inner-header">
+                    <h3>💬 Live Chat Room</h3>
+                    <p>Obrolan real-time sesama Beacon Listeners</p>
+                </div>
+                <div id="chat-auth-lock" class="feature-blur-lock">
+                    <div class="lock-inner-notice">
+                        <i class="fas fa-lock"></i>
+                        <h4>Fitur Terkunci</h4>
+                        <p>Silakan login terlebih dahulu untuk bergabung ke dalam obrolan hangat komunitas kami.</p>
+                    </div>
+                </div>
+                <div id="chat-active-area" class="chat-body-content" style="display:none;">
+                    <div id="chat-box-messages" class="chat-scroller-area"></div>
+                    <div class="chat-input-bar">
+                        <input type="text" id="chat-input-field" placeholder="Ketik pesan kamu di sini...">
+                        <button id="send-chat-btn"><i class="fas fa-paper-plane"></i></button>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <div class="footer-bottom-row">
-            <div class="footer-shortcuts-container">
+    </div>
+
+    <!-- MAIN FOOTER STATION BRANCHES -->
+    <footer class="station-footer">
+        <div class="footer-inner-wrapper">
+            <div class="footer-top-row">
+                <div class="footer-brand-side">
+                    <img src="Image/Logo.png" alt="Footer Logo" class="footer-mini-logo" id="footer-station-logo">
+                    <div>
+                        <h4 id="footer-station-name">Endless For Beacon FM</h4>
+                        <p>© 2026 Endless For Beacon Corp. Hak Cipta Dilindungi.</p>
+                    </div>
+                </div>
+                <div class="footer-clock-side">
+                    <div class="clock-item"><i class="far fa-clock"></i> WIB: <span id="clock-wib">00:00:00</span></div>
+                    <div class="clock-item"><i class="far fa-clock"></i> WITA: <span id="clock-wita">00:00:00</span></div>
+                    <div class="clock-item"><i class="far fa-clock"></i> WIT: <span id="clock-wit">00:00:00</span></div>
+                </div>
+            </div>
+            <div class="footer-divider"></div>
+            <div class="footer-shortcut-grid">
                 <span class="shortcut-label">Our Stations:</span>
-                <a href="#" class="footer-shortcut-link">
+                <a href="javascript:void(0)" onclick="switchStation('makassar')" class="footer-shortcut-link">
+                    <img src="Image/Logo.png" alt="Makassar">
+                    <span class="branch-name-tag">Makassar (Main)</span>
+                </a>
+                <a href="javascript:void(0)" onclick="switchStation('denpasar')" class="footer-shortcut-link">
                     <img src="Image/Endless For Beacon FM Denpasar.png" alt="Denpasar" onerror="this.src='Image/Logo.png'">
                     <span class="branch-name-tag">Endless For Beacon FM Denpasar</span>
                 </a>
-                <a href="#" class="footer-shortcut-link">
+                <a href="javascript:void(0)" onclick="switchStation('surabaya')" class="footer-shortcut-link">
                     <img src="Image/Endless For Beacon FM Surabaya.png" alt="Surabaya" onerror="this.src='Image/Logo.png'">
                     <span class="branch-name-tag">Endless For Beacon FM Surabaya</span>
                 </a>
@@ -255,7 +250,6 @@
         </div>
     </div>
 
-    <audio id="radio-player"></audio>
     <script src="script.js"></script>
 </body>
 </html>

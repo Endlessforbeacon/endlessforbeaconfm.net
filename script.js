@@ -1,12 +1,10 @@
 // ==========================================================================
 // 1. INTEGRASI LAYER METADATA SIARAN & LIBRARY FIREBASE
 // ==========================================================================
-// Memuat Icecast Player untuk Metadata Lagu
 const liveMetadataScript = document.createElement('script');
 liveMetadataScript.src = "https://unpkg.com/icecast-metadata-player/dist/icecast-metadata-player.production.min.js";
 document.head.appendChild(liveMetadataScript);
 
-// Memuat Firebase Core App & Realtime Database SDK (v9 Compat Mode agar mudah menyatu)
 const firebaseAppScript = document.createElement('script');
 firebaseAppScript.src = "https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js";
 document.head.appendChild(firebaseAppScript);
@@ -15,47 +13,123 @@ const firebaseDbScript = document.createElement('script');
 firebaseDbScript.src = "https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js";
 document.head.appendChild(firebaseDbScript);
 
-// Ambil elemen DOM dari HTML
 const playBtn = document.getElementById('play-btn');
 const volumeSlider = document.getElementById('volume');
 const songTitle = document.getElementById('song-title');
 const songArtist = document.getElementById('song-artist');
 const radioLogo = document.getElementById('radio-logo');
 
+// DATABASE KONFIGURASI CABANG STASIUN
+const STATIONS = {
+    makassar: {
+        name: "Endless For Beacon FM",
+        slogan: "The Smile Of The Stand Out For The Radio",
+        logo: "Image/Logo.png",
+        streamUrl: "https://stream.zeno.fm/n7qpxnyfrbruv",
+        streamId: "n7qpxnyfrbruv",
+        tagline: "🔴 SIARAN LANGSUNG"
+    },
+    denpasar: {
+        name: "Endless For Beacon FM Denpasar",
+        slogan: "The Smile Of The Stand Out For Denpasar",
+        logo: "Image/Endless For Beacon FM Denpasar.png",
+        streamUrl: "https://stream.zeno.fm/kzizu3f1dlatv", 
+        streamId: "kzizu3f1dlatv", 
+        tagline: "🔴 SIARAN LANGSUNG - DENPASAR"
+    },
+    surabaya: {
+        name: "Endless For Beacon FM Surabaya",
+        slogan: "The Smile Of The Stand Out For Surabaya",
+        logo: "Image/Endless For Beacon FM Surabaya.png",
+        streamUrl: "https://stream.zeno.fm/xbiqizas5qfvv", 
+        streamId: "xbiqizas5qfvv", 
+        tagline: "🔴 SIARAN LANGSUNG - SURABAYA"
+    }
+};
+
+let currentStationKey = "makassar";
 const DEFAULT_LOGO = "Image/Logo.png"; 
 let isPlaying = false;
 let playerInstance = null;
 let lastMetadataTime = 0;
 
-// Konfigurasi Streaming Zeno FM
-const ZENO_STREAM_URL = "https://stream.zeno.fm/n7qpxnyfrbruv"; 
-const ZENO_STREAM_ID = "n7qpxnyfrbruv"; 
-const ZENO_AUTODJ_API = `https://corsproxy.io/?${encodeURIComponent('https://api.zeno.fm/web-client/v2/epgs/' + ZENO_STREAM_ID)}`;
+let ZENO_STREAM_URL = STATIONS.makassar.streamUrl; 
+let ZENO_STREAM_ID = STATIONS.makassar.streamId; 
+let ZENO_AUTODJ_API = `https://corsproxy.io/?${encodeURIComponent('https://api.zeno.fm/web-client/v2/epgs/' + ZENO_STREAM_ID)}`;
 
 const audioStream = document.getElementById('radio-player') || document.createElement('audio');
 if (!audioStream.id) { audioStream.id = 'radio-player'; document.body.appendChild(audioStream); }
 audioStream.src = ZENO_STREAM_URL;
 
-liveMetadataScript.onload = () => {
+// INISIALISASI PLAYER METADATA ICECAST
+function initMetadataPlayer() {
+    if (playerInstance) {
+        try { playerInstance.stop(); } catch(e){}
+    }
     try {
         if (typeof IcecastMetadataPlayer !== 'undefined') {
             playerInstance = new IcecastMetadataPlayer(ZENO_STREAM_URL, {
-                onMetadata: (metadata) => { if (metadata && metadata.StreamTitle) { lastMetadataTime = Date.now(); parseAndDisplayTracks(metadata.StreamTitle); } },
+                onMetadata: (metadata) => { 
+                    if (metadata && metadata.StreamTitle) { 
+                        lastMetadataTime = Date.now(); 
+                        parseAndDisplayTracks(metadata.StreamTitle); 
+                    } 
+                },
                 audioElement: audioStream
             });
             if (volumeSlider) playerInstance.audioElement.volume = volumeSlider.value;
+            if (isPlaying) playerInstance.play();
         }
     } catch (e) { console.error("Library Metadata Player error:", e); }
+}
+
+liveMetadataScript.onload = () => { initMetadataPlayer(); };
+
+// DYNAMIC SWITCH STATION FUNCTION (SISTEM INTI SWAP ALIRAN AUDIO)
+window.switchStation = function(stationKey) {
+    if (!STATIONS[stationKey]) return;
+    currentStationKey = stationKey;
+    
+    const target = STATIONS[stationKey];
+    ZENO_STREAM_URL = target.streamUrl;
+    ZENO_STREAM_ID = target.streamId;
+    ZENO_AUTODJ_API = `https://corsproxy.io/?${encodeURIComponent('https://api.zeno.fm/web-client/v2/epgs/' + ZENO_STREAM_ID)}`;
+    
+    // 1. Update Teks di Head & Player
+    document.getElementById("header-station-name").innerText = target.name;
+    document.getElementById("header-station-slogan").innerText = target.slogan;
+    document.getElementById("header-station-logo").src = target.logo;
+    document.getElementById("live-indicator").innerText = target.tagline;
+    
+    // 2. Update Teks di Footer
+    document.getElementById("footer-station-name").innerText = target.name;
+    document.getElementById("footer-station-logo").src = target.logo;
+    
+    // 3. Update Status Tombol Pilihan (Pills)
+    document.querySelectorAll(".branch-pill").forEach(pill => pill.classList.remove("active"));
+    const activePill = document.getElementById(`pill-${stationKey}`);
+    if (activePill) activePill.classList.add("active");
+    
+    // 4. Set Default Judul Lagu Saat Loading Tukar Aliran
+    songTitle.innerText = "Menghubungkan...";
+    songArtist.innerText = target.name;
+    radioLogo.src = target.logo;
+    
+    // 5. Swap Source Audio & Re-Init Metadata Player
+    audioStream.src = ZENO_STREAM_URL;
+    initMetadataPlayer();
+    
+    // Berikan Efek Toast Pemberitahuan Ke User
+    showFeedbackToast(`Tuning ke Endless For Beacon FM ${stationKey.toUpperCase()}`);
 };
 
 // ==========================================================================
 // 2. KONEKSI & KONFIGURASI FIREBASE REALTIME DATABASE
 // ==========================================================================
-// GANTI DATA DI BAWAH INI DENGAN DATA DARI CONFIG FIREBASE CONSOLE KAMU!
 const firebaseConfig = {
     apiKey: "AIzaSyAQCV0HUrHKrLTs3iCkgLWJReBK8omtb0g",
     authDomain: "endless-for-beacon-fm-dedd2.firebaseapp.com",
-    databaseURL: "https://endless-for-beacon-fm-dedd2-default-rtdb.asia-southeast1.firebasedatabase.app/", // Sangat penting untuk Realtime Database
+    databaseURL: "https://endless-for-beacon-fm-dedd2-default-rtdb.asia-southeast1.firebasedatabase.app/",
     projectId: "endless-for-beacon-fm-dedd2",
     storageBucket: "endless-for-beacon-fm-dedd2.firebasestorage.app",
     messagingSenderId: "430104466152",
@@ -64,12 +138,10 @@ const firebaseConfig = {
 
 let database;
 
-// Inisialisasi Firebase setelah library eksternalnya selesai dimuat browser
 firebaseDbScript.onload = () => {
     firebase.initializeApp(firebaseConfig);
     database = firebase.database();
     
-    // Dengarkan database secara Real-Time. Jika ada data baru masuk di Firebase, langsung tampilkan ke chat-box!
     database.ref('live_chats').limitToLast(50).on('child_added', (snapshot) => {
         const data = snapshot.val();
         const savedUser = localStorage.getItem("user_logged_in");
@@ -77,7 +149,6 @@ firebaseDbScript.onload = () => {
         
         if (savedUser) {
             const currentUser = JSON.parse(savedUser);
-            // Cek apakah pengirim adalah akun kita sendiri
             if (currentUser.name === data.username) isMe = true;
         }
         
@@ -107,7 +178,6 @@ function appendChatMessage(username, messageText, avatar, isMe = false) {
     chatMessagesContainer.scrollTop = chatMessagesContainer.scrollHeight;
 }
 
-// Fungsi utama: Mengirim pesan langsung ke Cloud Firebase
 function sendLiveChatMessage() {
     if (!chatInputField || !database) return;
     const text = chatInputField.value.trim();
@@ -116,15 +186,12 @@ function sendLiveChatMessage() {
     const savedUser = localStorage.getItem("user_logged_in");
     if (savedUser) {
         const userData = JSON.parse(savedUser);
-        
-        // PUSH DATA KE FIREBASE (Ini yang bikin sinkron ke semua HP/Laptop)
         database.ref('live_chats').push({
             username: userData.name,
             message: text,
             avatar: userData.avatarUrl,
             timestamp: Date.now()
         });
-        
         chatInputField.value = "";
     }
 }
@@ -139,12 +206,15 @@ function parseAndDisplayTracks(rawText) {
     if (!songTitle || !songArtist) return;
     if (rawText.includes(" - ")) {
         const parts = rawText.split(" - ");
-        const artist = parts[0].trim(); const title = parts[1].trim();
-        songTitle.innerText = title; songArtist.innerText = artist;
+        const artist = parts[0].trim();
+        const title = parts[1].trim();
+        songTitle.innerText = title;
+        songArtist.innerText = artist;
         getArtworkFromiTunes(artist, title);
     } else {
-        songTitle.innerText = rawText; songArtist.innerText = "Endless For Beacon FM";
-        if (radioLogo) radioLogo.src = DEFAULT_LOGO;
+        songTitle.innerText = rawText;
+        songArtist.innerText = STATIONS[currentStationKey].name;
+        if (radioLogo) radioLogo.src = STATIONS[currentStationKey].logo;
     }
 }
 
@@ -153,133 +223,160 @@ async function getArtworkFromiTunes(artist, title) {
     try {
         const response = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(artist + " " + title)}&media=music&limit=1`);
         const data = await response.json();
-        if (data.resultCount > 0) radioLogo.src = data.results[0].artworkUrl100.replace("100x100bb.jpg", "400x400bb.jpg");
-        else radioLogo.src = DEFAULT_LOGO;
-    } catch (err) { radioLogo.src = DEFAULT_LOGO; }
+        if (data.resultCount > 0) {
+            radioLogo.src = data.results[0].artworkUrl100.replace("100x100bb.jpg", "400x400bb.jpg");
+        } else {
+            radioLogo.src = STATIONS[currentStationKey].logo;
+        }
+    } catch (e) { radioLogo.src = STATIONS[currentStationKey].logo; }
 }
 
+// ==========================================================================
+// 5. ENGINE KUIS INTERAKTIF DATA STATIS
+// ==========================================================================
+const quizQuestionsDatabase = [
+    { q: "Kapan Endless For Beacon FM resmi mengudara pertama kali?", a: ["12 Juli 2023", "13 Juli 2023", "14 Juli 2023", "15 Juli 2023"], correct: 1 },
+    { q: "Apa slogan utama dari Endless For Beacon FM?", a: ["The Voice of Generation", "The Smile Of The Stand Out For The Radio", "Music for Your Soul", "Nonstop Hits Station"], correct: 1 },
+    { q: "Program acara sore sinematik di Beacon FM adalah...", a: ["Morning Brew", "Night Shift", "Screen To Sounds", "Throwback Thursday"], correct: 2 }
+];
+
+let currentQuestionIndex = 0;
+const quizActiveArea = document.getElementById("quiz-active-area");
+
+function renderQuizQuestion() {
+    if (!quizActiveArea) return;
+    const currentData = quizQuestionsDatabase[currentQuestionIndex];
+    quizActiveArea.innerHTML = `
+        <p class="quiz-question-text">${currentData.q}</p>
+        <div class="quiz-options-container">
+            ${currentData.a.map((opt, i) => `<button class="quiz-opt-btn" onclick="checkUserQuizAnswer(${i})">${opt}</button>`).join('')}
+        </div>
+        <p class="quiz-score-notice">Pertanyaan ke ${currentQuestionIndex + 1} dari ${quizQuestionsDatabase.length}</p>
+    `;
+}
+
+window.checkUserQuizAnswer = function(selectedOptionIndex) {
+    const currentData = quizQuestionsDatabase[currentQuestionIndex];
+    const buttons = quizActiveArea.querySelectorAll(".quiz-opt-btn");
+    
+    buttons.forEach((btn, idx) => {
+        btn.disabled = true;
+        if (idx === currentData.correct) btn.classList.add("correct-ans");
+        if (idx === selectedOptionIndex && selectedOptionIndex !== currentData.correct) btn.classList.add("wrong-ans");
+    });
+    
+    setTimeout(() => {
+        currentQuestionIndex = (currentQuestionIndex + 1) % quizQuestionsDatabase.length;
+        renderQuizQuestion();
+    }, 2500);
+};
+
+// ==========================================================================
+// 6. BACKUP ENGINE JIKA METADATA UTAMA MATI (AUTO DJ BACKUP)
+// ==========================================================================
 async function checkAutoDJStatus() {
-    if (Date.now() - lastMetadataTime < 20000) return; 
+    if (Date.now() - lastMetadataTime < 15000) return;
     try {
-        const response = await fetch(ZENO_AUTODJ_API);
-        const data = await response.json();
-        if (data?.v2?.epgs?.length > 0) { const autoDJText = data.v2.epgs[0].title; if (autoDJText) parseAndDisplayTracks(autoDJText); }
-    } catch (err) { console.log("AutoDJ sync deferred..."); }
+        const res = await fetch(ZENO_AUTODJ_API);
+        const data = await res.json();
+        if (data && data.length > 0 && data[0].title) {
+            const track = data[0];
+            if (songTitle && songArtist) {
+                songTitle.innerText = track.title;
+                songArtist.innerText = track.artist || STATIONS[currentStationKey].name;
+                if (track.image && radioLogo) radioLogo.src = track.image;
+            }
+        }
+    } catch (e) { console.log("AutoDJ API fallback check."); }
 }
 setInterval(checkAutoDJStatus, 15000);
 
 // ==========================================================================
-// 5. KONTROL AUDIO PLAYER
+// 7. GOOGLE INITIALIZATION OAUTH & MODAL ENGINE
 // ==========================================================================
-function togglePlayback() {
-    if (!isPlaying) {
-        audioStream.load(); 
-        if (playerInstance && typeof playerInstance.play === 'function') playerInstance.play();
-        else audioStream.play();
-        isPlaying = true; if (playBtn) playBtn.innerText = "⏸";
-    } else {
-        if (playerInstance && typeof playerInstance.stop === 'function') playerInstance.stop();
-        else audioStream.pause();
-        isPlaying = false; if (playBtn) playBtn.innerText = "▶";
-    }
-}
-if (playBtn) playBtn.addEventListener('click', togglePlayback);
-if (volumeSlider) {
-    volumeSlider.addEventListener('input', () => {
-        if (playerInstance?.audioElement) playerInstance.audioElement.volume = volumeSlider.value;
-        else audioStream.volume = volumeSlider.value;
-    });
-}
-
-// ==========================================================================
-// 6. JAM NAVIGATION & COUNTDOWN BADGE
-// ==========================================================================
-function updateNavigationClocks() {
-    const now = new Date(); const options = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
-    const clockWib = document.getElementById('nav-clock-wib'); const clockWita = document.getElementById('nav-clock-wita'); const clockWit = document.getElementById('nav-clock-wit');
-    if (clockWib) clockWib.innerText = new Intl.DateTimeFormat('en-US', { ...options, timeZone: 'Asia/Jakarta' }).format(now);
-    if (clockWita) clockWita.innerText = new Intl.DateTimeFormat('en-US', { ...options, timeZone: 'Asia/Makassar' }).format(now);
-    if (clockWit) clockWit.innerText = new Intl.DateTimeFormat('en-US', { ...options, timeZone: 'Asia/Jayapura' }).format(now);
-}
-
-function initAnniversaryCountdown() {
-    const targetDate = new Date("2026-07-06T07:00:00+08:00").getTime();
-    setInterval(() => {
-        const timeLeft = targetDate - new Date().getTime(); const badge = document.querySelector(".anniversary-badge");
-        if (timeLeft <= 0) { if (badge) badge.innerHTML = "🎉 PRESENTING 🎉"; return; }
-        const d = document.getElementById("days"); const h = document.getElementById("hours"); const m = document.getElementById("minutes"); const s = document.getElementById("seconds");
-        if (d) d.textContent = String(Math.floor(timeLeft / 86400000)).padStart(2, '0');
-        if (h) h.textContent = String(Math.floor((timeLeft % 86400000) / 3600000)).padStart(2, '0');
-        if (m) m.textContent = String(Math.floor((timeLeft % 3600000) / 60000)).padStart(2, '0');
-        if (s) s.textContent = String(Math.floor((timeLeft % 60000) / 1000)).padStart(2, '0');
-    }, 1000);
-}
-
-// ==========================================================================
-// 7. GOOGLE AUTHENTICATION & INTERACTIVE STATE
-// ==========================================================================
-function syncInteractiveComponentsState(isLoggedIn, userName = "") {
-    if (!chatInputField || !sendChatBtn) return;
-    if (isLoggedIn) { chatInputField.removeAttribute("disabled"); sendChatBtn.removeAttribute("disabled"); chatInputField.placeholder = `Ketik pesan sebagai ${userName}...`; }
-    else { chatInputField.setAttribute("disabled", "true"); sendChatBtn.setAttribute("disabled", "true"); chatInputField.placeholder = "Silahkan login untuk ikut live chat..."; }
-}
-
 const loginModal = document.getElementById('login-modal');
 const closeLoginBtn = document.getElementById('close-login-btn');
 const loginMessage = document.getElementById('login-message');
+const navbarAuthSection = document.getElementById('navbar-auth-section');
+
+const quizAuthLock = document.getElementById('quiz-auth-lock');
+const quizActiveAreaElement = document.getElementById('quiz-active-area');
+const chatAuthLock = document.getElementById('chat-auth-lock');
+const chatActiveAreaElement = document.getElementById('chat-active-area');
 
 function initGoogleSignIn() {
-    if (typeof google === 'undefined' || !document.getElementById("google-login-btn")) return;
-    google.accounts.id.initialize({ client_id: "969783269309-99n69ig4hfbcpnvkn2dr0k86stbfejs2.apps.googleusercontent.com", callback: handleCredentialResponse, auto_select: false });
-    google.accounts.id.renderButton(document.getElementById("google-login-btn"), { theme: "outline", size: "large", type: "standard", text: "signin_with", shape: "rectangular", width: "100%" });
+    if (typeof google !== 'undefined') {
+        google.accounts.id.initialize({
+            client_id: "430104466152-t36mki680g22g8i1q6r6beph3skqptp6.apps.googleusercontent.com",
+            callback: handleGoogleLoginResponse
+        });
+        const googleBtnDiv = document.getElementById("google-login-btn");
+        if (googleBtnDiv) {
+            google.accounts.id.renderButton(googleBtnDiv, { theme: "dark", size: "large", width: "280" });
+        }
+    }
 }
 
-function handleCredentialResponse(response) {
-    const btnContainer = document.getElementById("google-login-btn");
-    if (btnContainer) btnContainer.innerHTML = `<div style="color:#fff; font-size:13px;">Verifikasi...</div>`;
-    if (loginMessage) { loginMessage.className = "login-status-msg msg-success"; loginMessage.innerText = "Menghubungkan..."; }
-    setTimeout(() => {
-        const responsePayload = parseJwt(response.credential); const name = responsePayload.name; const avatarUrl = responsePayload.picture;
-        localStorage.setItem("user_logged_in", JSON.stringify({ name, avatarUrl }));
-        displayUserProfile(name, avatarUrl); closeLoginModal(); showToastNotification(`Selamat datang, ${name}! 🎉`);
-    }, 1300);
+function handleGoogleLoginResponse(response) {
+    try {
+        const base64Url = response.credential.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const jsonPayload = decodeURIComponent(atob(base64).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''));
+        
+        const payload = JSON.parse(jsonPayload);
+        const userData = { name: payload.name, avatarUrl: payload.picture, email: payload.email };
+        
+        localStorage.setItem("user_logged_in", JSON.stringify(userData));
+        applyUserAuthenticationState(userData);
+        closeLoginModal();
+        showFeedbackToast("Selamat Datang! Login Berhasil.");
+    } catch (e) {
+        if (loginMessage) loginMessage.innerText = "Gagal memproses data login. Coba lagi.";
+    }
 }
 
-function displayUserProfile(name, avatarUrl) {
-    const authSection = document.getElementById("navbar-auth-section");
-    if (authSection) {
-        authSection.innerHTML = `
+function applyUserAuthenticationState(user) {
+    if (navbarAuthSection) {
+        navbarAuthSection.innerHTML = `
             <div class="user-profile-nav-container">
-                <img src="${avatarUrl}" alt="Avatar" class="user-avatar-img">
-                <span class="user-name-span">${name}</span>
-                <button class="logout-action-btn" onclick="handleSignOut()"><i class="fas fa-sign-out-alt"></i></button>
+                <img src="${user.avatarUrl}" alt="Avatar" class="user-avatar-img">
+                <span class="user-name-span">${user.name}</span>
+                <button class="logout-action-btn" onclick="executeAppLogout()"><i class="fas fa-sign-out-alt"></i></button>
             </div>
         `;
     }
-    syncInteractiveComponentsState(true, name);
+    if (quizAuthLock) quizAuthLock.style.display = "none";
+    if (quizActiveAreaElement) quizActiveAreaElement.style.display = "block";
+    if (chatAuthLock) chatAuthLock.style.display = "none";
+    if (chatActiveAreaElement) chatActiveAreaElement.style.display = "flex";
+    
+    renderQuizQuestion();
 }
 
-function handleSignOut() {
+window.executeAppLogout = function() {
     localStorage.removeItem("user_logged_in");
-    const authSection = document.getElementById("navbar-auth-section");
-    if (authSection) authSection.innerHTML = `<button id="nav-login-btn" class="login-trigger-btn" onclick="openLoginModal()"><i class="fas fa-sign-in-alt"></i> <span>Login</span></button>`;
-    syncInteractiveComponentsState(false); showToastNotification("Kamu telah keluar.");
-}
+    if (navbarAuthSection) {
+        navbarAuthSection.innerHTML = `
+            <button id="nav-login-btn" class="login-trigger-btn" onclick="openLoginModal()">
+                <i class="fas fa-sign-in-alt"></i> <span>Login</span>
+            </button>
+        `;
+    }
+    if (quizAuthLock) quizAuthLock.style.display = "flex";
+    if (quizActiveAreaElement) quizActiveAreaElement.style.display = "none";
+    if (chatAuthLock) chatAuthLock.style.display = "flex";
+    if (chatActiveAreaElement) chatActiveAreaElement.style.display = "none";
+    showFeedbackToast("Anda telah keluar dari aplikasi.");
+};
 
-function parseJwt(token) {
-    let base64Url = token.split('.')[1]; let base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-    let jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) { return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2); }).join(''));
-    return JSON.parse(jsonPayload);
-}
-
-function showToastNotification(msg) {
+function showFeedbackToast(msg) {
     const toast = document.createElement("div");
     toast.style.cssText = `position:fixed; bottom:30px; right:30px; background:#131316; color:#fff; border-left:4px solid #10b981; padding:16px 24px; border-radius:12px; font-size:13px; font-weight:600; box-shadow:0 10px 30px rgba(0,0,0,0.5); z-index:9999;`;
     toast.innerText = msg; document.body.appendChild(toast); setTimeout(() => { toast.remove(); }, 4000);
 }
 
-function openLoginModal() { if (loginModal) { loginModal.classList.add('show-modal'); initGoogleSignIn(); } }
-function closeLoginModal() { if (loginModal) { loginModal.classList.remove('show-modal'); if (loginMessage) loginMessage.innerText = ""; } }
+window.openLoginModal = function() { if (loginModal) { loginModal.classList.add('show-modal'); initGoogleSignIn(); } };
+window.closeLoginModal = function() { if (loginModal) { loginModal.classList.remove('show-modal'); if (loginMessage) loginMessage.innerText = ""; } };
 if (closeLoginBtn) closeLoginBtn.addEventListener('click', closeLoginModal);
 window.addEventListener('click', (e) => { if (e.target === loginModal) closeLoginModal(); });
 
@@ -289,7 +386,107 @@ window.addEventListener('click', (e) => { if (e.target === loginModal) closeLogi
 document.addEventListener("DOMContentLoaded", () => {
     updateNavigationClocks(); setInterval(updateNavigationClocks, 1000);
     initAnniversaryCountdown(); checkAutoDJStatus(); setTimeout(initGoogleSignIn, 1000); 
-    const savedUser = localStorage.getItem("user_logged_in");
-    if (savedUser) { const userData = JSON.parse(savedUser); displayUserProfile(userData.name, userData.avatarUrl); }
-    else { syncInteractiveComponentsState(false); }
+    
+    const checkLogin = localStorage.getItem("user_logged_in");
+    if (checkLogin) { applyUserAuthenticationState(JSON.parse(checkLogin)); }
+    
+    // ==========================================================================
+    // TOMBOL PLAY/PAUSE DENGAN SISTEM FAILSAFE (ANTI-MACET)
+    // ==========================================================================
+    if (playBtn) {
+        playBtn.addEventListener('click', () => {
+            // Jalankan interaksi audio wajib untuk membuka blokir autoplay browser
+            if (audioStream.src !== ZENO_STREAM_URL) {
+                audioStream.src = ZENO_STREAM_URL;
+            }
+
+            // 1. Opsi Utama: Menggunakan Icecast Metadata Player jika siap
+            if (typeof IcecastMetadataPlayer !== 'undefined' && playerInstance) {
+                try {
+                    if (isPlaying) {
+                        // Catatan: Library Icecast menggunakan method .stop() untuk berhenti
+                        playerInstance.stop(); 
+                        playBtn.innerText = "▶";
+                        isPlaying = false;
+                        showFeedbackToast("Radio Dihentikan");
+                    } else {
+                        playerInstance.play();
+                        playBtn.innerText = "⏸";
+                        isPlaying = true;
+                        showFeedbackToast("Memutar " + STATIONS[currentStationKey].name);
+                    }
+                } catch (err) {
+                    console.warn("Icecast Player bermasalah, beralih ke Fallback HTML5 Audio:", err);
+                    toggleStandardHTML5Audio();
+                }
+            } else {
+                // 2. Opsi Cadangan: Langsung gunakan tag Audio HTML5 standar jika library belum siap
+                toggleStandardHTML5Audio();
+            }
+        });
+    }
+
+    // Fungsi pembantu jika library utama tidak merespons
+    function toggleStandardHTML5Audio() {
+        if (isPlaying) {
+            audioStream.pause();
+            playBtn.innerText = "▶";
+            isPlaying = false;
+            showFeedbackToast("Radio Dihentikan");
+        } else {
+            // Memaksa reload stream agar menghindari delay buffer siaran langsung
+            audioStream.load(); 
+            audioStream.play()
+                .then(() => {
+                    playBtn.innerText = "⏸";
+                    isPlaying = true;
+                    showFeedbackToast("Memutar (Mode Cadangan) " + STATIONS[currentStationKey].name);
+                })
+                .catch(err => {
+                    console.error("HTML5 Playback gagal total:", err);
+                    alert("Waduh! Browser kamu memblokir pemutar otomatis. Silakan klik tombol Play sekali lagi.");
+                });
+        }
+    }
+
+    // Perbaikan kontrol slider volume
+    if (volumeSlider) {
+        volumeSlider.addEventListener('input', (e) => {
+            const volumeValue = e.target.value;
+            // Setel volume ke elemen HTML5 audio standar
+            audioStream.volume = volumeValue;
+            // Setel volume ke library metadata jika sedang aktif
+            if (playerInstance && playerInstance.audioElement) {
+                playerInstance.audioElement.volume = volumeValue;
+            }
+        });
+    }
 });
+
+function updateNavigationClocks() {
+    const now = new Date();
+    const wib = new Date(now.toLocaleString("en-US", { timeZone: "Asia/Jakarta" }));
+    const wita = new Date(now.toLocaleString("en-US", { timeZone: "Asia/Makassar" }));
+    const wit = new Date(now.toLocaleString("en-US", { timeZone: "Asia/Jayapura" }));
+    const f = (d) => String(d.getHours()).padStart(2, '0') + ":" + String(d.getMinutes()).padStart(2, '0') + ":" + String(d.getSeconds()).padStart(2, '0');
+    if (document.getElementById('clock-wib')) document.getElementById('clock-wib').innerText = f(wib);
+    if (document.getElementById('clock-wita')) document.getElementById('clock-wita').innerText = f(wita);
+    if (document.getElementById('clock-wit')) document.getElementById('clock-wit').innerText = f(wit);
+}
+
+function initAnniversaryCountdown() {
+    const targetDate = new Date("July 13, 2026 00:00:00").getTime();
+    setInterval(() => {
+        const now = new Date().getTime();
+        const diff = targetDate - now;
+        if (diff <= 0) return;
+        const d = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const s = Math.floor((diff % (1000 * 60)) / 1000);
+        if (document.getElementById('days')) document.getElementById('days').innerText = String(d).padStart(2, '0');
+        if (document.getElementById('hours')) document.getElementById('hours').innerText = String(h).padStart(2, '0');
+        if (document.getElementById('minutes')) document.getElementById('minutes').innerText = String(m).padStart(2, '0');
+        if (document.getElementById('seconds')) document.getElementById('seconds').innerText = String(s).padStart(2, '0');
+    }, 1000);
+}
