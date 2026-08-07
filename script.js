@@ -31,7 +31,7 @@ const STATIONS = {
     },
     denpasar: {
         name: "Endless For Beacon FM Denpasar",
-        slogan: "The Smile Of The Stand Out For Denpasar",
+        slogan: "The Smile Of The Stand Out For The Radio",
         logo: "Image/Endless For Beacon FM Denpasar.png",
         streamUrl: "https://stream.zeno.fm/kzizu3f1dlatv", 
         streamId: "kzizu3f1dlatv", 
@@ -39,7 +39,7 @@ const STATIONS = {
     },
     surabaya: {
         name: "Endless For Beacon FM Surabaya",
-        slogan: "The Smile Of The Stand Out For Surabaya",
+        slogan: "The Smile Of The Stand Out For The Radio",
         logo: "Image/Endless For Beacon FM Surabaya.png",
         streamUrl: "https://stream.zeno.fm/xbiqizas5qfvv", 
         streamId: "xbiqizas5qfvv", 
@@ -390,21 +390,16 @@ document.addEventListener("DOMContentLoaded", () => {
     const checkLogin = localStorage.getItem("user_logged_in");
     if (checkLogin) { applyUserAuthenticationState(JSON.parse(checkLogin)); }
     
-    // ==========================================================================
-    // TOMBOL PLAY/PAUSE DENGAN SISTEM FAILSAFE (ANTI-MACET)
-    // ==========================================================================
+    // TOMBOL PLAY/PAUSE DENGAN SISTEM FAILSAFE
     if (playBtn) {
         playBtn.addEventListener('click', () => {
-            // Jalankan interaksi audio wajib untuk membuka blokir autoplay browser
             if (audioStream.src !== ZENO_STREAM_URL) {
                 audioStream.src = ZENO_STREAM_URL;
             }
 
-            // 1. Opsi Utama: Menggunakan Icecast Metadata Player jika siap
             if (typeof IcecastMetadataPlayer !== 'undefined' && playerInstance) {
                 try {
                     if (isPlaying) {
-                        // Catatan: Library Icecast menggunakan method .stop() untuk berhenti
                         playerInstance.stop(); 
                         playBtn.innerText = "▶";
                         isPlaying = false;
@@ -420,13 +415,11 @@ document.addEventListener("DOMContentLoaded", () => {
                     toggleStandardHTML5Audio();
                 }
             } else {
-                // 2. Opsi Cadangan: Langsung gunakan tag Audio HTML5 standar jika library belum siap
                 toggleStandardHTML5Audio();
             }
         });
     }
 
-    // Fungsi pembantu jika library utama tidak merespons
     function toggleStandardHTML5Audio() {
         if (isPlaying) {
             audioStream.pause();
@@ -434,7 +427,6 @@ document.addEventListener("DOMContentLoaded", () => {
             isPlaying = false;
             showFeedbackToast("Radio Dihentikan");
         } else {
-            // Memaksa reload stream agar menghindari delay buffer siaran langsung
             audioStream.load(); 
             audioStream.play()
                 .then(() => {
@@ -449,13 +441,10 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    // Perbaikan kontrol slider volume
     if (volumeSlider) {
         volumeSlider.addEventListener('input', (e) => {
             const volumeValue = e.target.value;
-            // Setel volume ke elemen HTML5 audio standar
             audioStream.volume = volumeValue;
-            // Setel volume ke library metadata jika sedang aktif
             if (playerInstance && playerInstance.audioElement) {
                 playerInstance.audioElement.volume = volumeValue;
             }
