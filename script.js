@@ -1,24 +1,57 @@
 /**
- * BEACON FM - REAL-TIME ENGINE (NON-FIREBASE VERSION)
- * 1. Zeno.fm API + iTunes Search API (Metadata Judul, Penyanyi & Artwork HD)
- * 2. WhatsApp Integration (Request Direct Studio)
- * 3. Web Audio API (Live Audio Visualizer)
- * 4. Local Live Chat Simulation
- * 5. Automatic Schedule Tracker & 3 Timezones Indonesian Clock
+ * BEACON FM - REAL-TIME ENGINE (MAKASSAR HQ TIME - WITA)
  */
 
-// Key Mount Stream Zeno.fm
 const ZENO_STREAM_KEY = "f32w3ebmk8zuv"; 
 const ZENO_API_URL = `https://api.zeno.fm/v2/m3u/mounts/${ZENO_STREAM_KEY}/nowplaying`;
-
-// Nomor WhatsApp Studio Radio (Format tanpa + atau spasi)
 const RADIO_WA_NUMBER = "6282192775899"; 
 
-// Global States
 let currentUser = null;
 let audioContext, audioAnalyser, audioSource;
 let currentProgramName = "";
 let lastTrackKey = "";
+
+// Array Nama Hari Indonesia
+const dayNames = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+
+/**
+ * DATABASE JADWAL ACARA DENGAN PENAMBAHAN HARI TAYANG (days)
+ * 0 = Minggu, 1 = Senin, 2 = Selasa, 3 = Rabu, 4 = Kamis, 5 = Jumat, 6 = Sabtu
+ */
+const schedules = [
+    { 
+        startHour: 8, 
+        endHour: 12, 
+        days: [1, 2, 3, 4, 5], // Senin - Jumat
+        title: "Morning Brew", 
+        desc: "Sebuah Program Utama Di Pagi Hari Yang Akan Memulai pagi kamu dengan asupan semangat yang tepat! Morning Brew hadir nemenin Beacon Listeners Untuk scrolling linimasa, bersiap ke sekolah, kampus, atau ngejar deadline kantor. Disini kita muterin playlist penuh energi, bahas tren pop culture yang lagi viral, info game terbaru, hingga obrolan kocak seputar keseharian. Booster paling pas buat mengubah pagi yang mager jadi penuh ambisi!", 
+        img: "Image/Program/Morning Brew.png" 
+    },
+    { 
+        startHour: 17, 
+        endHour: 20, 
+        days: [1, 2, 3, 4, 5], // Senin - Jumat
+        title: "Screen To Sounds", 
+        desc: "Program Acara Di Sore Hari Yang Bisa Ubah momen sore kamu jadi lebih sinematik! Program ini pas banget buat nemenin Beacon Listeners yang baru kelar jam sekolah, pulang ngampus, atau selesai beraktivitas. Kita bakal menjelajahi dunia sinema lewat soundtrack film Box Office legendaris, lagu hits dari series yang lagi trending, hingga musik tema game open-world favoritmu. Teman terbaik di kala nongkrong sore atau di tengah kemacetan kota.", 
+        img: "Image/Program/Screen To Sounds.png" 
+    },
+    { 
+        startHour: 10, 
+        endHour: 19, 
+        days: [4], // Setiap Kamis
+        title: "Endless For Beacon Throwback", 
+        desc: "Ini Dia Program Segmen Andalannya Endless For Beacon FM setiap hari Kamis! Kita bakal muter mesin waktu buat menyajikan lagu-lagu terbaik dari era 90-an Ke Atas, 2000-an, Sampai tahun 2018 ke bawah. Siap-siap Deh Beacon Listeners Bernostalgia total bareng vibe jaman MTV Indonesia, masa kejayaan warnet dan rental PS, sampai memori manis masa sekolah yang penuh cerita. Penuh energi dan sing-along seharian!", 
+        img: "Image/Program/Endless For Beacon Throwback.jpeg" 
+    },
+    { 
+        startHour: 7, 
+        endHour: 10, 
+        days: [0, 6], // Sabtu & Minggu
+        title: "Asia Pop 40", 
+        desc: "Asia Pop 40 (AP40) adalah program chart countdown radio mingguan regional pertama di Asia yang menghitung mundur 40 lagu terpopuler berdasarkan data streaming platform musik seperti Spotify, Apple Music, TikTok, dan YouTube. Disiarkan melalui stasiun radio mitra di seluruh kawasan Asia-Pasifik, program sindikasi ini menyajikan deretan lagu hits internasional dan lokal Asia, wawancara eksklusif artis global, serta ulasan lagu-lagu rilisan terbaru.", 
+        img: "Image/Program/Asia Pop 40.jpg" 
+    }
+];
 
 document.addEventListener('DOMContentLoaded', () => {
     initZenoMetadataEngine();
@@ -26,25 +59,51 @@ document.addEventListener('DOMContentLoaded', () => {
     initAudioPlayerAndVisualizer();
     initRealTimeSchedule();
     initRealTimeClocks();
-    initRealTimeQuiz();
+    initMobileNav();
 });
 
-/* ==========================================================================
-   1. REAL-TIME METADATA ENGINE (PERBAIKAN CORS & ITUNES COVER ART API)
-   ========================================================================== */
+/* Helper Waktu Makassar (WITA - UTC+8) */
+function getMakassarDate() {
+    const now = new Date();
+    const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+    return new Date(utc + (3600000 * 8));
+}
+
+function formatDaysText(daysArray) {
+    if (daysArray.length === 7) return "Setiap Hari";
+    if (JSON.stringify(daysArray) === JSON.stringify([1,2,3,4,5])) return "Senin - Jumat";
+    if (JSON.stringify(daysArray) === JSON.stringify([0,6])) return "Sabtu & Minggu";
+    return daysArray.map(d => dayNames[d]).join(', ');
+}
+
+/* Navigasi Mobile 3 Garis */
+function initMobileNav() {
+    const toggleBtn = document.getElementById('mobile-menu-toggle');
+    const navMenu = document.getElementById('nav-menu');
+
+    if (toggleBtn && navMenu) {
+        toggleBtn.addEventListener('click', () => {
+            navMenu.classList.toggle('active');
+        });
+
+        // Tutup menu otomatis setelah memilih tab di HP
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', () => navMenu.classList.remove('active'));
+        });
+    }
+}
+
+/* 1. METADATA STREAM & REAL-TIME LISTENERS COUNTER */
 function initZenoMetadataEngine() {
     fetchNowPlayingData();
-    // Ulangi pengecekan metadata setiap 10 detik
-    setInterval(fetchNowPlayingData, 10000);
+    setInterval(fetchNowPlayingData, 10000); // Polling setiap 10 detik
 }
 
 async function fetchNowPlayingData() {
     const titleEl = document.getElementById('track-title');
     const artistEl = document.getElementById('track-artist');
-
-    // Menggunakan Proxy AllOrigins untuk menghindari kendala CORS
-    const targetUrl = encodeURIComponent(ZENO_API_URL);
-    const proxyUrl = `https://api.allorigins.win/raw?url=${targetUrl}`;
+    const listenerEl = document.getElementById('listener-counter');
+    const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(ZENO_API_URL)}`;
 
     try {
         const response = await fetch(proxyUrl);
@@ -52,105 +111,71 @@ async function fetchNowPlayingData() {
         
         const data = await response.json();
         
+        // Update Jumlah Pendengar Real-Time dari Server Zeno
+        if (data && data.listeners !== undefined && listenerEl) {
+            listenerEl.textContent = data.listeners;
+        }
+
+        // Update Metadata Judul & Artis Lagu
         let songTitle = "Beacon FM Stream";
         let artistName = "Beacon FM Network";
 
-        // Parsing data Zeno.fm
-        if (data) {
-            if (data.title && data.title.trim() !== "") {
-                if (data.title.includes(" - ")) {
-                    const parts = data.title.split(" - ");
-                    artistName = parts[0].trim();
-                    songTitle = parts.slice(1).join(" - ").trim();
-                } else {
-                    songTitle = data.title.trim();
-                    artistName = data.artist ? data.artist.trim() : "Beacon FM";
-                }
-            } else if (data.song) {
-                songTitle = data.song;
-                artistName = data.artist || "Beacon FM";
+        if (data && data.title) {
+            if (data.title.includes(" - ")) {
+                const parts = data.title.split(" - ");
+                artistName = parts[0].trim();
+                songTitle = parts.slice(1).join(" - ").trim();
+            } else {
+                songTitle = data.title.trim();
             }
         }
 
         const currentTrackKey = `${artistName}-${songTitle}`;
-
-        // Perbarui tampilan UI jika lagu berganti
         if (currentTrackKey !== lastTrackKey && songTitle !== "Beacon FM Stream") {
             lastTrackKey = currentTrackKey;
-
             titleEl.textContent = songTitle;
             artistEl.textContent = artistName;
-
-            // Cari Artwork HD via iTunes API
             fetchiTunesArtwork(songTitle, artistName);
         }
-
     } catch (error) {
-        console.warn("Terjadi kendala saat mengambil metadata Zeno:", error);
+        console.warn("Kendala metadata Zeno:", error);
     }
 }
 
-// Pencarian Artwork via iTunes Search API dengan CORS Proxy Fallback
 async function fetchiTunesArtwork(title, artist) {
     const artworkEl = document.getElementById('track-artwork');
-    const defaultArtwork = 'Image/Logo.png'; // Menyesuaikan logo default di HTML
-    
-    const query = encodeURIComponent(`${artist} ${title}`);
-    const rawItunesUrl = `https://itunes.apple.com/search?term=${query}&media=music&limit=1`;
-    const proxyItunesUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(rawItunesUrl)}`;
+    const defaultArtwork = 'Image/Logo.png';
+    const rawItunesUrl = `https://itunes.apple.com/search?term=${encodeURIComponent(artist + ' ' + title)}&media=music&limit=1`;
 
     try {
-        const res = await fetch(proxyItunesUrl);
+        const res = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(rawItunesUrl)}`);
         const data = await res.json();
-
         if (data.results && data.results.length > 0) {
-            // Mengubah ukuran thumbnail menjadi High Definition (600x600 px)
-            let artworkUrl = data.results[0].artworkUrl100.replace('100x100bb', '600x600bb');
-            artworkEl.src = artworkUrl;
-
-            pushToRecentPlaylistLocal({
-                title: title,
-                artist: artist,
-                artwork: artworkUrl
-            });
+            artworkEl.src = data.results[0].artworkUrl100.replace('100x100bb', '600x600bb');
         } else {
             artworkEl.src = defaultArtwork;
-            pushToRecentPlaylistLocal({
-                title: title,
-                artist: artist,
-                artwork: defaultArtwork
-            });
         }
     } catch (err) {
-        console.error("Gagal mengambil artwork iTunes:", err);
         artworkEl.src = defaultArtwork;
     }
 }
 
-/* ==========================================================================
-   2. LIVE CHAT ENGINE (SIMULASI LOKAL TANPA FIREBASE)
-   ========================================================================== */
+/* 2. CHAT LOCAL */
 function initLocalChat() {
     const chatForm = document.getElementById('chat-form');
     const chatInput = document.getElementById('chat-input');
     const chatBox = document.getElementById('chat-box');
 
-    // Pesan Awal
     chatBox.innerHTML = `
         <div class="chat-msg">
-            <span class="user" style="color:#50b5ff; font-weight:700;">System:</span> 
-            <span>Selamat datang di Live Chat Beacon FM! Silakan login untuk mengirim pesan.</span>
-        </div>
-    `;
+            <span class="user" style="color:#ff2a5f; font-weight:700;">System:</span> 
+            <span>Selamat datang di Live Chat Beacon FM Makassar! Login Google untuk mengobrol.</span>
+        </div>`;
 
     chatForm.addEventListener('submit', (e) => {
         e.preventDefault();
+        if (!currentUser) return alert("Login Google terlebih dahulu.");
         
-        if (!currentUser) {
-            alert("Silakan masuk dengan akun Google terlebih dahulu.");
-            return;
-        }
-
         const msgText = chatInput.value.trim();
         if (!msgText) return;
 
@@ -166,61 +191,34 @@ function appendChatMessageUI(sender, text, avatarUrl, timestamp) {
 
     const date = new Date(timestamp);
     const timeStr = `<small style="color:var(--text-secondary); float:right; font-size:0.7rem;">${date.getHours()}:${String(date.getMinutes()).padStart(2,'0')}</small>`;
-    
-    const imgHtml = avatarUrl 
-        ? `<img src="${avatarUrl}" alt="${sender}" style="width:20px; height:20px; border-radius:50%; vertical-align:middle; margin-right:5px;">` 
-        : '<i class="fa-solid fa-user" style="margin-right:5px; font-size:0.8rem; color:var(--text-secondary)"></i>';
+    const imgHtml = avatarUrl ? `<img src="${avatarUrl}" style="width:20px; height:20px; border-radius:50%; vertical-align:middle; margin-right:5px;">` : '';
 
-    msgDiv.innerHTML = `${timeStr}${imgHtml}<span class="user" style="color:#50b5ff; font-weight:700;">${sender}:</span> <span>${text}</span>`;
-    
+    msgDiv.innerHTML = `${timeStr}${imgHtml}<span class="user" style="color:#ff2a5f; font-weight:700;">${sender}:</span> <span>${text}</span>`;
     chatBox.appendChild(msgDiv);
     chatBox.scrollTop = chatBox.scrollHeight;
 }
 
-/* ==========================================================================
-   3. AUDIO PLAYER & VISUALIZER (Web Audio API)
-   ========================================================================== */
+/* 3. AUDIO PLAYER */
 const audio = document.getElementById('audio-stream');
 const btnPlayPause = document.getElementById('btn-play-pause');
 const playIcon = document.getElementById('play-icon');
 const volumeSlider = document.getElementById('volume-slider');
-const volumeIcon = document.getElementById('volume-icon');
-const canvas = document.getElementById('visualizer');
-const canvasCtx = canvas.getContext('2d');
 
 function initAudioPlayerAndVisualizer() {
     let isPlaying = false;
-    let lastVolume = 0.8;
-
-    // 1. Izinkan Akses Cross-Origin untuk Stream Zeno
     audio.crossOrigin = "anonymous";
 
-    // 2. Set Volume Awal Audio Sesuai Nilai Slider
-    if (volumeSlider) {
-        audio.volume = parseFloat(volumeSlider.value);
-    }
+    if (volumeSlider) audio.volume = parseFloat(volumeSlider.value);
 
-    // 3. Kontrol Play / Pause
     btnPlayPause.addEventListener('click', () => {
-        // Inisialisasi AudioContext pada klik pertama pengguna
-        if (!audioContext) {
-            setupAudioVisualizer();
-        }
-
-        // Pastikan AudioContext Aktif (Mencegah Audio Suspended)
-        if (audioContext && audioContext.state === 'suspended') {
-            audioContext.resume();
-        }
+        if (!audioContext) setupAudioVisualizer();
+        if (audioContext && audioContext.state === 'suspended') audioContext.resume();
 
         if (!isPlaying) {
-            // Reload stream agar mendapatkan buffer paling realtime saat tombol play ditekan
-            audio.load(); 
+            audio.load();
             audio.play().then(() => {
                 isPlaying = true;
                 playIcon.className = 'fa-solid fa-pause';
-            }).catch(err => {
-                console.error("Gagal memutar audio:", err);
-                alert("Gagal memutar audio. Pastikan koneksi internet stabil atau coba muat ulang halaman.");
             });
         } else {
             audio.pause();
@@ -229,42 +227,8 @@ function initAudioPlayerAndVisualizer() {
         }
     });
 
-    // 4. Kontrol Volume Slider
     if (volumeSlider) {
-        volumeSlider.addEventListener('input', (e) => {
-            const val = parseFloat(e.target.value);
-            audio.volume = val;
-            updateVolumeIcon(val);
-        });
-    }
-
-    // 5. Fitur Klik Ikon Volume (Mute / Unmute)
-    if (volumeIcon) {
-        volumeIcon.style.cursor = 'pointer';
-        volumeIcon.addEventListener('click', () => {
-            if (audio.volume > 0) {
-                lastVolume = audio.volume;
-                audio.volume = 0;
-                volumeSlider.value = 0;
-                updateVolumeIcon(0);
-            } else {
-                audio.volume = lastVolume > 0 ? lastVolume : 0.8;
-                volumeSlider.value = audio.volume;
-                updateVolumeIcon(audio.volume);
-            }
-        });
-    }
-}
-
-// Update Ikon Volume Dinamis
-function updateVolumeIcon(val) {
-    if (!volumeIcon) return;
-    if (val === 0) {
-        volumeIcon.className = 'fa-solid fa-volume-xmark';
-    } else if (val < 0.5) {
-        volumeIcon.className = 'fa-solid fa-volume-low';
-    } else {
-        volumeIcon.className = 'fa-solid fa-volume-high';
+        volumeSlider.addEventListener('input', (e) => audio.volume = parseFloat(e.target.value));
     }
 }
 
@@ -274,14 +238,13 @@ function setupAudioVisualizer() {
         audioAnalyser = audioContext.createAnalyser();
         audioAnalyser.fftSize = 64;
 
-        // Hubungkan Audio Element ke Analyser dan Destination (Speaker)
         audioSource = audioContext.createMediaElementSource(audio);
         audioSource.connect(audioAnalyser);
         audioAnalyser.connect(audioContext.destination);
 
         renderVisualizer();
     } catch (e) {
-        console.warn("Visualizer tidak dapat berjalan karena batasan CORS browser, namun audio tetap akan diputar normal:", e);
+        console.warn("Visualizer Error:", e);
     }
 }
 
@@ -289,11 +252,14 @@ function renderVisualizer() {
     requestAnimationFrame(renderVisualizer);
     if (!audioAnalyser) return;
 
+    const canvas = document.getElementById('visualizer');
+    const canvasCtx = canvas.getContext('2d');
     const bufferLength = audioAnalyser.frequencyBinCount;
     const dataArray = new Uint8Array(bufferLength);
+    
     audioAnalyser.getByteFrequencyData(dataArray);
-
     canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
+
     const barWidth = (canvas.width / bufferLength) * 2.5;
     let x = 0;
 
@@ -305,78 +271,34 @@ function renderVisualizer() {
     }
 }
 
-/* ==========================================================================
-   4. REQUEST LAGU VIA WHATSAPP ENGINE
-   ========================================================================== */
-function openRequestModal(programName) {
-    currentProgramName = programName;
-    document.getElementById('target-program-name').textContent = `Program: ${programName}`;
-    document.getElementById('modal-request').style.display = 'flex';
-    
-    if (currentUser && currentUser.name) {
-        document.getElementById('req-sender').value = currentUser.name;
-    }
-}
-
-function closeRequestModal() {
-    document.getElementById('modal-request').style.display = 'none';
-}
-
-document.getElementById('form-request').addEventListener('submit', (e) => {
-    e.preventDefault();
-
-    const sender = document.getElementById('req-sender').value.trim();
-    const song = document.getElementById('req-song').value.trim();
-    const msg = document.getElementById('req-message').value.trim();
-
-    // Format Pesan WhatsApp
-    let textMessage = `*REQUEST LAGU - BEACON FM*\n`;
-    textMessage += `-----------------------------------\n`;
-    textMessage += `📻 *Program:* ${currentProgramName}\n`;
-    textMessage += `👤 *Dari:* ${sender}\n`;
-    textMessage += `🎵 *Lagu:* ${song}\n`;
-    if (msg) {
-        textMessage += `💬 *Pesan:* _"${msg}"_\n`;
-    }
-    textMessage += `-----------------------------------\n`;
-    textMessage += `_Dikirim via Website Beacon FM_`;
-
-    const encodedMessage = encodeURIComponent(textMessage);
-    const waUrl = `https://wa.me/${RADIO_WA_NUMBER}?text=${encodedMessage}`;
-
-    window.open(waUrl, '_blank');
-
-    closeRequestModal();
-    document.getElementById('req-song').value = '';
-    document.getElementById('req-message').value = '';
-});
-
-/* ==========================================================================
-   5. JADWAL ACARA
-   ========================================================================== */
-const schedules = [
-    { startHour: 6, endHour: 10, title: "Morning Hits & Booster", desc: "Awali hari dengan energi positif.", img: "https://images.unsplash.com/photo-1590602847861-f357a9332bbc?w=200&q=80" },
-    { startHour: 10, endHour: 16, title: "Daytime Eco Beat", desc: "Hits terpopuler menemani aktivitas siang.", img: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=200&q=80" },
-    { startHour: 16, endHour: 20, title: "Sore Santai & Request", desc: "Teman perjalanan pulang terfavorit.", img: "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=200&q=80" },
-    { startHour: 20, endHour: 24, title: "Night Acoustic & Chill", desc: "Alunan akustik syahdu menjelang malam.", img: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=500&q=80" }
-];
-
+/* 4. JADWAL ACARA REAL-TIME */
 function initRealTimeSchedule() {
     function updateScheduleUI() {
-        const currentHour = new Date().getHours();
+        const makassarTime = getMakassarDate();
+        const currentHour = makassarTime.getHours();
+        const currentDay = makassarTime.getDay();
+
         const container = document.getElementById('schedule-container');
         container.innerHTML = '';
 
         schedules.forEach(prog => {
-            const isNow = currentHour >= prog.startHour && currentHour < prog.endHour;
+            const isToday = prog.days.includes(currentDay);
+            const isTime = currentHour >= prog.startHour && currentHour < prog.endHour;
+            const isNow = isToday && isTime;
+
+            const daysFormatted = formatDaysText(prog.days);
+
             const card = document.createElement('div');
             card.className = `program-card ${isNow ? 'active-program' : ''}`;
             
             card.innerHTML = `
-                ${isNow ? '<span class="active-tag">ON AIR NOW</span>' : ''}
+                ${isNow ? '<span class="active-tag"><i class="fa-solid fa-circle" style="font-size:0.5rem;"></i> ON AIR NOW</span>' : ''}
                 <img src="${prog.img}" alt="${prog.title}" class="program-logo">
                 <div class="program-info">
-                    <span class="program-time"><i class="fa-regular fa-clock"></i> ${String(prog.startHour).padStart(2,'0')}:00 - ${String(prog.endHour).padStart(2,'0')}:00 WIB</span>
+                    <span class="program-time">
+                        <i class="fa-regular fa-clock"></i> ${String(prog.startHour).padStart(2,'0')}:00 - ${String(prog.endHour).padStart(2,'0')}:00 WITA 
+                        <span class="program-days">(${daysFormatted})</span>
+                    </span>
                     <h3 class="program-title">${prog.title}</h3>
                     <p class="program-desc">${prog.desc}</p>
                     <button class="btn-request" onclick="openRequestModal('${prog.title}')">
@@ -389,107 +311,58 @@ function initRealTimeSchedule() {
     }
 
     updateScheduleUI();
-    setInterval(updateScheduleUI, 60000);
+    setInterval(updateScheduleUI, 10000);
 }
 
-/* ==========================================================================
-   6. JAM REAL-TIME 3 ZONA WAKTU INDONESIA
-   ========================================================================== */
+/* 5. REQUEST WA MODAL */
+function openRequestModal(programName) {
+    currentProgramName = programName;
+    document.getElementById('target-program-name').textContent = `Program: ${programName}`;
+    document.getElementById('modal-request').style.display = 'flex';
+    if (currentUser && currentUser.name) document.getElementById('req-sender').value = currentUser.name;
+}
+
+function closeRequestModal() {
+    document.getElementById('modal-request').style.display = 'none';
+}
+
+document.getElementById('form-request').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const sender = document.getElementById('req-sender').value.trim();
+    const song = document.getElementById('req-song').value.trim();
+    const msg = document.getElementById('req-message').value.trim();
+
+    let textMessage = `*REQUEST LAGU - BEACON FM MAKASSAR*\n-----------------------------------\n🎵 *Program:* ${currentProgramName}\n👤 *Dari:* ${sender}\n🎶 *Lagu:* ${song}\n` + (msg ? `💬 *Pesan:* _"${msg}"_\n` : '') + `-----------------------------------`;
+
+    window.open(`https://wa.me/${RADIO_WA_NUMBER}?text=${encodeURIComponent(textMessage)}`, '_blank');
+    closeRequestModal();
+});
+
+/* 6. CLOCKS */
 function initRealTimeClocks() {
     function updateClocks() {
         const now = new Date();
         const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
 
-        const wib = new Date(utc + (3600000 * 7));
-        const wita = new Date(utc + (3600000 * 8));
-        const wit = new Date(utc + (3600000 * 9));
-
         const formatTime = (d) => d.toTimeString().split(' ')[0];
-
-        document.getElementById('clock-wib').textContent = formatTime(wib);
-        document.getElementById('clock-wita').textContent = formatTime(wita);
-        document.getElementById('clock-wit').textContent = formatTime(wit);
+        document.getElementById('clock-wib').textContent = formatTime(new Date(utc + (3600000 * 7)));
+        document.getElementById('clock-wita').textContent = formatTime(new Date(utc + (3600000 * 8)));
+        document.getElementById('clock-wit').textContent = formatTime(new Date(utc + (3600000 * 9)));
     }
-
     updateClocks();
     setInterval(updateClocks, 1000);
 }
 
-/* ==========================================================================
-   7. KUIS INTERAKTIF
-   ========================================================================== */
-function initRealTimeQuiz() {
-    let timeLeft = 15;
-    const timerBadge = document.getElementById('quiz-timer-badge');
-
-    const quizData = {
-        question: "Grup musik mana yang menyanyikan lagu 'Time Is Running Out'?",
-        options: ["Muse", "Linkin Park", "Coldplay", "Green Day"],
-        answer: 0
-    };
-
-    document.getElementById('quiz-question').textContent = quizData.question;
-    const optsEl = document.getElementById('quiz-options');
-    optsEl.innerHTML = '';
-
-    quizData.options.forEach((opt, idx) => {
-        const btn = document.createElement('button');
-        btn.className = 'quiz-btn';
-        btn.textContent = `${idx + 1}. ${opt}`;
-        btn.onclick = () => submitAnswer(idx === quizData.answer);
-        optsEl.appendChild(btn);
-    });
-
-    const countdown = setInterval(() => {
-        timeLeft--;
-        timerBadge.textContent = `00:${String(timeLeft).padStart(2, '0')}`;
-        if (timeLeft <= 0) {
-            clearInterval(countdown);
-            timerBadge.textContent = "HABIS";
-            disableQuiz();
-        }
-    }, 1000);
-
-    function submitAnswer(isCorrect) {
-        clearInterval(countdown);
-        timerBadge.textContent = "SELESAI";
-        const resEl = document.getElementById('quiz-result');
-        if (isCorrect) {
-            resEl.textContent = "Jawaban Tepat!";
-            resEl.style.color = "var(--status-green)";
-        } else {
-            resEl.textContent = "Salah!";
-            resEl.style.color = "var(--accent-color)";
-        }
-        disableQuiz();
-    }
-
-    function disableQuiz() {
-        document.querySelectorAll('.quiz-btn').forEach(btn => btn.disabled = true);
-    }
-}
-
-/* ==========================================================================
-   8. GOOGLE SIGN-IN HANDLER
-   ========================================================================== */
+/* 7. GOOGLE AUTH */
 function parseJwt(token) {
     var base64Url = token.split('.')[1];
     var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-    var jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
-        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-    }).join(''));
-    return JSON.parse(jsonPayload);
+    return JSON.parse(decodeURIComponent(window.atob(base64).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join('')));
 }
 
 function handleCredentialResponse(response) {
-    const responsePayload = parseJwt(response.credential);
-    
-    currentUser = {
-        uid: responsePayload.sub,
-        name: responsePayload.name,
-        picture: responsePayload.picture,
-        email: responsePayload.email
-    };
+    const payload = parseJwt(response.credential);
+    currentUser = { uid: payload.sub, name: payload.name, picture: payload.picture };
 
     document.querySelector('.g_id_signin').style.display = 'none';
     const profileBar = document.getElementById('user-profile');
@@ -498,20 +371,13 @@ function handleCredentialResponse(response) {
     profileBar.style.display = 'flex';
 
     document.getElementById('chat-input').disabled = false;
-    document.getElementById('chat-input').placeholder = "Tulis pesan...";
     document.getElementById('chat-submit').disabled = false;
-
-    document.getElementById('req-sender').value = currentUser.name;
 }
 
 function logoutGoogle() {
     currentUser = null;
     document.getElementById('user-profile').style.display = 'none';
     document.querySelector('.g_id_signin').style.display = 'block';
-    
     document.getElementById('chat-input').disabled = true;
-    document.getElementById('chat-input').placeholder = "Masuk dengan Google untuk chat...";
     document.getElementById('chat-submit').disabled = true;
-
-    document.getElementById('req-sender').value = '';
 }

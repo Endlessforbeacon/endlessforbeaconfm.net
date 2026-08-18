@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Beacon FM - Real-Time Radio Stream</title>
+    <title>Endless For Beacon FM</title>
     <link rel="stylesheet" href="style.css">
-    <!-- Font & Icons -->
+    
+    <!-- Fonts & Icons -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700;800&display=swap" rel="stylesheet">
@@ -16,44 +17,55 @@
 </head>
 <body>
 
+    <div class="bg-overlay"></div>
+
     <!-- Header / Navbar -->
     <header class="navbar">
         <div class="container nav-container">
-            <div class="brand-logo">
-                <i class="fa-solid fa-radio logo-icon pulse-glow"></i>
-                <span class="brand-name">BEACON<span>FM</span></span>
-            </div>
-            <nav class="nav-menu">
+            <a href="#" class="brand-logo">
+                <img src="Image/Logo.png" alt="Beacon FM Logo" class="nav-logo-img">
+                <div class="brand-text">
+                    <span class="site-name">Endless For Beacon FM</span>
+                    <span class="site-tagline">The Smile Of The Stand Out For The Radio</span>
+                </div>
+            </a>
+            
+            <button class="mobile-menu-btn" id="mobile-menu-toggle" aria-label="Toggle Menu">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+
+            <!-- Nav Menu (Inklusi Tab & Google Auth untuk HP) -->
+            <nav class="nav-menu" id="nav-menu">
                 <a href="#player" class="nav-link active">Live Stream</a>
                 <a href="#jadwal" class="nav-link">Jadwal Acara</a>
                 <a href="#event" class="nav-link">Event</a>
                 <a href="#interaktif" class="nav-link">Live Chat & Kuis</a>
+
+                <!-- Google Auth Box disatukan ke dalam Nav -->
+                <div class="auth-box">
+                    <div id="g_id_onload"
+                         data-client_id="YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com"
+                         data-callback="handleCredentialResponse"
+                         data-auto_prompt="false">
+                    </div>
+                    <div class="g_id_signin" data-type="standard" data-shape="pill" data-theme="filled_dark" data-text="signin_with" data-size="medium"></div>
+                    <div id="user-profile" class="user-profile-bar" style="display: none;">
+                        <img id="user-avatar" src="" alt="Avatar">
+                        <span id="user-name"></span>
+                        <button onclick="logoutGoogle()" class="btn-logout" title="Keluar"><i class="fa-solid fa-right-from-bracket"></i></button>
+                    </div>
+                </div>
             </nav>
-            <div class="auth-box">
-                <!-- Google Sign-In Container -->
-                <div id="g_id_onload"
-                     data-client_id="YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com"
-                     data-callback="handleCredentialResponse"
-                     data-auto_prompt="false">
-                </div>
-                <div class="g_id_signin" data-type="standard" data-shape="pill" data-theme="filled_dark" data-text="signin_with" data-size="medium"></div>
-                <div id="user-profile" class="user-profile-bar" style="display: none;">
-                    <img id="user-avatar" src="" alt="Avatar">
-                    <span id="user-name"></span>
-                    <button onclick="logoutGoogle()" class="btn-logout" title="Keluar"><i class="fa-solid fa-right-from-bracket"></i></button>
-                </div>
-            </div>
         </div>
     </header>
 
-    <!-- Main Hero / Live Audio Player -->
+    <!-- Main Hero / Audio Player -->
     <section id="player" class="hero-player-section">
         <div class="container player-container">
             <audio id="audio-stream" src="https://stream.zeno.fm/n7qpxnyfrbruv" preload="none"></audio>
             
             <div class="now-playing-card">
                 <div class="artwork-wrapper">
-                    <!-- Artwork diupdate via Zeno + iTunes API -->
                     <img id="track-artwork" src="Image/Logo.png" alt="Song Artwork">
                     <div class="live-badge">
                         <span class="dot"></span> ON AIR NOW
@@ -62,18 +74,15 @@
 
                 <div class="track-details">
                     <div class="live-status-bar">
-                        <span class="on-air-label"><i class="fa-solid fa-tower-broadcast pulse-icon"></i> LIVE BROADCAST</span>
-                        <span class="listeners-badge"><i class="fa-solid fa-headphones"></i> <span id="listener-counter">124</span> Pendengar</span>
+                        <span class="on-air-label"><i class="fa-solid fa-tower-broadcast pulse-icon"></i> LIVE BROADCAST (MAKASSAR HQ)</span>
+                        <span class="listeners-badge"><i class="fa-solid fa-headphones"></i> <span id="listener-counter">0</span> Pendengar</span>
                     </div>
                     
-                    <!-- Metadata diupdate via Zeno.fm API -->
                     <h1 id="track-title" class="track-title">Memuat Stream...</h1>
                     <h3 id="track-artist" class="track-artist">Beacon FM Network</h3>
 
-                    <!-- Audio Visualizer Canvas -->
                     <canvas id="visualizer" width="300" height="40"></canvas>
 
-                    <!-- Player Controls -->
                     <div class="player-controls">
                         <button id="btn-play-pause" class="btn-play">
                             <i class="fa-solid fa-play" id="play-icon"></i>
@@ -88,24 +97,21 @@
         </div>
     </section>
 
-    <!-- Main Content Layout Grid -->
+    <!-- Content Grid -->
     <main class="container main-grid">
         
-        <!-- Left Column: Schedule & Events -->
         <div class="left-column">
-            
-            <!-- Real-Time Schedule Section -->
+            <!-- Jadwal Acara -->
             <section id="jadwal" class="content-section">
                 <div class="section-header">
-                    <h2><i class="fa-regular fa-calendar-check"></i> Jadwal Program Acara Hari Ini</h2>
+                    <h2><i class="fa-regular fa-calendar-check"></i> Jadwal Program Acara (WITA)</h2>
                 </div>
-
                 <div class="schedule-list" id="schedule-container">
-                    <!-- Dynamic Schedule Rendering -->
+                    <!-- Dynamic Schedule Rendering via JS -->
                 </div>
             </section>
 
-            <!-- Events Section -->
+            <!-- Event -->
             <section id="event" class="content-section">
                 <div class="section-header">
                     <h2><i class="fa-solid fa-bullhorn"></i> Event Mendatang</h2>
@@ -122,49 +128,39 @@
             </section>
         </div>
 
-        <!-- Right Column: Interactive -->
         <div class="right-column" id="interaktif">
-            
-            <!-- Real-Time Recent Playlist (Zeno API) -->
-            <section class="content-card">
-                <h3><i class="fa-solid fa-list-ul"></i> Riwayat Putar</h3>
-                <ul id="recent-playlist-list" class="recent-list">
-                    <!-- Dynamic Updates -->
-                </ul>
-            </section>
-
-            <!-- Interactive Live Chat -->
+            <!-- Live Chat -->
             <section class="content-card chat-card">
                 <div class="chat-header">
                     <h3><i class="fa-regular fa-comments"></i> Live Chat Community</h3>
                     <span class="socket-status" id="db-status"><i class="fa-solid fa-circle" style="color:var(--status-green)"></i> Aktif</span>
                 </div>
-                <div id="chat-box" class="chat-messages">
-                    <!-- Chat Messages -->
-                </div>
+                <div id="chat-box" class="chat-messages"></div>
                 <form id="chat-form" class="chat-input-area">
                     <input type="text" id="chat-input" placeholder="Masuk dengan Google untuk chat..." required autocomplete="off" disabled>
                     <button type="submit" id="chat-submit" disabled><i class="fa-solid fa-paper-plane"></i></button>
                 </form>
             </section>
 
-            <!-- Interactive Quiz -->
+            <!-- Quiz Section (Coming Soon Locked) -->
             <section class="content-card quiz-card">
                 <div class="quiz-header-bar">
                     <h3><i class="fa-solid fa-lightbulb"></i> Kuis Interaktif</h3>
-                    <span id="quiz-timer-badge" class="timer-badge">00:15</span>
+                    <span class="status-badge coming-soon">COMING SOON</span>
                 </div>
+                
                 <div id="quiz-container">
-                    <p id="quiz-question" class="quiz-q">Memuat Kuis...</p>
-                    <div id="quiz-options" class="quiz-options"></div>
-                    <div id="quiz-result" class="quiz-result"></div>
+                    <div class="quiz-state-box">
+                        <i class="fa-solid fa-hourglass-half quiz-state-icon"></i>
+                        <h4>Fitur Kuis Segera Hadir!</h4>
+                        <p class="quiz-info-text">Kuis interaktif berhadiah sedang dalam tahap penyiapan. Tetap dengarkan siaran Endless For Beacon FM untuk info terbaru.</p>
+                    </div>
                 </div>
             </section>
-
         </div>
     </main>
 
-    <!-- Modal Request Lagu via WhatsApp -->
+    <!-- Modal Request WhatsApp -->
     <div id="modal-request" class="modal">
         <div class="modal-content">
             <span class="close-modal" onclick="closeRequestModal()">&times;</span>
@@ -193,40 +189,29 @@
     <!-- Footer -->
     <footer class="footer">
         <div class="container footer-grid">
-            
             <div class="footer-col">
-                <div class="brand-logo">
-                    <i class="fa-solid fa-radio logo-icon"></i>
-                    <span class="brand-name">BEACON<span>FM</span></span>
-                </div>
-                <p class="footer-desc">Jaringan radio siaran digital langsung terintegrasi secara real-time.</p>
-                <p class="copyright">&copy; 2026 Beacon Radio Network. All Rights Reserved.</p>
+                <a href="#" class="brand-logo footer-logo-wrapper">
+                    <img src="Image/Logo.png" alt="Beacon FM Logo" class="footer-logo-img">
+                    <span class="footer-site-name">Endless For Beacon FM</span>
+                </a>
+                <p class="footer-desc">Jaringan radio siaran digital langsung terintegrasi secara real-time dengan musik terbaik 24/7.</p>
+                <p class="copyright">&copy; 2026 Endless For Beacon Corp. All Rights Reserved.</p>
             </div>
 
-            <!-- Real-time 3 Indonesian Timezones -->
             <div class="footer-col">
                 <h4><i class="fa-regular fa-clock"></i> Jam Indonesia</h4>
                 <div class="clocks-wrapper">
-                    <div class="clock-item">
-                        <span class="clock-label">WIB</span>
-                        <span id="clock-wib" class="clock-time">00:00:00</span>
-                    </div>
-                    <div class="clock-item">
-                        <span class="clock-label">WITA</span>
-                        <span id="clock-wita" class="clock-time">00:00:00</span>
-                    </div>
-                    <div class="clock-item">
-                        <span class="clock-label">WIT</span>
-                        <span id="clock-wit" class="clock-time">00:00:00</span>
-                    </div>
+                    <div class="clock-item"><span class="clock-label">WIB</span><span id="clock-wib" class="clock-time">00:00:00</span></div>
+                    <div class="clock-item"><span class="clock-label">WITA (Makassar)</span><span id="clock-wita" class="clock-time">00:00:00</span></div>
+                    <div class="clock-item"><span class="clock-label">WIT</span><span id="clock-wit" class="clock-time">00:00:00</span></div>
                 </div>
             </div>
 
             <div class="footer-col">
-                <h4><i class="fa-solid fa-network-wired"></i> Network Stasiun Radio</h4>
+                <h4><i class="fa-solid fa-network-wired"></i> Our Station</h4>
                 <ul class="station-list">
-                    <li><a href="#"><i class="fa-solid fa-tower-cell"></i> Jakarta</a></li>
-                    <li><a href="#"><i class="fa-solid fa-tower-cell"></i> Makassar</a></li>
+                    <li><a href="#"><i class="fa-solid fa-tower-cell"></i> Makassar (HQ)</a></li>
+                    <li><a href="#"><i class="fa-solid fa-tower-cell"></i> Denpasar</a></li>
                     <li><a href="#"><i class="fa-solid fa-tower-cell"></i> Surabaya</a></li>
                 </ul>
             </div>
@@ -234,16 +219,14 @@
             <div class="footer-col">
                 <h4><i class="fa-solid fa-hashtag"></i> Ikuti Kami</h4>
                 <div class="social-links">
-                    <a href="#" class="social-btn"><i class="fa-brands fa-instagram"></i></a>
-                    <a href="#" class="social-btn"><i class="fa-brands fa-youtube"></i></a>
-                    <a href="#" class="social-btn"><i class="fa-brands fa-tiktok"></i></a>
+                    <a href="https://www.instagram.com/endless_for.beacon/" class="social-btn"><i class="fa-brands fa-instagram"></i></a>
+                    <a href="https://www.youtube.com/@EndlessForBeacon" class="social-btn"><i class="fa-brands fa-youtube"></i></a>
+                    <a href="https://www.tiktok.com/@endless.for_beacon06/" class="social-btn"><i class="fa-brands fa-tiktok"></i></a>
                 </div>
             </div>
-
         </div>
     </footer>
 
-    <!-- Main Script -->
     <script src="script.js"></script>
 </body>
 </html>
