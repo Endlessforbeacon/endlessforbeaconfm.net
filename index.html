@@ -3,311 +3,247 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Endless For Beacon FM</title>
-
-    <!-- FAVICON -->
-    <link class="icon" type="image/png" href="Image/Logo.png">
-    
+    <title>Beacon FM - Real-Time Radio Stream</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Font & Icons -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    <link rel="stylesheet" href="style.css">
-
-    <!-- Google Identity Services SDK -->
+    <!-- Google Identity Services -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
 
-    <header class="main-header">
-        <div class="header-inner">
-            <div class="brand-container">
-                <img src="Image/Logo.png" alt="Beacon FM Logo" class="station-logo" id="header-station-logo">
-                <div class="brand-text">
-                    <span class="station-name" id="header-station-name">Endless For Beacon FM</span>
-                    <span class="station-slogan" id="header-station-slogan">The Smile Of The Stand Out For The Radio</span>
-                </div>
+    <!-- Header / Navbar -->
+    <header class="navbar">
+        <div class="container nav-container">
+            <div class="brand-logo">
+                <i class="fa-solid fa-radio logo-icon pulse-glow"></i>
+                <span class="brand-name">BEACON<span>FM</span></span>
             </div>
-
-            <div class="header-action-container">
-                <!-- KONDISI AUTHENTICATION TERINTEGRASI -->
-                <div id="navbar-auth-section">
-                    <button id="nav-login-btn" class="login-trigger-btn" onclick="openLoginModal()">
-                        <i class="fas fa-sign-in-alt"></i> <span>Login</span>
-                    </button>
+            <nav class="nav-menu">
+                <a href="#player" class="nav-link active">Live Stream</a>
+                <a href="#jadwal" class="nav-link">Jadwal Acara</a>
+                <a href="#event" class="nav-link">Event</a>
+                <a href="#interaktif" class="nav-link">Live Chat & Kuis</a>
+            </nav>
+            <div class="auth-box">
+                <!-- Google Sign-In Container -->
+                <div id="g_id_onload"
+                     data-client_id="YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com"
+                     data-callback="handleCredentialResponse"
+                     data-auto_prompt="false">
+                </div>
+                <div class="g_id_signin" data-type="standard" data-shape="pill" data-theme="filled_dark" data-text="signin_with" data-size="medium"></div>
+                <div id="user-profile" class="user-profile-bar" style="display: none;">
+                    <img id="user-avatar" src="" alt="Avatar">
+                    <span id="user-name"></span>
+                    <button onclick="logoutGoogle()" class="btn-logout" title="Keluar"><i class="fa-solid fa-right-from-bracket"></i></button>
                 </div>
             </div>
         </div>
     </header>
 
-    <div class="main-content-wrapper">
+    <!-- Main Hero / Live Audio Player -->
+    <section id="player" class="hero-player-section">
+        <div class="container player-container">
+            <audio id="audio-stream" src="https://stream.zeno.fm/n7qpxnyfrbruv" preload="none"></audio>
+            
+            <div class="now-playing-card">
+                <div class="artwork-wrapper">
+                    <!-- Artwork diupdate via Zeno + iTunes API -->
+                    <img id="track-artwork" src="Image/Logo.png" alt="Song Artwork">
+                    <div class="live-badge">
+                        <span class="dot"></span> ON AIR NOW
+                    </div>
+                </div>
+
+                <div class="track-details">
+                    <div class="live-status-bar">
+                        <span class="on-air-label"><i class="fa-solid fa-tower-broadcast pulse-icon"></i> LIVE BROADCAST</span>
+                        <span class="listeners-badge"><i class="fa-solid fa-headphones"></i> <span id="listener-counter">124</span> Pendengar</span>
+                    </div>
+                    
+                    <!-- Metadata diupdate via Zeno.fm API -->
+                    <h1 id="track-title" class="track-title">Memuat Stream...</h1>
+                    <h3 id="track-artist" class="track-artist">Beacon FM Network</h3>
+
+                    <!-- Audio Visualizer Canvas -->
+                    <canvas id="visualizer" width="300" height="40"></canvas>
+
+                    <!-- Player Controls -->
+                    <div class="player-controls">
+                        <button id="btn-play-pause" class="btn-play">
+                            <i class="fa-solid fa-play" id="play-icon"></i>
+                        </button>
+                        <div class="volume-container">
+                            <i class="fa-solid fa-volume-high" id="volume-icon"></i>
+                            <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="0.8">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Content Layout Grid -->
+    <main class="container main-grid">
         
-        <!-- CAPSULE STREAMING PLAYER DENGAN BRANCH SELECTOR -->
-        <div class="prambors-style-player">
-            <div class="player-artwork-area">
-                <img src="Image/Logo.png" alt="Artwork" id="radio-logo">
-            </div>
+        <!-- Left Column: Schedule & Events -->
+        <div class="left-column">
             
-            <div class="player-info-area">
-                <!-- PILIHAN CABANG STASIUN -->
-                <div class="station-branch-selector">
-                    <button class="branch-pill active" onclick="switchStation('makassar')" id="pill-makassar">Makassar</button>
-                    <button class="branch-pill" onclick="switchStation('denpasar')" id="pill-denpasar">Denpasar</button>
-                    <button class="branch-pill" onclick="switchStation('surabaya')" id="pill-surabaya">Surabaya</button>
+            <!-- Real-Time Schedule Section -->
+            <section id="jadwal" class="content-section">
+                <div class="section-header">
+                    <h2><i class="fa-regular fa-calendar-check"></i> Jadwal Program Acara Hari Ini</h2>
                 </div>
-                <div class="listener-count" id="live-indicator">🔴 SIARAN LANGSUNG - MAKASSAR</div>
-                <h1 id="song-title">Memuat Judul...</h1>
-                <p id="song-artist">Endless For Beacon FM</p>
-            </div>
-            
-            <div class="player-controls-area">
-                <div class="volume-box">
-                    <span class="vol-icon">🔈</span>
-                    <input type="range" id="volume" class="volume-slider" min="0" max="1" step="0.05" value="0.8">
+
+                <div class="schedule-list" id="schedule-container">
+                    <!-- Dynamic Schedule Rendering -->
                 </div>
-                <button id="play-btn" class="play-pause-circle">▶</button>
-            </div>
+            </section>
+
+            <!-- Events Section -->
+            <section id="event" class="content-section">
+                <div class="section-header">
+                    <h2><i class="fa-solid fa-bullhorn"></i> Event Mendatang</h2>
+                </div>
+                <div class="events-grid">
+                    <div class="event-card">
+                        <div class="event-date">15 AGU</div>
+                        <div class="event-details">
+                            <h3>Anniversary Concert Virtual</h3>
+                            <p><i class="fa-solid fa-location-dot"></i> Virtual Stage Roblox & Live Stream</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
         </div>
 
-        <!-- JADWAL PROGRAM ACARA (HORIZONTAL TIMELINE) -->
-        <section class="schedule-timeline-section">
-            <div class="section-header">
-                <span class="section-tagline">📅 STATION PROGRAM</span>
-                <h2 class="section-main-title">Jadwal Program Acara Endless For Beacon FM</h2>
-            </div>
+        <!-- Right Column: Interactive -->
+        <div class="right-column" id="interaktif">
             
-            <div class="timeline-container">
-                <div class="timeline-track">
-                    <!-- Item Timeline 1 -->
-                    <div class="timeline-item">
-                        <div class="timeline-marker"></div>
-                        <div class="timeline-card">
-                            <div class="p-card-banner">
-                                <img src="Image/Program/Morning Brew.png" alt="Morning Brew Banner" onerror="this.src='Image/Logo.png'">
-                            </div>
-                            <div class="p-card-content">
-                                <div class="p-card-time">Senin - Jumat 🕒 08:00 - 12:00 WITA</div>
-                                <h3 class="p-card-title">Morning Brew</h3>
-                                <p class="p-card-desc">Sebuah Program Utama Di Pagi Hari Yang Akan Memulai pagi kamu dengan asupan semangat yang tepat! Morning Brew hadir nemenin Beacon Listeners Untuk scrolling linimasa, bersiap ke sekolah, kampus, atau ngejar deadline kantor. Disini kita muterin playlist penuh energi, bahas tren pop culture yang lagi viral, info game terbaru, hingga obrolan kocak seputar keseharian. Booster paling pas buat mengubah pagi yang mager jadi penuh ambisi!</p>
-                                <a href="https://wa.me/6285257448582?text=Halo%20Endless%20For%20Beacon%20FM%21%20Saya%20Mau%20Request%20Lagu%20Untuk%20Program%20Morning%20Brew%3A%0A%0AJudul%20Lagu%3A+%0APenyanyi%3A+&" target="_blank" class="timeline-request-btn">
-                                    <i class="fab fa-whatsapp"></i> Request Lagu
-                                </a>
-                            </div>
-                        </div>
-                    </div>
+            <!-- Real-Time Recent Playlist (Zeno API) -->
+            <section class="content-card">
+                <h3><i class="fa-solid fa-list-ul"></i> Riwayat Putar</h3>
+                <ul id="recent-playlist-list" class="recent-list">
+                    <!-- Dynamic Updates -->
+                </ul>
+            </section>
 
-                    <!-- Item Timeline 2 -->
-                    <div class="timeline-item highlight">
-                        <div class="timeline-marker"></div>
-                        <div class="timeline-card">
-                            <div class="p-card-banner">
-                                <img src="Image/Program/Screen To Sounds.png" alt="Screen To Sounds Banner" onerror="this.src='Image/Logo.png'">
-                            </div>
-                            <div class="p-card-content">
-                                <div class="p-card-time">Senin - Jumat 🕒 17:00 - 20:00 WITA</div>
-                                <h3 class="p-card-title">Screen To Sounds</h3>
-                                <p class="p-card-desc">Program Acara Di Sore Hari Yang Bisa Ubah momen sore kamu jadi lebih sinematik! Program ini pas banget buat nemenin Beacon Listeners yang baru kelar jam sekolah, pulang ngampus, atau selesai beraktivitas. Kita bakal menjelajahi dunia sinema lewat soundtrack film Box Office legendaris, lagu hits dari series yang lagi trending, hingga musik tema game open-world favoritmu. Teman terbaik di kala nongkrong sore atau di tengah kemacetan kota.</p>
-                                <a href="https://wa.me/6285257448582?text=Halo%20Endless%20For%20Beacon%20FM%21%20Saya%20Mau%20Request%20Lagu%20Untuk%20Program%20Screen%20To%20Sounds%3A%0A%0AJudul%20Lagu%3A+%0APenyanyi%3A+&" target="_blank" class="timeline-request-btn">
-                                    <i class="fab fa-whatsapp"></i> Request Lagu
-                                </a>
-                            </div>
-                        </div>
-                    </div>
+            <!-- Interactive Live Chat -->
+            <section class="content-card chat-card">
+                <div class="chat-header">
+                    <h3><i class="fa-regular fa-comments"></i> Live Chat Community</h3>
+                    <span class="socket-status" id="db-status"><i class="fa-solid fa-circle" style="color:var(--status-green)"></i> Aktif</span>
+                </div>
+                <div id="chat-box" class="chat-messages">
+                    <!-- Chat Messages -->
+                </div>
+                <form id="chat-form" class="chat-input-area">
+                    <input type="text" id="chat-input" placeholder="Masuk dengan Google untuk chat..." required autocomplete="off" disabled>
+                    <button type="submit" id="chat-submit" disabled><i class="fa-solid fa-paper-plane"></i></button>
+                </form>
+            </section>
 
-                    <!-- Item Timeline 3 -->
-                    <div class="timeline-item">
-                        <div class="timeline-marker"></div>
-                        <div class="timeline-card">
-                            <div class="p-card-banner">
-                                <img src="Image/Program/Endless For Beacon Throwback.jpeg" alt="Thursday Throwback Banner" onerror="this.src='Image/Logo.png'">
-                            </div>
-                            <div class="p-card-content">
-                                <div class="p-card-time">Setiap Kamis 🕒 10:00 - 19:00 WITA</div>
-                                <h3 class="p-card-title">Endless For Beacon Throwback</h3>
-                                <p class="p-card-desc">Ini Dia Program Segmen Andalannya Endless For Beacon FM setiap hari Kamis! Kita bakal muter mesin waktu buat menyajikan lagu-lagu terbaik dari era 90-an Ke Atas, 2000-an, Sampai tahun 2018 ke bawah. Siap-siap Deh Beacon Listeners Bernostalgia total bareng vibe jaman MTV Indonesia, masa kejayaan warnet dan rental PS, sampai memori manis masa sekolah yang penuh cerita. Penuh energi dan sing-along seharian!</p>
-                                <a href="https://wa.me/6285257448582?text=Halo%20Endless%20For%20Beacon%20FM%21%20Saya%20Mau%20Request%20Lagu%20Untuk%20Program%20Throwback%3A%0A%0AJudul%20Lagu%3A+%0APenyanyi%3A+&" target="_blank" class="timeline-request-btn">
-                                    <i class="fab fa-whatsapp"></i> Request Lagu
-                                </a>
-                            </div>
-                        </div>
-                    </div>
+            <!-- Interactive Quiz -->
+            <section class="content-card quiz-card">
+                <div class="quiz-header-bar">
+                    <h3><i class="fa-solid fa-lightbulb"></i> Kuis Interaktif</h3>
+                    <span id="quiz-timer-badge" class="timer-badge">00:15</span>
+                </div>
+                <div id="quiz-container">
+                    <p id="quiz-question" class="quiz-q">Memuat Kuis...</p>
+                    <div id="quiz-options" class="quiz-options"></div>
+                    <div id="quiz-result" class="quiz-result"></div>
+                </div>
+            </section>
 
-                    <!-- Item Timeline 4 -->
-                    <div class="timeline-item">
-                        <div class="timeline-marker"></div>
-                        <div class="timeline-card">
-                            <div class="p-card-banner">
-                                <img src="Image/Program/Asia Pop 40.jpg" alt="Asia Pop 40 Banner" onerror="this.src='Image/Logo.png'">
-                            </div>
-                            <div class="p-card-content">
-                                <div class="p-card-time">Sabtu & Minggu 🕒 07:00 - 10:00 WITA</div>
-                                <h3 class="p-card-title">Asia Pop 40</h3>
-                                <p class="p-card-desc">Asia Pop 40 (AP40) adalah program chart countdown radio mingguan regional pertama di Asia yang menghitung mundur 40 lagu terpopuler berdasarkan data streaming platform musik seperti Spotify, Apple Music, TikTok, dan YouTube. Disiarkan melalui stasiun radio mitra di seluruh kawasan Asia-Pasifik, program sindikasi ini menyajikan deretan lagu hits internasional dan lokal Asia, wawancara eksklusif artis global, serta ulasan lagu-lagu rilisan terbaru.</p>
-                                <a href="https://wa.me/6285257448582?text=Halo%20Endless%20For%20Beacon%20FM%21%20Saya%20Mau%20Request%20Lagu%20Untuk%20Program%20Asia%20Pop%2040%3A%0A%0AJudul%20Lagu%3A+%0APenyanyi%3A+&" target="_blank" class="timeline-request-btn">
-                                    <i class="fab fa-whatsapp"></i> Request Lagu
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- ROAD TO 3RD ANNIVERSARY COUNTDOWN -->
-        <section class="anniversary-section">
-            <div class="trio-bars">
-                <div class="bar"></div>
-                <div class="bar"></div>
-                <div class="bar"></div>
-            </div>
-            <span class="anniversary-badge">ANNIVERSARY COUNTDOWN</span>
-            <h2 class="anniversary-title">Road To 3rd Anniversary Endless For Beacon FM</h2>
-            <p class="anniversary-slogan">Terus Bersama Menjadi Bagian dari Senyuman Radio yang Berdiri Keluar!</p>
-            
-            <div class="countdown-display">
-                <div class="countdown-box">
-                    <span id="days">00</span>
-                    <label>Hari</label>
-                </div>
-                <div class="countdown-box">
-                    <span id="hours">00</span>
-                    <label>Jam</label>
-                </div>
-                <div class="countdown-box">
-                    <span id="minutes">00</span>
-                    <label>Menit</label>
-                </div>
-                <div class="countdown-box">
-                    <span id="seconds">00</span>
-                    <label>Detik</label>
-                </div>
-            </div>
-        </section>
-
-        <!-- INTERACTIVE LAYER (LIVE CHAT & KUIS SELEKTIF) -->
-        <div class="interactive-grid-section">
-            <!-- BOX KUIS -->
-            <div class="quiz-card-box">
-                <div class="box-inner-header">
-                    <h3>🎯 Kuis Interaktif</h3>
-                    <p>Uji pengetahuanmu dan kumpulkan poin!</p>
-                </div>
-                <div id="quiz-auth-lock" class="feature-blur-lock">
-                    <div class="lock-inner-notice">
-                        <i class="fas fa-lock"></i>
-                        <h4>Fitur Terkunci</h4>
-                        <p>Silakan login menggunakan Akun Google terlebih dahulu di bar navigasi atas untuk mengikuti kuis seru.</p>
-                    </div>
-                </div>
-                <div id="quiz-active-area" class="quiz-body-content" style="display:none;">
-                    <!-- Diisi dinamis oleh JavaScript -->
-                </div>
-            </div>
-
-            <!-- BOX LIVE CHAT -->
-            <div class="chat-card-box">
-                <div class="box-inner-header">
-                    <h3>💬 Live Chat Room</h3>
-                    <p>Obrolan real-time sesama Beacon Listeners</p>
-                </div>
-                <div id="chat-auth-lock" class="feature-blur-lock">
-                    <div class="lock-inner-notice">
-                        <i class="fas fa-lock"></i>
-                        <h4>Fitur Terkunci</h4>
-                        <p>Silakan login terlebih dahulu untuk bergabung ke dalam obrolan hangat komunitas kami.</p>
-                    </div>
-                </div>
-                <div id="chat-active-area" class="chat-body-content" style="display:none;">
-                    <div id="chat-box-messages" class="chat-scroller-area"></div>
-                    <div class="chat-input-bar">
-                        <input type="text" id="chat-input-field" placeholder="Ketik pesan kamu di sini...">
-                        <button id="send-chat-btn"><i class="fas fa-paper-plane"></i></button>
-                    </div>
-                </div>
-            </div>
         </div>
+    </main>
 
+    <!-- Modal Request Lagu via WhatsApp -->
+    <div id="modal-request" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeRequestModal()">&times;</span>
+            <h2><i class="fa-brands fa-whatsapp" style="color: #25D366;"></i> Request Lagu via WhatsApp</h2>
+            <p id="target-program-name" class="modal-sub"></p>
+            <form id="form-request">
+                <div class="form-group">
+                    <label>Nama Kamu:</label>
+                    <input type="text" id="req-sender" placeholder="Masukkan nama kamu" required>
+                </div>
+                <div class="form-group">
+                    <label>Judul Lagu & Penyanyi:</label>
+                    <input type="text" id="req-song" placeholder="Contoh: Muse - Time Is Running Out" required>
+                </div>
+                <div class="form-group">
+                    <label>Pesan / Salam:</label>
+                    <textarea id="req-message" rows="3" placeholder="Pesan untuk penyiar / teman..."></textarea>
+                </div>
+                <button type="submit" class="btn-submit btn-wa">
+                    <i class="fa-brands fa-whatsapp"></i> Kirim ke WhatsApp Studio
+                </button>
+            </form>
+        </div>
     </div>
 
-    <!-- MAIN FOOTER STATION BRANCHES & SOCIAL MEDIA -->
-    <footer class="station-footer">
-        <div class="footer-inner-wrapper">
-            <div class="footer-top-row">
-                <div class="footer-brand-side">
-                    <img src="Image/Logo.png" alt="Footer Logo" class="footer-mini-logo" id="footer-station-logo">
-                    <div>
-                        <h4 id="footer-station-name">Endless For Beacon FM</h4>
-                        <p>© 2026 Endless For Beacon Corp. Hak Cipta Dilindungi.</p>
-                    </div>
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container footer-grid">
+            
+            <div class="footer-col">
+                <div class="brand-logo">
+                    <i class="fa-solid fa-radio logo-icon"></i>
+                    <span class="brand-name">BEACON<span>FM</span></span>
                 </div>
-                <div class="footer-clock-side">
-                    <div class="clock-item"><i class="far fa-clock"></i> WIB: <span id="clock-wib">00:00:00</span></div>
-                    <div class="clock-item"><i class="far fa-clock"></i> WITA: <span id="clock-wita">00:00:00</span></div>
-                    <div class="clock-item"><i class="far fa-clock"></i> WIT: <span id="clock-wit">00:00:00</span></div>
-                </div>
+                <p class="footer-desc">Jaringan radio siaran digital langsung terintegrasi secara real-time.</p>
+                <p class="copyright">&copy; 2026 Beacon Radio Network. All Rights Reserved.</p>
             </div>
-            
-            <div class="footer-divider"></div>
-            
-            <div class="footer-bottom-row">
-                <div class="footer-shortcut-grid">
-                    <span class="shortcut-label">Our Stations:</span>
-                    <a href="javascript:void(0)" onclick="switchStation('makassar')" class="footer-shortcut-link">
-                        <img src="Image/Logo.png" alt="Makassar">
-                        <span class="branch-name-tag">Makassar (Main)</span>
-                    </a>
-                    <a href="javascript:void(0)" onclick="switchStation('denpasar')" class="footer-shortcut-link">
-                        <img src="Image/Endless For Beacon FM Denpasar.png" alt="Denpasar" onerror="this.src='Image/Logo.png'">
-                        <span class="branch-name-tag">Endless For Beacon FM Denpasar</span>
-                    </a>
-                    <a href="javascript:void(0)" onclick="switchStation('surabaya')" class="footer-shortcut-link">
-                        <img src="Image/Endless For Beacon FM Surabaya.png" alt="Surabaya" onerror="this.src='Image/Logo.png'">
-                        <span class="branch-name-tag">Endless For Beacon FM Surabaya</span>
-                    </a>
-                </div>
 
-                <!-- PENAMBAHAN SOSIAL MEDIA DI FOOTER -->
-                <div class="footer-social-side">
-                    <span class="shortcut-label">Follow Us:</span>
-                    <div class="social-icons-wrapper">
-                        <a href="https://instagram.com/" target="_blank" aria-label="Instagram" class="social-btn instagram">
-                            <i class="fab fa-instagram"></i>
-                        </a>
-                        <a href="https://youtube.com/" target="_blank" aria-label="YouTube" class="social-btn youtube">
-                            <i class="fab fa-youtube"></i>
-                        </a>
-                        <a href="https://tiktok.com/" target="_blank" aria-label="TikTok" class="social-btn tiktok">
-                            <i class="fab fa-tiktok"></i>
-                        </a>
-                        <a href="https://x.com/" target="_blank" aria-label="X (Twitter)" class="social-btn x-twitter">
-                            <i class="fab fa-x-twitter"></i>
-                        </a>
-                        <a href="https://facebook.com/" target="_blank" aria-label="Facebook" class="social-btn facebook">
-                            <i class="fab fa-facebook-f"></i>
-                        </a>
+            <!-- Real-time 3 Indonesian Timezones -->
+            <div class="footer-col">
+                <h4><i class="fa-regular fa-clock"></i> Jam Indonesia</h4>
+                <div class="clocks-wrapper">
+                    <div class="clock-item">
+                        <span class="clock-label">WIB</span>
+                        <span id="clock-wib" class="clock-time">00:00:00</span>
+                    </div>
+                    <div class="clock-item">
+                        <span class="clock-label">WITA</span>
+                        <span id="clock-wita" class="clock-time">00:00:00</span>
+                    </div>
+                    <div class="clock-item">
+                        <span class="clock-label">WIT</span>
+                        <span id="clock-wit" class="clock-time">00:00:00</span>
                     </div>
                 </div>
             </div>
+
+            <div class="footer-col">
+                <h4><i class="fa-solid fa-network-wired"></i> Network Stasiun Radio</h4>
+                <ul class="station-list">
+                    <li><a href="#"><i class="fa-solid fa-tower-cell"></i> Jakarta</a></li>
+                    <li><a href="#"><i class="fa-solid fa-tower-cell"></i> Makassar</a></li>
+                    <li><a href="#"><i class="fa-solid fa-tower-cell"></i> Surabaya</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-col">
+                <h4><i class="fa-solid fa-hashtag"></i> Ikuti Kami</h4>
+                <div class="social-links">
+                    <a href="#" class="social-btn"><i class="fa-brands fa-instagram"></i></a>
+                    <a href="#" class="social-btn"><i class="fa-brands fa-youtube"></i></a>
+                    <a href="#" class="social-btn"><i class="fa-brands fa-tiktok"></i></a>
+                </div>
+            </div>
+
         </div>
     </footer>
 
-    <!-- MODAL GOOGLE SIGN-IN BOX -->
-    <div id="login-modal" class="login-overlay">
-        <div class="login-box-container">
-            <button id="close-login-btn" class="close-modal-x">&times;</button>
-            <div class="login-header-area">
-                <img src="Image/Logo.png" alt="Logo" class="login-brand-logo">
-                <h3>Endless For Beacon FM</h3>
-                <p>Masuk untuk mengakses fitur interaktif dari Endless For Beacon FM</p>
-            </div>
-            <div class="google-btn-wrapper">
-                <div id="google-login-btn"></div>
-            </div>
-            <div id="login-message" class="login-status-msg"></div>
-        </div>
-    </div>
-
+    <!-- Main Script -->
     <script src="script.js"></script>
 </body>
 </html>
