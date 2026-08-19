@@ -2,8 +2,8 @@
  * BEACON FM - REAL-TIME ENGINE (MAKASSAR HQ TIME - WITA)
  */
 
-const ZENO_STREAM_KEY = "f32w3ebmk8zuv"; 
-const ZENO_API_URL = `https://api.zeno.fm/v2/m3u/mounts/${ZENO_STREAM_KEY}/nowplaying`;
+const ZENO_STREAM_KEY = "n7qpxnyfrbruv"; 
+const ZENO_STATUS_URL = `https://stream.zeno.fm/status/${n7qpxnyfrbruv}`;
 const RADIO_WA_NUMBER = "6282192775899"; 
 
 let currentUser = null;
@@ -54,7 +54,7 @@ const schedules = [
 ];
 
 document.addEventListener('DOMContentLoaded', () => {
-    initZenoMetadataEngine();
+    initZenoStatusEngine();
     initLocalChat();
     initAudioPlayerAndVisualizer();
     initRealTimeSchedule();
@@ -86,62 +86,70 @@ function initMobileNav() {
             navMenu.classList.toggle('active');
         });
 
-        // Tutup menu otomatis setelah memilih tab di HP
         document.querySelectorAll('.nav-link').forEach(link => {
             link.addEventListener('click', () => navMenu.classList.remove('active'));
         });
     }
 }
 
-/* 1. METADATA STREAM & REAL-TIME LISTENERS COUNTER */
-function initZenoMetadataEngine() {
-    fetchNowPlayingData();
-    setInterval(fetchNowPlayingData, 10000); // Polling setiap 10 detik
+/* 1. STATUS STREAM ZENO & METADATA LAGU */
+function initZenoStatusEngine() {
+    fetchZenoStatusData();
+    setInterval(fetchZenoStatusData, 10000); // Fetch data tiap 10 detik
 }
 
-async function fetchNowPlayingData() {
+async function fetchZenoStatusData() {
     const titleEl = document.getElementById('track-title');
     const artistEl = document.getElementById('track-artist');
     const listenerEl = document.getElementById('listener-counter');
-    const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(ZENO_API_URL)}`;
+    
+    // Proxy AllOrigins untuk menghindari kendala CORS saat membaca endpoint status
+    const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent('https://stream.zeno.fm/status/${n7qpxnyfrbruv}')}`;
 
     try {
         const response = await fetch(proxyUrl);
-        if (!response.ok) throw new Error("Gagal mengambil data Zeno");
+        if (!response.ok) throw new Error("Gagal mengambil data dari Zeno Status");
         
         const data = await response.json();
         
-        // Update Jumlah Pendengar Real-Time dari Server Zeno
-        if (data && data.listeners !== undefined && listenerEl) {
-            listenerEl.textContent = data.listeners;
+        // 1. Ekstrak Jumlah Pendengar (Mendukung properti 'listeners' atau 'current_listeners')
+        const activeListeners = data.listeners !== undefined ? data.listeners : (data.current_listeners !== undefined ? data.current_listeners : 0);
+        if (listenerEl) {
+            listenerEl.textContent = activeListeners;
         }
 
-        // Update Metadata Judul & Artis Lagu
+        // 2. Ekstrak Metadata Judul Lagu & Penyanyi (Mendukung 'stream_title', 'title', atau 'song')
+        const rawTitle = data.stream_title || data.title || data.song || "";
+
         let songTitle = "Beacon FM Stream";
         let artistName = "Beacon FM Network";
 
-        if (data && data.title) {
-            if (data.title.includes(" - ")) {
-                const parts = data.title.split(" - ");
+        if (rawTitle && rawTitle.trim() !== "") {
+            if (rawTitle.includes(" - ")) {
+                const parts = rawTitle.split(" - ");
                 artistName = parts[0].trim();
                 songTitle = parts.slice(1).join(" - ").trim();
             } else {
-                songTitle = data.title.trim();
+                songTitle = rawTitle.trim();
             }
         }
 
+        // Jika lagu berubah, perbarui DOM & panggil iTunes API untuk mengambil Artwork
         const currentTrackKey = `${artistName}-${songTitle}`;
         if (currentTrackKey !== lastTrackKey && songTitle !== "Beacon FM Stream") {
             lastTrackKey = currentTrackKey;
             titleEl.textContent = songTitle;
             artistEl.textContent = artistName;
+            
+            // Panggil fungsi pencarian Artwork
             fetchiTunesArtwork(songTitle, artistName);
         }
     } catch (error) {
-        console.warn("Kendala metadata Zeno:", error);
+        console.warn("Kendala mengambil Zeno Status API:", error);
     }
 }
 
+/* Pencarian Artwork Album via iTunes API */
 async function fetchiTunesArtwork(title, artist) {
     const artworkEl = document.getElementById('track-artwork');
     const defaultArtwork = 'Image/Logo.png';
@@ -151,6 +159,7 @@ async function fetchiTunesArtwork(title, artist) {
         const res = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(rawItunesUrl)}`);
         const data = await res.json();
         if (data.results && data.results.length > 0) {
+            // Mengubah resolusi gambar kover menjadi 600x600 px agar jernih
             artworkEl.src = data.results[0].artworkUrl100.replace('100x100bb', '600x600bb');
         } else {
             artworkEl.src = defaultArtwork;
@@ -198,7 +207,7 @@ function appendChatMessageUI(sender, text, avatarUrl, timestamp) {
     chatBox.scrollTop = chatBox.scrollHeight;
 }
 
-/* 3. AUDIO PLAYER */
+/* 3. AUDIO PLAYER & VISUALIZER */
 const audio = document.getElementById('audio-stream');
 const btnPlayPause = document.getElementById('btn-play-pause');
 const playIcon = document.getElementById('play-icon');
@@ -338,7 +347,7 @@ document.getElementById('form-request').addEventListener('submit', (e) => {
     closeRequestModal();
 });
 
-/* 6. CLOCKS */
+/* 6. JAM WIB, WITA, WIT */
 function initRealTimeClocks() {
     function updateClocks() {
         const now = new Date();

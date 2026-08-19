@@ -181,6 +181,7 @@ body {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    transition: src 0.3s ease-in-out;
 }
 
 .live-badge {
@@ -617,22 +618,15 @@ body {
     to { opacity: 1; }
 }
 
-/* RESPONSIVE DESIGN (HP & TABLET) */
+/* RESPONSIVE DESIGN */
 @media (max-width: 992px) {
-    .nav-container {
-        position: relative;
-    }
+    .nav-container { position: relative; }
+    .mobile-menu-btn { display: block; }
 
-    .mobile-menu-btn {
-        display: block;
-    }
-
-    /* Dropdown Nav Menu di HP */
     .nav-menu {
         display: none;
         position: absolute;
-        top: 75px;
-        left: 0;
+        top: 75px; left: 0;
         width: 100%;
         background: rgba(12, 15, 25, 0.98);
         backdrop-filter: blur(20px);
@@ -645,18 +639,9 @@ body {
         z-index: 999;
     }
 
-    .nav-menu.active {
-        display: flex;
-    }
+    .nav-menu.active { display: flex; }
+    .nav-link { font-size: 1rem; padding: 10px 0; width: 100%; border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
 
-    .nav-link {
-        font-size: 1rem;
-        padding: 10px 0;
-        width: 100%;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-    }
-
-    /* Auth Box di dalam Dropdown Menu */
     .auth-box {
         margin-top: 10px;
         width: 100%;
@@ -666,12 +651,7 @@ body {
     }
 
     .main-grid, .footer-grid { grid-template-columns: 1fr; }
-
-    .now-playing-card {
-        flex-direction: column;
-        text-align: center;
-    }
-
+    .now-playing-card { flex-direction: column; text-align: center; }
     .artwork-wrapper { width: 180px; height: 180px; }
     .live-status-bar, .player-controls { justify-content: center; }
 }
