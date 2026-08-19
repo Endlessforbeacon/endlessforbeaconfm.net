@@ -3,7 +3,7 @@
  */
 
 const ZENO_STREAM_KEY = "n7qpxnyfrbruv"; 
-const ZENO_STATUS_URL = `https://stream.zeno.fm/status/${n7qpxnyfrbruv}`;
+const ZENO_STATUS_URL = `https://stream.zeno.fm/status/n7qpxnyfrbruv`;
 const RADIO_WA_NUMBER = "6282192775899"; 
 
 let currentUser = null;
@@ -104,7 +104,7 @@ async function fetchZenoStatusData() {
     const listenerEl = document.getElementById('listener-counter');
     
     // Proxy AllOrigins untuk menghindari kendala CORS saat membaca endpoint status
-    const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent('https://stream.zeno.fm/status/${n7qpxnyfrbruv}')}`;
+    const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent('https://stream.zeno.fm/status/n7qpxnyfrbruv')}`;
 
     try {
         const response = await fetch(proxyUrl);
