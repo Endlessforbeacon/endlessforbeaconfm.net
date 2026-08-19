@@ -3,7 +3,6 @@
  */
 
 const ZENO_STREAM_KEY = "n7qpxnyfrbruv"; 
-const ZENO_STATUS_URL = `https://stream.zeno.fm/status/n7qpxnyfrbruv`;
 const RADIO_WA_NUMBER = "6282192775899"; 
 
 let currentUser = null;
@@ -92,10 +91,10 @@ function initMobileNav() {
     }
 }
 
-/* 1. STATUS STREAM ZENO & METADATA LAGU */
+/* 1. STATUS STREAM ZENO & METADATA LAGU (DENGAN REVERSE PROXY SUPAYA ANTI-CORS) */
 function initZenoStatusEngine() {
     fetchZenoStatusData();
-    setInterval(fetchZenoStatusData, 10000); // Fetch data tiap 10 detik
+    setInterval(fetchZenoStatusData, 7000); // Fetch data setiap 7 detik
 }
 
 async function fetchZenoStatusData() {
@@ -103,28 +102,50 @@ async function fetchZenoStatusData() {
     const artistEl = document.getElementById('track-artist');
     const listenerEl = document.getElementById('listener-counter');
     
-    // Proxy AllOrigins untuk menghindari kendala CORS saat membaca endpoint status
-    const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent('https://stream.zeno.fm/status/n7qpxnyfrbruv')}`;
+    // Menggunakan API AllOrigins agar bebas CORS saat Fetch Metadata Zeno FM
+    const targetUrl = `https://stream.zeno.fm/status/${n7qpxnyfrbruv}`;
+    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}&_=${new Date().getTime()}`;
 
     try {
         const response = await fetch(proxyUrl);
-        if (!response.ok) throw new Error("Gagal mengambil data dari Zeno Status");
+        if (!response.ok) throw new Error("Gagal terhubung ke Zeno Status API");
         
-        const data = await response.json();
+        const wrapperData = await response.json();
+        if (!wrapperData.contents) return;
+
+        const data = JSON.parse(wrapperData.contents);
         
-        // 1. Ekstrak Jumlah Pendengar (Mendukung properti 'listeners' atau 'current_listeners')
-        const activeListeners = data.listeners !== undefined ? data.listeners : (data.current_listeners !== undefined ? data.current_listeners : 0);
+        // --- 1. AMBIL JUMLAH PENDENGAR REAL-TIME ---
+        let activeListeners = 0;
+        if (data.listeners !== undefined) {
+            activeListeners = data.listeners;
+        } else if (data.current_listeners !== undefined) {
+            activeListeners = data.current_listeners;
+        } else if (data.mounts && data.mounts.length > 0 && data.mounts[0].listeners !== undefined) {
+            activeListeners = data.mounts[0].listeners;
+        }
+
         if (listenerEl) {
             listenerEl.textContent = activeListeners;
         }
 
-        // 2. Ekstrak Metadata Judul Lagu & Penyanyi (Mendukung 'stream_title', 'title', atau 'song')
-        const rawTitle = data.stream_title || data.title || data.song || "";
+        // --- 2. AMBIL JUDUL LAGU & PENYANYI ---
+        let rawTitle = "";
+        if (data.stream_title) {
+            rawTitle = data.stream_title;
+        } else if (data.title) {
+            rawTitle = data.title;
+        } else if (data.song) {
+            rawTitle = data.song;
+        } else if (data.mounts && data.mounts.length > 0 && data.mounts[0].title) {
+            rawTitle = data.mounts[0].title;
+        }
 
-        let songTitle = "Beacon FM Stream";
-        let artistName = "Beacon FM Network";
+        let songTitle = "The Smile Of The Stand Out For The Radio";
+        let artistName = "Endless For Beacon FM";
 
         if (rawTitle && rawTitle.trim() !== "") {
+            // Parsing Format Baku: "Penyanyi - Judul Lagu"
             if (rawTitle.includes(" - ")) {
                 const parts = rawTitle.split(" - ");
                 artistName = parts[0].trim();
@@ -134,18 +155,19 @@ async function fetchZenoStatusData() {
             }
         }
 
-        // Jika lagu berubah, perbarui DOM & panggil iTunes API untuk mengambil Artwork
-        const currentTrackKey = `${artistName}-${songTitle}`;
-        if (currentTrackKey !== lastTrackKey && songTitle !== "Beacon FM Stream") {
+        // Cek Apakah Ada Perubahan Lagu yang Sedang Diputar
+        const currentTrackKey = `${artistName} - ${songTitle}`;
+        if (currentTrackKey !== lastTrackKey) {
             lastTrackKey = currentTrackKey;
-            titleEl.textContent = songTitle;
-            artistEl.textContent = artistName;
             
-            // Panggil fungsi pencarian Artwork
+            if (titleEl) titleEl.textContent = songTitle;
+            if (artistEl) artistEl.textContent = artistName;
+            
+            // Panggil Fungsi Pengambilan Artwork iTunes Album
             fetchiTunesArtwork(songTitle, artistName);
         }
     } catch (error) {
-        console.warn("Kendala mengambil Zeno Status API:", error);
+        console.warn("Status Sync Notice:", error);
     }
 }
 
@@ -153,14 +175,34 @@ async function fetchZenoStatusData() {
 async function fetchiTunesArtwork(title, artist) {
     const artworkEl = document.getElementById('track-artwork');
     const defaultArtwork = 'Image/Logo.png';
-    const rawItunesUrl = `https://itunes.apple.com/search?term=${encodeURIComponent(artist + ' ' + title)}&media=music&limit=1`;
+
+    // Jika lagu default/stasiun radio, langsung pakai logo stasiun
+    if (title === "Endless For Beacon FM" || artist === "Beacon FM Network") {
+        artworkEl.src = defaultArtwork;
+        return;
+    }
+
+    // Bersihkan Query dari karakter spesial agar pencarian iTunes lebih akurat
+    const cleanArtist = artist.replace(/ft\..*|feat\..*/i, '').trim();
+    const cleanTitle = title.replace(/\(.*\)|\[.*\]/g, '').trim();
+    const query = `${cleanArtist} ${cleanTitle}`;
+
+    const rawItunesUrl = `https://itunes.apple.com/search?term=${encodeURIComponent(query)}&media=music&entity=song&limit=1`;
+    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(rawItunesUrl)}&_=${new Date().getTime()}`;
 
     try {
-        const res = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(rawItunesUrl)}`);
-        const data = await res.json();
-        if (data.results && data.results.length > 0) {
-            // Mengubah resolusi gambar kover menjadi 600x600 px agar jernih
-            artworkEl.src = data.results[0].artworkUrl100.replace('100x100bb', '600x600bb');
+        const res = await fetch(proxyUrl);
+        const wrapperData = await res.json();
+        
+        if (wrapperData.contents) {
+            const data = JSON.parse(wrapperData.contents);
+            if (data.results && data.results.length > 0) {
+                // Resolusi Kover Album Ditingkatkan ke 600x600 px agar tajam
+                const highResArtwork = data.results[0].artworkUrl100.replace('100x100bb', '600x600bb');
+                artworkEl.src = highResArtwork;
+            } else {
+                artworkEl.src = defaultArtwork;
+            }
         } else {
             artworkEl.src = defaultArtwork;
         }
@@ -174,6 +216,8 @@ function initLocalChat() {
     const chatForm = document.getElementById('chat-form');
     const chatInput = document.getElementById('chat-input');
     const chatBox = document.getElementById('chat-box');
+
+    if (!chatBox || !chatForm) return;
 
     chatBox.innerHTML = `
         <div class="chat-msg">
@@ -195,6 +239,8 @@ function initLocalChat() {
 
 function appendChatMessageUI(sender, text, avatarUrl, timestamp) {
     const chatBox = document.getElementById('chat-box');
+    if (!chatBox) return;
+
     const msgDiv = document.createElement('div');
     msgDiv.className = 'chat-msg';
 
@@ -215,28 +261,29 @@ const volumeSlider = document.getElementById('volume-slider');
 
 function initAudioPlayerAndVisualizer() {
     let isPlaying = false;
-    audio.crossOrigin = "anonymous";
 
-    if (volumeSlider) audio.volume = parseFloat(volumeSlider.value);
+    if (volumeSlider && audio) audio.volume = parseFloat(volumeSlider.value);
 
-    btnPlayPause.addEventListener('click', () => {
-        if (!audioContext) setupAudioVisualizer();
-        if (audioContext && audioContext.state === 'suspended') audioContext.resume();
+    if (btnPlayPause && audio) {
+        btnPlayPause.addEventListener('click', () => {
+            if (!audioContext) setupAudioVisualizer();
+            if (audioContext && audioContext.state === 'suspended') audioContext.resume();
 
-        if (!isPlaying) {
-            audio.load();
-            audio.play().then(() => {
-                isPlaying = true;
-                playIcon.className = 'fa-solid fa-pause';
-            });
-        } else {
-            audio.pause();
-            isPlaying = false;
-            playIcon.className = 'fa-solid fa-play';
-        }
-    });
+            if (!isPlaying) {
+                audio.load();
+                audio.play().then(() => {
+                    isPlaying = true;
+                    if (playIcon) playIcon.className = 'fa-solid fa-pause';
+                }).catch(err => console.warn("Autoplay / Stream error:", err));
+            } else {
+                audio.pause();
+                isPlaying = false;
+                if (playIcon) playIcon.className = 'fa-solid fa-play';
+            }
+        });
+    }
 
-    if (volumeSlider) {
+    if (volumeSlider && audio) {
         volumeSlider.addEventListener('input', (e) => audio.volume = parseFloat(e.target.value));
     }
 }
@@ -253,7 +300,7 @@ function setupAudioVisualizer() {
 
         renderVisualizer();
     } catch (e) {
-        console.warn("Visualizer Error:", e);
+        console.warn("Visualizer WebAudio Notice:", e);
     }
 }
 
@@ -262,6 +309,8 @@ function renderVisualizer() {
     if (!audioAnalyser) return;
 
     const canvas = document.getElementById('visualizer');
+    if (!canvas) return;
+    
     const canvasCtx = canvas.getContext('2d');
     const bufferLength = audioAnalyser.frequencyBinCount;
     const dataArray = new Uint8Array(bufferLength);
@@ -288,6 +337,8 @@ function initRealTimeSchedule() {
         const currentDay = makassarTime.getDay();
 
         const container = document.getElementById('schedule-container');
+        if (!container) return;
+        
         container.innerHTML = '';
 
         schedules.forEach(prog => {
@@ -326,26 +377,34 @@ function initRealTimeSchedule() {
 /* 5. REQUEST WA MODAL */
 function openRequestModal(programName) {
     currentProgramName = programName;
-    document.getElementById('target-program-name').textContent = `Program: ${programName}`;
-    document.getElementById('modal-request').style.display = 'flex';
-    if (currentUser && currentUser.name) document.getElementById('req-sender').value = currentUser.name;
+    const targetEl = document.getElementById('target-program-name');
+    const modalEl = document.getElementById('modal-request');
+    const senderEl = document.getElementById('req-sender');
+
+    if (targetEl) targetEl.textContent = `Program: ${programName}`;
+    if (modalEl) modalEl.style.display = 'flex';
+    if (currentUser && currentUser.name && senderEl) senderEl.value = currentUser.name;
 }
 
 function closeRequestModal() {
-    document.getElementById('modal-request').style.display = 'none';
+    const modalEl = document.getElementById('modal-request');
+    if (modalEl) modalEl.style.display = 'none';
 }
 
-document.getElementById('form-request').addEventListener('submit', (e) => {
-    e.preventDefault();
-    const sender = document.getElementById('req-sender').value.trim();
-    const song = document.getElementById('req-song').value.trim();
-    const msg = document.getElementById('req-message').value.trim();
+const formReq = document.getElementById('form-request');
+if (formReq) {
+    formReq.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const sender = document.getElementById('req-sender').value.trim();
+        const song = document.getElementById('req-song').value.trim();
+        const msg = document.getElementById('req-message').value.trim();
 
-    let textMessage = `*REQUEST LAGU - BEACON FM MAKASSAR*\n-----------------------------------\n🎵 *Program:* ${currentProgramName}\n👤 *Dari:* ${sender}\n🎶 *Lagu:* ${song}\n` + (msg ? `💬 *Pesan:* _"${msg}"_\n` : '') + `-----------------------------------`;
+        let textMessage = `*REQUEST LAGU - BEACON FM MAKASSAR*\n-----------------------------------\n🎵 *Program:* ${currentProgramName}\n👤 *Dari:* ${sender}\n🎶 *Lagu:* ${song}\n` + (msg ? `💬 *Pesan:* _"${msg}"_\n` : '') + `-----------------------------------`;
 
-    window.open(`https://wa.me/${RADIO_WA_NUMBER}?text=${encodeURIComponent(textMessage)}`, '_blank');
-    closeRequestModal();
-});
+        window.open(`https://wa.me/${RADIO_WA_NUMBER}?text=${encodeURIComponent(textMessage)}`, '_blank');
+        closeRequestModal();
+    });
+}
 
 /* 6. JAM WIB, WITA, WIT */
 function initRealTimeClocks() {
@@ -354,9 +413,14 @@ function initRealTimeClocks() {
         const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
 
         const formatTime = (d) => d.toTimeString().split(' ')[0];
-        document.getElementById('clock-wib').textContent = formatTime(new Date(utc + (3600000 * 7)));
-        document.getElementById('clock-wita').textContent = formatTime(new Date(utc + (3600000 * 8)));
-        document.getElementById('clock-wit').textContent = formatTime(new Date(utc + (3600000 * 9)));
+        
+        const wibEl = document.getElementById('clock-wib');
+        const witaEl = document.getElementById('clock-wita');
+        const witEl = document.getElementById('clock-wit');
+
+        if (wibEl) wibEl.textContent = formatTime(new Date(utc + (3600000 * 7)));
+        if (witaEl) witaEl.textContent = formatTime(new Date(utc + (3600000 * 8)));
+        if (witEl) witEl.textContent = formatTime(new Date(utc + (3600000 * 9)));
     }
     updateClocks();
     setInterval(updateClocks, 1000);
@@ -373,20 +437,33 @@ function handleCredentialResponse(response) {
     const payload = parseJwt(response.credential);
     currentUser = { uid: payload.sub, name: payload.name, picture: payload.picture };
 
-    document.querySelector('.g_id_signin').style.display = 'none';
-    const profileBar = document.getElementById('user-profile');
-    document.getElementById('user-avatar').src = currentUser.picture;
-    document.getElementById('user-name').textContent = currentUser.name;
-    profileBar.style.display = 'flex';
+    const gBtn = document.querySelector('.g_id_signin');
+    if (gBtn) gBtn.style.display = 'none';
 
-    document.getElementById('chat-input').disabled = false;
-    document.getElementById('chat-submit').disabled = false;
+    const profileBar = document.getElementById('user-profile');
+    const avatarEl = document.getElementById('user-avatar');
+    const nameEl = document.getElementById('user-name');
+
+    if (avatarEl) avatarEl.src = currentUser.picture;
+    if (nameEl) nameEl.textContent = currentUser.name;
+    if (profileBar) profileBar.style.display = 'flex';
+
+    const inputEl = document.getElementById('chat-input');
+    const submitEl = document.getElementById('chat-submit');
+    if (inputEl) inputEl.disabled = false;
+    if (submitEl) submitEl.disabled = false;
 }
 
 function logoutGoogle() {
     currentUser = null;
-    document.getElementById('user-profile').style.display = 'none';
-    document.querySelector('.g_id_signin').style.display = 'block';
-    document.getElementById('chat-input').disabled = true;
-    document.getElementById('chat-submit').disabled = true;
+    const profileBar = document.getElementById('user-profile');
+    const gBtn = document.querySelector('.g_id_signin');
+
+    if (profileBar) profileBar.style.display = 'none';
+    if (gBtn) gBtn.style.display = 'block';
+
+    const inputEl = document.getElementById('chat-input');
+    const submitEl = document.getElementById('chat-submit');
+    if (inputEl) inputEl.disabled = true;
+    if (submitEl) submitEl.disabled = true;
 }
