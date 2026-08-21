@@ -4,6 +4,7 @@
 
 const ZENO_STREAM_KEY = "x1wrh2y4jj6uv"; 
 const RADIO_WA_NUMBER = "6285257448582"; 
+const DEFAULT_LOGO = "Image/Logo.png";
 
 let currentUser = null;
 let audioContext, audioAnalyser, audioSource;
@@ -48,12 +49,20 @@ const schedules = [
 ];
 
 document.addEventListener('DOMContentLoaded', () => {
-    initZenoIframeBridge();
+    initZenoPublicSSE();
     initLocalChat();
     initAudioPlayerAndVisualizer();
     initRealTimeSchedule();
     initRealTimeClocks();
     initMobileNav();
+
+    // Fallback Gambar Artwork Pecah/Error
+    const artworkEl = document.getElementById('track-artwork');
+    if (artworkEl) {
+        artworkEl.addEventListener('error', () => {
+            artworkEl.src = DEFAULT_LOGO;
+        });
+    }
 });
 
 /* Helper Waktu Makassar (WITA - UTC+8) */
@@ -70,7 +79,7 @@ function formatDaysText(daysArray) {
     return daysArray.map(d => dayNames[d]).join(', ');
 }
 
-/* Navigasi Mobile 3 Garis */
+/* Navigasi Mobile */
 function initMobileNav() {
     const toggleBtn = document.getElementById('mobile-menu-toggle');
     const navMenu = document.getElementById('nav-menu');
@@ -86,60 +95,53 @@ function initMobileNav() {
     }
 }
 
-/* 1. MENGAMBIL METADATA VIA POSTMESSAGE IFRAME ZENO (BEBAS ERROR CORS/404) */
-function initZenoIframeBridge() {
-    // Listener pesan otomatis dari Iframe Zeno Player
-    window.addEventListener('message', (event) => {
-        if (event.origin && event.origin.includes('zeno.fm')) {
-            try {
-                const data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
-                if (data) {
-                    updateMetadataUI(data);
-                }
-            } catch (e) {
-                // Ignore parsing errors for internal messages
+/* 1. MENGAMBIL METADATA & LISTENERS VIA PUBLIC SSE (ZENO PUBLIC API - BEBAS ERROR 401) */
+function initZenoPublicSSE() {
+    // A. SSE Live Metadata (Judul & Penyanyi)
+    const metadataSSEUrl = `https://api.zeno.fm/mounts/metadata/subscribe?streamkey=${ZENO_STREAM_KEY}`;
+    const metadataSource = new EventSource(metadataSSEUrl);
+
+    metadataSource.onmessage = (event) => {
+        try {
+            const data = JSON.parse(event.data);
+            if (data.streamTitle) {
+                processTrackInfo(data.streamTitle);
             }
+        } catch (e) {
+            console.error("Gagal parsing metadata SSE:", e);
         }
-    });
+    };
 
-    // Fallback Polling langsung ke Endpoint Public Zeno
-    fetchZenoDataJSON();
-    setInterval(fetchZenoDataJSON, 5000);
-}
+    metadataSource.onerror = (err) => {
+        console.warn("Koneksi metadata SSE terputus, mencoba lagi...", err);
+    };
 
-async function fetchZenoDataJSON() {
-    try {
-        const res = await fetch(`https://api.zeno.fm/mounts/metadata/${ZENO_STREAM_KEY}`, { cache: 'no-store' });
-        if (res.ok) {
-            const data = await res.json();
-            updateMetadataUI(data);
+    // B. SSE Live Listeners (Jumlah Pendengar)
+    const statsSSEUrl = `https://api.zeno.fm/mounts/stats/subscribe?streamkey=${ZENO_STREAM_KEY}`;
+    const statsSource = new EventSource(statsSSEUrl);
+
+    statsSource.onmessage = (event) => {
+        try {
+            const data = JSON.parse(event.data);
+            if (data.listeners !== undefined) {
+                const listenerEl = document.getElementById('listener-counter');
+                if (listenerEl) listenerEl.textContent = data.listeners;
+            }
+        } catch (e) {
+            console.error("Gagal parsing stats SSE:", e);
         }
-    } catch (err) {
-        // Fallback silent
-    }
-}
+    };
 
-function updateMetadataUI(data) {
-    const listenerEl = document.getElementById('listener-counter');
-    
-    // Update Jumlah Pendengar
-    const listeners = data.listeners ?? data.listener_count ?? data.stream_listeners;
-    if (listeners !== undefined && listenerEl) {
-        listenerEl.textContent = listeners;
-    }
-
-    // Update Track Info
-    const rawTrack = data.stream_title || data.title || (data.artist ? `${data.artist} - ${data.song}` : '');
-    if (rawTrack && rawTrack.trim() !== "") {
-        processTrackInfo(rawTrack);
-    }
+    statsSource.onerror = (err) => {
+        console.warn("Koneksi stats SSE terputus, mencoba lagi...", err);
+    };
 }
 
 function processTrackInfo(rawTitle) {
     const titleEl = document.getElementById('track-title');
     const artistEl = document.getElementById('track-artist');
 
-    let songTitle = "The Smile Of The Stand Out For The Radio";
+    let songTitle = "Endless For Beacon FM";
     let artistName = "Beacon FM Network";
 
     if (rawTitle && rawTitle.trim() !== "" && rawTitle !== "undefined - undefined") {
@@ -158,7 +160,7 @@ function processTrackInfo(rawTitle) {
         if (titleEl) titleEl.textContent = songTitle;
         if (artistEl) artistEl.textContent = artistName;
         
-        // Panggil Pencarian Artwork dari iTunes API
+        // Cari Artwork Lagu dari iTunes Search API
         fetchiTunesArtworkDirect(songTitle, artistName);
     }
 }
@@ -166,12 +168,10 @@ function processTrackInfo(rawTitle) {
 /* Fetch Artwork Lagu dari iTunes Search API */
 async function fetchiTunesArtworkDirect(title, artist) {
     const artworkEl = document.getElementById('track-artwork');
-    const defaultLogo = "Image/Logo.png";
-
     if (!artworkEl) return;
 
-    if (artist === "Beacon FM Network" || title === "The Smile Of The Stand Out For The Radio") {
-        artworkEl.src = defaultLogo;
+    if (artist === "Beacon FM Network" || title === "Endless For Beacon FM") {
+        artworkEl.src = DEFAULT_LOGO;
         return;
     }
 
@@ -192,7 +192,7 @@ async function fetchiTunesArtworkDirect(title, artist) {
         console.warn("Artwork iTunes tidak ditemukan.");
     }
 
-    artworkEl.src = defaultLogo;
+    artworkEl.src = DEFAULT_LOGO;
 }
 
 /* 2. CHAT LOCAL */
