@@ -95,104 +95,62 @@ function initMobileNav() {
     }
 }
 
-/* 1. MENGAMBIL METADATA & LISTENERS VIA PUBLIC SSE (ZENO PUBLIC API - BEBAS ERROR 401) */
+/* 1. MENGAMBIL METADATA & LISTENERS VIA ZENO PUBLIC STATION API */
 function initZenoPublicSSE() {
-    // A. SSE Live Metadata (Judul & Penyanyi)
-    const metadataSSEUrl = `https://api.zeno.fm/mounts/metadata/subscribe?streamkey=${x1wrh2y4jj6uv}`;
-    const metadataSource = new EventSource(metadataSSEUrl);
-
-    metadataSource.onmessage = (event) => {
+    // Fungsi untuk mengambil metadata & jumlah pendengar
+    async function fetchZenoStationData() {
         try {
-            const data = JSON.parse(event.data);
-            if (data.streamTitle) {
-                processTrackInfo(data.streamTitle);
+            // Mengambil data publik stasiun Zeno berdasarkan Stream Key
+            const response = await fetch(`https://api.zeno.fm/v2/stations/${x1wrh2y4jj6uv}`);
+            
+            if (response.ok) {
+                const data = await response.json();
+                
+                // Update Jumlah Pendengar
+                if (data.listeners !== undefined) {
+                    const listenerEl = document.getElementById('listener-counter');
+                    if (listenerEl) listenerEl.textContent = data.listeners;
+                }
+
+                // Update Title & Artist jika tersedia dari stream
+                if (data.now_playing && data.now_playing.song) {
+                    processTrackInfo(data.now_playing.song);
+                } else if (data.title) {
+                    processTrackInfo(data.title);
+                }
+            } else {
+                // Fallback jika API v2 dibatasi: Coba ambil status stream ICY
+                fetchFallbackStreamInfo();
             }
-        } catch (e) {
-            console.error("Gagal parsing metadata SSE:", e);
+        } catch (error) {
+            console.warn("Gagal mengambil data Zeno API, mencoba fallback...", error);
+            fetchFallbackStreamInfo();
         }
-    };
+    }
 
-    metadataSource.onerror = (err) => {
-        console.warn("Koneksi metadata SSE terputus, mencoba lagi...", err);
-    };
-
-    // B. SSE Live Listeners (Jumlah Pendengar)
-    const statsSSEUrl = `https://api.zeno.fm/mounts/stats/subscribe?streamkey=${x1wrh2y4jj6uv}`;
-    const statsSource = new EventSource(statsSSEUrl);
-
-    statsSource.onmessage = (event) => {
-        try {
-            const data = JSON.parse(event.data);
-            if (data.listeners !== undefined) {
-                const listenerEl = document.getElementById('listener-counter');
-                if (listenerEl) listenerEl.textContent = data.listeners;
-            }
-        } catch (e) {
-            console.error("Gagal parsing stats SSE:", e);
-        }
-    };
-
-    statsSource.onerror = (err) => {
-        console.warn("Koneksi stats SSE terputus, mencoba lagi...", err);
-    };
+    // Jalankan sekali saat load, lalu ulangi setiap 10 detik
+    fetchZenoStationData();
+    setInterval(fetchZenoStationData, 10000);
 }
 
-function processTrackInfo(rawTitle) {
-    const titleEl = document.getElementById('track-title');
-    const artistEl = document.getElementById('track-artist');
-
-    let songTitle = "Endless For Beacon FM";
-    let artistName = "Beacon FM Network";
-
-    if (rawTitle && rawTitle.trim() !== "" && rawTitle !== "undefined - undefined") {
-        if (rawTitle.includes(" - ")) {
-            const parts = rawTitle.split(" - ");
-            artistName = parts[0].trim();
-            songTitle = parts.slice(1).join(" - ").trim();
-        } else {
-            songTitle = rawTitle.trim();
-        }
-    }
-
-    const currentTrackKey = `${artistName} - ${songTitle}`;
-    if (currentTrackKey !== lastTrackKey) {
-        lastTrackKey = currentTrackKey;
-        if (titleEl) titleEl.textContent = songTitle;
-        if (artistEl) artistEl.textContent = artistName;
-        
-        // Cari Artwork Lagu dari iTunes Search API
-        fetchiTunesArtworkDirect(songTitle, artistName);
-    }
-}
-
-/* Fetch Artwork Lagu dari iTunes Search API */
-async function fetchiTunesArtworkDirect(title, artist) {
-    const artworkEl = document.getElementById('track-artwork');
-    if (!artworkEl) return;
-
-    if (artist === "Beacon FM Network" || title === "Endless For Beacon FM") {
-        artworkEl.src = DEFAULT_LOGO;
-        return;
-    }
-
+/* Fallback jika Zeno API Utama Membutuhkan Header Tambahan */
+async function fetchFallbackStreamInfo() {
     try {
-        const query = encodeURIComponent(`${artist} ${title}`);
-        const res = await fetch(`https://itunes.apple.com/search?term=${query}&entity=song&limit=1`);
-        
+        const res = await fetch(`https://stream.zeno.fm/status-json.xsl?mount=${x1wrh2y4jj6uv}`);
         if (res.ok) {
             const data = await res.json();
-            if (data.results && data.results.length > 0) {
-                // Ambil gambar cover HD 600x600 px
-                const highResArtwork = data.results[0].artworkUrl100.replace('100x100bb', '600x600bb');
-                artworkEl.src = highResArtwork;
-                return;
+            if (data.icestats && data.icestats.source) {
+                const source = data.icestats.source;
+                if (source.title) processTrackInfo(source.title);
+                if (source.listeners !== undefined) {
+                    const listenerEl = document.getElementById('listener-counter');
+                    if (listenerEl) listenerEl.textContent = source.listeners;
+                }
             }
         }
     } catch (e) {
-        console.warn("Artwork iTunes tidak ditemukan.");
+        // Mode offline/default jika server stream tidak merespons metadata
     }
-
-    artworkEl.src = DEFAULT_LOGO;
 }
 
 /* 2. CHAT LOCAL */
