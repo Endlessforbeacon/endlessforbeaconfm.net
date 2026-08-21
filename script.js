@@ -98,7 +98,7 @@ function initMobileNav() {
 /* 1. MENGAMBIL METADATA & LISTENERS VIA PUBLIC SSE (ZENO PUBLIC API - BEBAS ERROR 401) */
 function initZenoPublicSSE() {
     // A. SSE Live Metadata (Judul & Penyanyi)
-    const metadataSSEUrl = `https://api.zeno.fm/mounts/metadata/subscribe?streamkey=${ZENO_STREAM_KEY}`;
+    const metadataSSEUrl = `https://api.zeno.fm/mounts/metadata/subscribe?streamkey=${x1wrh2y4jj6uv}`;
     const metadataSource = new EventSource(metadataSSEUrl);
 
     metadataSource.onmessage = (event) => {
@@ -117,7 +117,7 @@ function initZenoPublicSSE() {
     };
 
     // B. SSE Live Listeners (Jumlah Pendengar)
-    const statsSSEUrl = `https://api.zeno.fm/mounts/stats/subscribe?streamkey=${ZENO_STREAM_KEY}`;
+    const statsSSEUrl = `https://api.zeno.fm/mounts/stats/subscribe?streamkey=${x1wrh2y4jj6uv}`;
     const statsSource = new EventSource(statsSSEUrl);
 
     statsSource.onmessage = (event) => {
