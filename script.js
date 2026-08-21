@@ -2,7 +2,7 @@
  * BEACON FM - REAL-TIME ENGINE (MAKASSAR HQ TIME - WITA)
  */
 
-const ZENO_STREAM_KEY = "n7qpxnyfrbruv"; 
+const ZENO_STREAM_KEY = "x1wrh2y4jj6uv"; 
 const RADIO_WA_NUMBER = "6282192775899"; 
 
 let currentUser = null;
@@ -94,7 +94,7 @@ function initZenoStatusEngine() {
 
     // 2. Real-time EventSource (SSE) listener
     try {
-        const sseUrl = `https://api.zeno.fm/mounts/metadata/subscribe/${ZENO_STREAM_KEY}`;
+        const sseUrl = `https://api.zeno.fm/mounts/metadata/subscribe/x1wrh2y4jj6uv`;
         const eventSource = new EventSource(sseUrl);
 
         eventSource.onmessage = (event) => {
