@@ -48,7 +48,7 @@ const schedules = [
 ];
 
 document.addEventListener('DOMContentLoaded', () => {
-    initZenoStatusEngine();
+    initZenoIframeBridge();
     initLocalChat();
     initAudioPlayerAndVisualizer();
     initRealTimeSchedule();
@@ -86,56 +86,36 @@ function initMobileNav() {
     }
 }
 
-/* 1. STATUS STREAM ZENO, LISTENERS & METADATA LAGU (SOLUSI FIX AMPUH) */
-function initZenoStatusEngine() {
-    // 1. Ambil data metadata & listeners secara berkala dari API Zeno
-    fetchZenoDataJSON();
-    setInterval(fetchZenoDataJSON, 4000);
-
-    // 2. Real-time EventSource (SSE) listener
-    try {
-        const sseUrl = `https://api.zeno.fm/mounts/metadata/subscribe/x1wrh2y4jj6uv`;
-        const eventSource = new EventSource(sseUrl);
-
-        eventSource.onmessage = (event) => {
-            if (event.data) {
-                try {
-                    const data = JSON.parse(event.data);
+/* 1. MENGAMBIL METADATA VIA POSTMESSAGE IFRAME ZENO (BEBAS ERROR CORS/404) */
+function initZenoIframeBridge() {
+    // Listener pesan otomatis dari Iframe Zeno Player
+    window.addEventListener('message', (event) => {
+        if (event.origin && event.origin.includes('zeno.fm')) {
+            try {
+                const data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
+                if (data) {
                     updateMetadataUI(data);
-                } catch (err) {
-                    // Jika data SSE berupa raw text string (Artist - Title)
-                    processTrackInfo(event.data);
                 }
+            } catch (e) {
+                // Ignore parsing errors for internal messages
             }
-        };
+        }
+    });
 
-        eventSource.onerror = () => {
-            eventSource.close(); // Tutup jika terkena blokir CORS, sistem tetap jalan via Polling JSON
-        };
-    } catch (e) {
-        console.warn("SSE EventSource tidak didukung/dibatasi CORS, menggunakan fallback polling.");
-    }
+    // Fallback Polling langsung ke Endpoint Public Zeno
+    fetchZenoDataJSON();
+    setInterval(fetchZenoDataJSON, 5000);
 }
 
-/* Polling JSON Endpoint Zeno untuk bypass CORS SSE */
 async function fetchZenoDataJSON() {
-    const listenerEl = document.getElementById('listener-counter');
-
     try {
-        // Fetch metadata public endpoint Zeno
-        const res = await fetch(`https://api.zeno.fm/mounts/metadata/subscribe/x1wrh2y4jj6uv`, { cache: 'no-store' });
+        const res = await fetch(`https://api.zeno.fm/mounts/metadata/${ZENO_STREAM_KEY}`, { cache: 'no-store' });
         if (res.ok) {
             const data = await res.json();
             updateMetadataUI(data);
-            return;
         }
     } catch (err) {
-        // Fallback jika API terblokir total: baca data dari Zeno Widget Iframe atau simulasi terukur
-    }
-
-    // Fallback tampilan jumlah pendengar aktif jika API offline
-    if (listenerEl && (listenerEl.textContent === '0' || listenerEl.textContent === 'Memuat...')) {
-        listenerEl.textContent = '18'; // Menampilkan angka pendengar aktif awal
+        // Fallback silent
     }
 }
 
@@ -143,15 +123,14 @@ function updateMetadataUI(data) {
     const listenerEl = document.getElementById('listener-counter');
     
     // Update Jumlah Pendengar
-    if (data.listeners !== undefined && listenerEl) {
-        listenerEl.textContent = data.listeners;
-    } else if (data.listener_count !== undefined && listenerEl) {
-        listenerEl.textContent = data.listener_count;
+    const listeners = data.listeners ?? data.listener_count ?? data.stream_listeners;
+    if (listeners !== undefined && listenerEl) {
+        listenerEl.textContent = listeners;
     }
 
     // Update Track Info
     const rawTrack = data.stream_title || data.title || (data.artist ? `${data.artist} - ${data.song}` : '');
-    if (rawTrack) {
+    if (rawTrack && rawTrack.trim() !== "") {
         processTrackInfo(rawTrack);
     }
 }
@@ -179,9 +158,41 @@ function processTrackInfo(rawTitle) {
         if (titleEl) titleEl.textContent = songTitle;
         if (artistEl) artistEl.textContent = artistName;
         
-        // Panggil fungsi pencarian Artwork iTunes
+        // Panggil Pencarian Artwork dari iTunes API
         fetchiTunesArtworkDirect(songTitle, artistName);
     }
+}
+
+/* Fetch Artwork Lagu dari iTunes Search API */
+async function fetchiTunesArtworkDirect(title, artist) {
+    const artworkEl = document.getElementById('track-artwork');
+    const defaultLogo = "Image/Logo.png";
+
+    if (!artworkEl) return;
+
+    if (artist === "Beacon FM Network" || title === "The Smile Of The Stand Out For The Radio") {
+        artworkEl.src = defaultLogo;
+        return;
+    }
+
+    try {
+        const query = encodeURIComponent(`${artist} ${title}`);
+        const res = await fetch(`https://itunes.apple.com/search?term=${query}&entity=song&limit=1`);
+        
+        if (res.ok) {
+            const data = await res.json();
+            if (data.results && data.results.length > 0) {
+                // Ambil gambar cover HD 600x600 px
+                const highResArtwork = data.results[0].artworkUrl100.replace('100x100bb', '600x600bb');
+                artworkEl.src = highResArtwork;
+                return;
+            }
+        }
+    } catch (e) {
+        console.warn("Artwork iTunes tidak ditemukan.");
+    }
+
+    artworkEl.src = defaultLogo;
 }
 
 /* 2. CHAT LOCAL */
@@ -372,7 +383,7 @@ if (formReq) {
         const song = document.getElementById('req-song').value.trim();
         const msg = document.getElementById('req-message').value.trim();
 
-        let textMessage = `*REQUEST LAGU - BEACON FM MAKASSAR*\n-----------------------------------\n🎵 *Program:* ${currentProgramName}\n👤 *Dari:* ${sender}\n🎶 *Lagu:* ${song}\n` + (msg ? `💬 *Pesan:* _"${msg}"_\n` : '') + `-----------------------------------`;
+        let textMessage = `*REQUEST LAGU - BEACON FM MAKASSAR*\n-----------------------------------\n📻 *Program:* ${currentProgramName}\n👤 *Dari:* ${sender}\n🎵 *Lagu:* ${song}\n` + (msg ? `💬 *Pesan:* _"${msg}"_\n` : '') + `-----------------------------------`;
 
         window.open(`https://wa.me/${RADIO_WA_NUMBER}?text=${encodeURIComponent(textMessage)}`, '_blank');
         closeRequestModal();
