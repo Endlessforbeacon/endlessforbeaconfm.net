@@ -9,7 +9,6 @@ const DEFAULT_LOGO = "Image/Logo.png";
 let currentUser = null;
 let audioContext, audioAnalyser, audioSource;
 let currentProgramName = "";
-let lastTrackKey = "";
 
 const dayNames = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
 
@@ -55,6 +54,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initRealTimeSchedule();
     initRealTimeClocks();
     initMobileNav();
+    initEventCountdown(); // Inisialisasi Fitur Hitung Mundur Event
 
     // Fallback Gambar Artwork Pecah/Error
     const artworkEl = document.getElementById('track-artwork');
@@ -97,29 +97,24 @@ function initMobileNav() {
 
 /* 1. MENGAMBIL METADATA & LISTENERS VIA ZENO PUBLIC STATION API */
 function initZenoPublicSSE() {
-    // Fungsi untuk mengambil metadata & jumlah pendengar
     async function fetchZenoStationData() {
         try {
-            // Mengambil data publik stasiun Zeno berdasarkan Stream Key
-            const response = await fetch(`https://api.zeno.fm/v2/stations/x1wrh2y4jj6uv`);
+            const response = await fetch(`https://api.zeno.fm/v2/stations/${ZENO_STREAM_KEY}`);
             
             if (response.ok) {
                 const data = await response.json();
                 
-                // Update Jumlah Pendengar
                 if (data.listeners !== undefined) {
                     const listenerEl = document.getElementById('listener-counter');
                     if (listenerEl) listenerEl.textContent = data.listeners;
                 }
 
-                // Update Title & Artist jika tersedia dari stream
                 if (data.now_playing && data.now_playing.song) {
                     processTrackInfo(data.now_playing.song);
                 } else if (data.title) {
                     processTrackInfo(data.title);
                 }
             } else {
-                // Fallback jika API v2 dibatasi: Coba ambil status stream ICY
                 fetchFallbackStreamInfo();
             }
         } catch (error) {
@@ -128,15 +123,29 @@ function initZenoPublicSSE() {
         }
     }
 
-    // Jalankan sekali saat load, lalu ulangi setiap 10 detik
     fetchZenoStationData();
     setInterval(fetchZenoStationData, 10000);
 }
 
-/* Fallback jika Zeno API Utama Membutuhkan Header Tambahan */
+function processTrackInfo(rawTitle) {
+    const titleEl = document.getElementById('track-title');
+    const artistEl = document.getElementById('track-artist');
+
+    if (!rawTitle) return;
+
+    if (rawTitle.includes(' - ')) {
+        const parts = rawTitle.split(' - ');
+        if (artistEl) artistEl.textContent = parts[0].trim();
+        if (titleEl) titleEl.textContent = parts.slice(1).join(' - ').trim();
+    } else {
+        if (titleEl) titleEl.textContent = rawTitle;
+        if (artistEl) artistEl.textContent = "Beacon FM Network";
+    }
+}
+
 async function fetchFallbackStreamInfo() {
     try {
-        const res = await fetch(`https://stream.zeno.fm/status-json.xsl?mount=x1wrh2y4jj6uv`);
+        const res = await fetch(`https://stream.zeno.fm/status-json.xsl?mount=${ZENO_STREAM_KEY}`);
         if (res.ok) {
             const data = await res.json();
             if (data.icestats && data.icestats.source) {
@@ -149,7 +158,7 @@ async function fetchFallbackStreamInfo() {
             }
         }
     } catch (e) {
-        // Mode offline/default jika server stream tidak merespons metadata
+        // Mode offline/default
     }
 }
 
@@ -316,7 +325,44 @@ function initRealTimeSchedule() {
     setInterval(updateScheduleUI, 10000);
 }
 
-/* 5. REQUEST WA MODAL */
+/* 5. FITUR COUNTDOWN EVENT MENDATANG */
+function initEventCountdown() {
+    // Tanggal Target Event: 14 Desember 2026 05:00:00 WITA (UTC+8)
+    const targetDate = new Date('2026-12-14T05:00:00+08:00').getTime();
+
+    const daysEl = document.getElementById('cd-days');
+    const hoursEl = document.getElementById('cd-hours');
+    const minutesEl = document.getElementById('cd-minutes');
+    const secondsEl = document.getElementById('cd-seconds');
+    const containerEl = document.getElementById('event-countdown');
+
+    if (!daysEl || !hoursEl || !minutesEl || !secondsEl || !containerEl) return;
+
+    function updateCountdown() {
+        const now = new Date().getTime();
+        const timeDiff = targetDate - now;
+
+        if (timeDiff <= 0) {
+            containerEl.innerHTML = `<div class="event-started-msg"><i class="fa-solid fa-circle-play"></i> Event Sedang Berlangsung / Telah Dimulai!</div>`;
+            return;
+        }
+
+        const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((timeDiff % (1000 * 60)) / 1000);
+
+        daysEl.textContent = String(days).padStart(2, '0');
+        hoursEl.textContent = String(hours).padStart(2, '0');
+        minutesEl.textContent = String(minutes).padStart(2, '0');
+        secondsEl.textContent = String(seconds).padStart(2, '0');
+    }
+
+    updateCountdown();
+    setInterval(updateCountdown, 1000);
+}
+
+/* 6. REQUEST WA MODAL */
 function openRequestModal(programName) {
     currentProgramName = programName;
     const targetEl = document.getElementById('target-program-name');
@@ -348,7 +394,7 @@ if (formReq) {
     });
 }
 
-/* 6. JAM WIB, WITA, WIT */
+/* 7. JAM WIB, WITA, WIT */
 function initRealTimeClocks() {
     function updateClocks() {
         const now = new Date();
@@ -368,7 +414,7 @@ function initRealTimeClocks() {
     setInterval(updateClocks, 1000);
 }
 
-/* 7. GOOGLE AUTH */
+/* 8. GOOGLE AUTH */
 function parseJwt(token) {
     var base64Url = token.split('.')[1];
     var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');

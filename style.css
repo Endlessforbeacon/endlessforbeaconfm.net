@@ -377,25 +377,98 @@ body {
     color: #fff;
 }
 
-/* EVENT & CHAT */
+/* EVENT & COUNTDOWN STYLING */
 .event-card {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    background: rgba(255, 255, 255, 0.03);
+    padding: 20px;
+    border-radius: 16px;
+    border: 1px solid var(--card-border);
+}
+
+.event-header-info {
     display: flex;
     gap: 16px;
     align-items: center;
-    background: rgba(255, 255, 255, 0.03);
-    padding: 16px;
-    border-radius: 12px;
 }
 
 .event-date {
     background: var(--accent-color);
+    color: #fff;
     font-weight: 800;
-    padding: 10px;
+    padding: 10px 14px;
     border-radius: 10px;
-    font-size: 0.8rem;
+    font-size: 0.85rem;
     text-align: center;
+    white-space: nowrap;
 }
 
+.event-details h3 {
+    font-size: 1.1rem;
+    margin-bottom: 4px;
+}
+
+.event-details p {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.countdown-container {
+    background: rgba(0, 0, 0, 0.25);
+    padding: 14px;
+    border-radius: 12px;
+    border: 1px dashed rgba(255, 42, 95, 0.3);
+}
+
+.countdown-title {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--accent-color);
+    display: block;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.countdown-timer {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-start;
+}
+
+.timer-box {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--card-border);
+    padding: 8px 12px;
+    border-radius: 8px;
+    text-align: center;
+    min-width: 60px;
+}
+
+.timer-box span {
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: #fff;
+    display: block;
+    line-height: 1.1;
+}
+
+.timer-box small {
+    font-size: 0.65rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+}
+
+.event-started-msg {
+    color: var(--status-green);
+    font-weight: 800;
+    font-size: 1rem;
+    padding: 8px 0;
+}
+
+/* CHAT CARD */
 .chat-card {
     display: flex;
     flex-direction: column;
