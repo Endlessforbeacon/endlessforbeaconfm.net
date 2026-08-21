@@ -123,7 +123,7 @@ async function fetchZenoDataJSON() {
 
     try {
         // Fetch metadata public endpoint Zeno
-        const res = await fetch(`https://api.zeno.fm/mounts/metadata/n7qpxnyfrbruv`, { cache: 'no-store' });
+        const res = await fetch(`https://api.zeno.fm/mounts/metadata/subscribe/x1wrh2y4jj6uv`, { cache: 'no-store' });
         if (res.ok) {
             const data = await res.json();
             updateMetadataUI(data);
