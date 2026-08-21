@@ -101,7 +101,7 @@ function initZenoPublicSSE() {
     async function fetchZenoStationData() {
         try {
             // Mengambil data publik stasiun Zeno berdasarkan Stream Key
-            const response = await fetch(`https://api.zeno.fm/v2/stations/${x1wrh2y4jj6uv}`);
+            const response = await fetch(`https://api.zeno.fm/v2/stations/x1wrh2y4jj6uv`);
             
             if (response.ok) {
                 const data = await response.json();
@@ -136,7 +136,7 @@ function initZenoPublicSSE() {
 /* Fallback jika Zeno API Utama Membutuhkan Header Tambahan */
 async function fetchFallbackStreamInfo() {
     try {
-        const res = await fetch(`https://stream.zeno.fm/status-json.xsl?mount=${x1wrh2y4jj6uv}`);
+        const res = await fetch(`https://stream.zeno.fm/status-json.xsl?mount=x1wrh2y4jj6uv`);
         if (res.ok) {
             const data = await res.json();
             if (data.icestats && data.icestats.source) {
