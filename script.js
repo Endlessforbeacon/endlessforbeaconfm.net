@@ -5,10 +5,12 @@
 const ZENO_STREAM_KEY = "x1wrh2y4jj6uv"; 
 const RADIO_WA_NUMBER = "6285257448582"; 
 const DEFAULT_LOGO = "Image/Logo.png";
+const ALLORIGINS_PROXY = "https://api.allorigins.win/get?url=";
 
 let currentUser = null;
 let audioContext, audioAnalyser, audioSource;
 let currentProgramName = "";
+let lastPlayingTrack = "";
 
 const dayNames = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
 
@@ -48,15 +50,14 @@ const schedules = [
 ];
 
 document.addEventListener('DOMContentLoaded', () => {
-    initZenoPublicSSE();
+    initZenoPublicMetadata();
     initLocalChat();
     initAudioPlayerAndVisualizer();
     initRealTimeSchedule();
     initRealTimeClocks();
     initMobileNav();
-    initEventCountdown(); // Inisialisasi Fitur Hitung Mundur Event
+    initEventCountdown();
 
-    // Fallback Gambar Artwork Pecah/Error
     const artworkEl = document.getElementById('track-artwork');
     if (artworkEl) {
         artworkEl.addEventListener('error', () => {
@@ -95,36 +96,94 @@ function initMobileNav() {
     }
 }
 
-/* 1. MENGAMBIL METADATA & LISTENERS VIA ZENO PUBLIC STATION API */
-function initZenoPublicSSE() {
-    async function fetchZenoStationData() {
-        try {
-            const response = await fetch(`https://api.zeno.fm/v2/stations/${ZENO_STREAM_KEY}`);
-            
-            if (response.ok) {
-                const data = await response.json();
-                
-                if (data.listeners !== undefined) {
-                    const listenerEl = document.getElementById('listener-counter');
-                    if (listenerEl) listenerEl.textContent = data.listeners;
-                }
+/* 1. MENGAMBIL METADATA & LISTENERS VIA ZENO API & ALLORIGINS PROXY FALLBACK */
+function initZenoPublicMetadata() {
+    async function fetchMetadata() {
+        // Multi-stage Endpoint Fetching
+        const primaryApi = `https://api.zeno.fm/v2/stations/x1wrh2y4jj6uv`;
+        const fallbackApi = `https://stream.zeno.fm/status-json.xsl?mount=x1wrh2y4jj6uv`;
 
-                if (data.now_playing && data.now_playing.song) {
-                    processTrackInfo(data.now_playing.song);
-                } else if (data.title) {
-                    processTrackInfo(data.title);
-                }
-            } else {
-                fetchFallbackStreamInfo();
+        let dataFetched = false;
+
+        // Stage 1: Direct Fetch ke Primary API Zeno
+        try {
+            const res = await fetch(primaryApi);
+            if (res.ok) {
+                const data = await res.json();
+                updateRadioUI(data);
+                dataFetched = true;
             }
-        } catch (error) {
-            console.warn("Gagal mengambil data Zeno API, mencoba fallback...", error);
-            fetchFallbackStreamInfo();
+        } catch (e) {
+            console.warn("Direct Zeno V2 API blocked or failed, moving to AllOrigins proxy...");
+        }
+
+        // Stage 2: AllOrigins Proxy ke Primary API Zeno
+        if (!dataFetched) {
+            try {
+                const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(primaryApi)}`;
+                const res = await fetch(proxyUrl);
+                if (res.ok) {
+                    const proxyData = await res.json();
+                    if (proxyData.contents) {
+                        const data = JSON.parse(proxyData.contents);
+                        updateRadioUI(data);
+                        dataFetched = true;
+                    }
+                }
+            } catch (e) {
+                console.warn("AllOrigins Proxy for Primary API failed, trying status-json fallback...");
+            }
+        }
+
+        // Stage 3: AllOrigins Proxy ke Fallback Status-JSON API
+        if (!dataFetched) {
+            try {
+                const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(fallbackApi)}`;
+                const res = await fetch(proxyUrl);
+                if (res.ok) {
+                    const proxyData = await res.json();
+                    if (proxyData.contents) {
+                        const data = JSON.parse(proxyData.contents);
+                        if (data.icestats && data.icestats.source) {
+                            const source = data.icestats.source;
+                            processTrackInfo(source.title || "Endless For Beacon FM");
+                            if (source.listeners !== undefined) {
+                                const listenerEl = document.getElementById('listener-counter');
+                                if (listenerEl) listenerEl.textContent = source.listeners;
+                            }
+                            dataFetched = true;
+                        }
+                    }
+                }
+            } catch (e) {
+                console.error("All Metadata Endpoints Failed.", e);
+            }
         }
     }
 
-    fetchZenoStationData();
-    setInterval(fetchZenoStationData, 10000);
+    fetchMetadata();
+    setInterval(fetchMetadata, 8000);
+}
+
+function updateRadioUI(data) {
+    if (data.listeners !== undefined) {
+        const listenerEl = document.getElementById('listener-counter');
+        if (listenerEl) listenerEl.textContent = data.listeners;
+    }
+
+    let songString = "";
+
+    if (data.now_playing && data.now_playing.song) {
+        songString = data.now_playing.song;
+    } else if (data.title) {
+        songString = data.title;
+    } else if (data.stream_title) {
+        songString = data.stream_title;
+    }
+
+    if (songString) {
+        processTrackInfo(songString);
+    }
 }
 
 function processTrackInfo(rawTitle) {
@@ -133,36 +192,59 @@ function processTrackInfo(rawTitle) {
 
     if (!rawTitle) return;
 
+    let artistName = "Beacon FM Network";
+    let songTitle = rawTitle.trim();
+
     if (rawTitle.includes(' - ')) {
         const parts = rawTitle.split(' - ');
-        if (artistEl) artistEl.textContent = parts[0].trim();
-        if (titleEl) titleEl.textContent = parts.slice(1).join(' - ').trim();
-    } else {
-        if (titleEl) titleEl.textContent = rawTitle;
-        if (artistEl) artistEl.textContent = "Beacon FM Network";
+        artistName = parts[0].trim();
+        songTitle = parts.slice(1).join(' - ').trim();
+    }
+
+    if (titleEl) titleEl.textContent = songTitle;
+    if (artistEl) artistEl.textContent = artistName;
+
+    const fullTrackKey = `${artistName} - ${songTitle}`;
+    if (lastPlayingTrack !== fullTrackKey) {
+        lastPlayingTrack = fullTrackKey;
+        fetchArtworkFromiTunes(artistName, songTitle);
     }
 }
 
-async function fetchFallbackStreamInfo() {
+/* 2. AUTOMATIC ARTWORK FETCHING VIA ITUNES & ALLORIGINS PROXY */
+async function fetchArtworkFromiTunes(artist, title) {
+    const artworkEl = document.getElementById('track-artwork');
+    if (!artworkEl) return;
+
+    if (artist === "Beacon FM Network" || !title || title === "Endless For Beacon FM") {
+        artworkEl.src = DEFAULT_LOGO;
+        return;
+    }
+
+    const searchQuery = `${artist} ${title}`.replace(/[^\w\s]/gi, '');
+    const iTunesUrl = `https://itunes.apple.com/search?term=${encodeURIComponent(searchQuery)}&media=music&limit=1`;
+    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(iTunesUrl)}`;
+
     try {
-        const res = await fetch(`https://stream.zeno.fm/status-json.xsl?mount=${ZENO_STREAM_KEY}`);
-        if (res.ok) {
-            const data = await res.json();
-            if (data.icestats && data.icestats.source) {
-                const source = data.icestats.source;
-                if (source.title) processTrackInfo(source.title);
-                if (source.listeners !== undefined) {
-                    const listenerEl = document.getElementById('listener-counter');
-                    if (listenerEl) listenerEl.textContent = source.listeners;
-                }
+        const response = await fetch(proxyUrl);
+        if (response.ok) {
+            const result = await response.json();
+            const data = JSON.parse(result.contents);
+            if (data.results && data.results.length > 0) {
+                let highResArtwork = data.results[0].artworkUrl100.replace('100x100bb', '600x600bb');
+                artworkEl.src = highResArtwork;
+            } else {
+                artworkEl.src = DEFAULT_LOGO;
             }
+        } else {
+            artworkEl.src = DEFAULT_LOGO;
         }
     } catch (e) {
-        // Mode offline/default
+        artworkEl.src = DEFAULT_LOGO;
     }
 }
 
-/* 2. CHAT LOCAL */
+/* 3. CHAT LOCAL */
 function initLocalChat() {
     const chatForm = document.getElementById('chat-form');
     const chatInput = document.getElementById('chat-input');
@@ -204,7 +286,7 @@ function appendChatMessageUI(sender, text, avatarUrl, timestamp) {
     chatBox.scrollTop = chatBox.scrollHeight;
 }
 
-/* 3. AUDIO PLAYER & VISUALIZER */
+/* 4. AUDIO PLAYER & VISUALIZER */
 const audio = document.getElementById('audio-stream');
 const btnPlayPause = document.getElementById('btn-play-pause');
 const playIcon = document.getElementById('play-icon');
@@ -280,7 +362,7 @@ function renderVisualizer() {
     }
 }
 
-/* 4. JADWAL ACARA REAL-TIME */
+/* 5. JADWAL ACARA REAL-TIME */
 function initRealTimeSchedule() {
     function updateScheduleUI() {
         const makassarTime = getMakassarDate();
@@ -325,9 +407,8 @@ function initRealTimeSchedule() {
     setInterval(updateScheduleUI, 10000);
 }
 
-/* 5. FITUR COUNTDOWN EVENT MENDATANG */
+/* 6. FITUR COUNTDOWN EVENT MENDATANG */
 function initEventCountdown() {
-    // Tanggal Target Event: 14 Desember 2026 05:00:00 WITA (UTC+8)
     const targetDate = new Date('2026-12-14T05:00:00+08:00').getTime();
 
     const daysEl = document.getElementById('cd-days');
@@ -362,7 +443,7 @@ function initEventCountdown() {
     setInterval(updateCountdown, 1000);
 }
 
-/* 6. REQUEST WA MODAL */
+/* 7. REQUEST WA MODAL */
 function openRequestModal(programName) {
     currentProgramName = programName;
     const targetEl = document.getElementById('target-program-name');
@@ -394,7 +475,7 @@ if (formReq) {
     });
 }
 
-/* 7. JAM WIB, WITA, WIT */
+/* 8. JAM WIB, WITA, WIT */
 function initRealTimeClocks() {
     function updateClocks() {
         const now = new Date();
@@ -414,7 +495,7 @@ function initRealTimeClocks() {
     setInterval(updateClocks, 1000);
 }
 
-/* 8. GOOGLE AUTH */
+/* 9. GOOGLE AUTH */
 function parseJwt(token) {
     var base64Url = token.split('.')[1];
     var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
