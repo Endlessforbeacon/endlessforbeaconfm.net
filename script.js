@@ -5,10 +5,9 @@
 const ZENO_STREAM_KEY = "x1wrh2y4jj6uv"; 
 const RADIO_WA_NUMBER = "6285257448582"; 
 const DEFAULT_LOGO = "Image/Logo.png";
-const ALLORIGINS_PROXY = "https://api.allorigins.win/get?url=";
 
-// Ganti DENGAN API Key milik Anda dari https://newsapi.org
-const NEWS_API_KEY = "ce2268ceb997475eaf2158a70e04910a"; 
+// API Key NewsData.io (Dapatkan API Key gratis di https://newsdata.io)
+const NEWSDATA_API_KEY = "pub_ab11e44304d1451f90ba554b4d677da7"; 
 
 let currentUser = null;
 let audioContext, audioAnalyser, audioSource;
@@ -61,7 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initRealTimeClocks();
     initMobileNav();
     initEventCountdown();
-    initBeaconNewsEngine(); // Inisialisasi Fitur Agregator Berita Internet
+    initBeaconNewsEngine(); // Inisialisasi Fitur Agregator Berita Internet (NewsData.io)
 
     const artworkEl = document.getElementById('track-artwork');
     if (artworkEl) {
@@ -104,8 +103,8 @@ function initMobileNav() {
 /* 1. MENGAMBIL METADATA & LISTENERS VIA ZENO API */
 function initZenoPublicMetadata() {
     async function fetchMetadata() {
-        const primaryApi = `https://api.zeno.fm/v2/stations/x1wrh2y4jj6uv`;
-        const fallbackApi = `https://stream.zeno.fm/status-json.xsl?mount=x1wrh2y4jj6uv`;
+        const primaryApi = `https://api.zeno.fm/v2/stations/${ZENO_STREAM_KEY}`;
+        const fallbackApi = `https://stream.zeno.fm/status-json.xsl?mount=${ZENO_STREAM_KEY}`;
 
         let dataFetched = false;
 
@@ -244,7 +243,7 @@ async function fetchArtworkFromiTunes(artist, title) {
     }
 }
 
-/* 3. FITUR ENDLESS FOR BEACON NEWS ENGINE (INTERNET AGGREGATOR) */
+/* 3. FITUR ENDLESS FOR BEACON NEWS ENGINE (NEWSDATA.IO AGGREGATOR) */
 function initBeaconNewsEngine() {
     const newsGrid = document.getElementById('news-grid');
     const searchInput = document.getElementById('news-search-input');
@@ -253,39 +252,29 @@ function initBeaconNewsEngine() {
 
     if (!newsGrid) return;
 
-    async function fetchTopHeadlines(category = 'general') {
+    async function fetchNewsData(category = 'top', query = '') {
         showNewsLoading();
-        const url = `https://newsapi.org/v2/top-headlines?country=id&category=${category}&apiKey=ce2268ceb997475eaf2158a70e04910a`;
 
-        try {
-            const res = await fetch(url);
-            const data = await res.json();
-
-            if (data.status === 'ok' && data.articles.length > 0) {
-                renderNewsCards(data.articles);
-            } else {
-                showNewsStatus('Tidak ada berita ditemukan untuk kategori ini.');
-            }
-        } catch (error) {
-            showNewsStatus('Gagal memuat berita dari internet. Pastikan API Key valid.');
+        let url = `https://newsdata.io/api/1/news?apikey=ab11e44304d1451f90ba554b4d677da7&country=id&language=id`;
+        
+        if (query) {
+            url += `&q=${encodeURIComponent(query)}`;
+        } else if (category) {
+            url += `&category=${category}`;
         }
-    }
-
-    async function fetchNewsBySearch(query) {
-        showNewsLoading();
-        const url = `https://newsapi.org/v2/everything?q=${encodeURIComponent(query)}&sortBy=publishedAt&language=id&apiKey=ce2268ceb997475eaf2158a70e04910a`;
 
         try {
             const res = await fetch(url);
             const data = await res.json();
 
-            if (data.status === 'ok' && data.articles.length > 0) {
-                renderNewsCards(data.articles);
+            if (data.status === 'success' && data.results && data.results.length > 0) {
+                renderNewsCards(data.results);
             } else {
-                showNewsStatus(`Tidak ada berita yang cocok dengan kata kunci "${query}".`);
+                showNewsStatus('Tidak ada berita ditemukan.');
             }
         } catch (error) {
-            showNewsStatus('Terjadi kesalahan saat mencari berita.');
+            console.error('NewsData Fetch Error:', error);
+            showNewsStatus('Gagal memuat berita dari internet. Pastikan API Key NewsData.io valid.');
         }
     }
 
@@ -293,27 +282,26 @@ function initBeaconNewsEngine() {
         newsGrid.innerHTML = '';
 
         articles.forEach(article => {
-            if (article.title === '[Removed]') return;
-
-            const publishedDate = new Date(article.publishedAt).toLocaleDateString('id-ID', {
+            const publishedDate = article.pubDate ? new Date(article.pubDate).toLocaleDateString('id-ID', {
                 day: 'numeric',
                 month: 'short',
                 year: 'numeric'
-            });
+            }) : 'Terbaru';
 
-            const fallbackImage = 'Image/Logo.png';
-            const imageUrl = article.urlToImage || fallbackImage;
+            const fallbackImage = DEFAULT_LOGO;
+            const imageUrl = article.image_url || fallbackImage;
+            const sourceName = article.source_id ? article.source_id.toUpperCase() : 'BERITA';
 
             const card = document.createElement('article');
             card.className = 'news-card';
             card.innerHTML = `
                 <div class="news-img-wrapper">
                     <img src="${imageUrl}" alt="Header Berita" onerror="this.src='${fallbackImage}'">
-                    <div class="news-badge">${article.source.name || 'BERITA'}</div>
+                    <div class="news-badge">${sourceName}</div>
                 </div>
                 <div class="news-body">
-                    <h3><a href="${article.url}" target="_blank" rel="noopener noreferrer">${article.title}</a></h3>
-                    <p>${article.description || 'Klik tautan judul di atas untuk membaca berita selengkapnya.'}</p>
+                    <h3><a href="${article.link}" target="_blank" rel="noopener noreferrer">${article.title}</a></h3>
+                    <p>${article.description ? article.description.substring(0, 120) + '...' : 'Klik tautan judul di atas untuk membaca berita selengkapnya.'}</p>
                     <span class="news-date"><i class="fa-regular fa-clock"></i> ${publishedDate}</span>
                 </div>
             `;
@@ -338,7 +326,7 @@ function initBeaconNewsEngine() {
 
             const category = e.target.getAttribute('data-category');
             if (searchInput) searchInput.value = '';
-            fetchTopHeadlines(category);
+            fetchNewsData(category, '');
         });
     });
 
@@ -348,7 +336,7 @@ function initBeaconNewsEngine() {
             const query = searchInput.value.trim();
             if (query !== '') {
                 catBtns.forEach(b => b.classList.remove('active'));
-                fetchNewsBySearch(query);
+                fetchNewsData('', query);
             }
         });
 
@@ -358,7 +346,7 @@ function initBeaconNewsEngine() {
     }
 
     // Load Berita Utama saat pertama kali dibuka
-    fetchTopHeadlines();
+    fetchNewsData('top', '');
 }
 
 /* 4. SWITCH SFX VIA WEB AUDIO API */
