@@ -7,10 +7,14 @@ const RADIO_WA_NUMBER = "6285257448582";
 const DEFAULT_LOGO = "Image/Logo.png";
 const ALLORIGINS_PROXY = "https://api.allorigins.win/get?url=";
 
+// Ganti DENGAN API Key milik Anda dari https://newsapi.org
+const NEWS_API_KEY = "ce2268ceb997475eaf2158a70e04910a"; 
+
 let currentUser = null;
 let audioContext, audioAnalyser, audioSource;
 let currentProgramName = "";
 let lastPlayingTrack = "";
+let isPlaying = false;
 
 const dayNames = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
 
@@ -57,6 +61,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initRealTimeClocks();
     initMobileNav();
     initEventCountdown();
+    initBeaconNewsEngine(); // Inisialisasi Fitur Agregator Berita Internet
 
     const artworkEl = document.getElementById('track-artwork');
     if (artworkEl) {
@@ -96,16 +101,14 @@ function initMobileNav() {
     }
 }
 
-/* 1. MENGAMBIL METADATA & LISTENERS VIA ZENO API & ALLORIGINS PROXY FALLBACK */
+/* 1. MENGAMBIL METADATA & LISTENERS VIA ZENO API */
 function initZenoPublicMetadata() {
     async function fetchMetadata() {
-        // Multi-stage Endpoint Fetching
         const primaryApi = `https://api.zeno.fm/v2/stations/x1wrh2y4jj6uv`;
         const fallbackApi = `https://stream.zeno.fm/status-json.xsl?mount=x1wrh2y4jj6uv`;
 
         let dataFetched = false;
 
-        // Stage 1: Direct Fetch ke Primary API Zeno
         try {
             const res = await fetch(primaryApi);
             if (res.ok) {
@@ -114,10 +117,9 @@ function initZenoPublicMetadata() {
                 dataFetched = true;
             }
         } catch (e) {
-            console.warn("Direct Zeno V2 API blocked or failed, moving to AllOrigins proxy...");
+            console.warn("Direct Zeno V2 API blocked, trying proxy...");
         }
 
-        // Stage 2: AllOrigins Proxy ke Primary API Zeno
         if (!dataFetched) {
             try {
                 const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(primaryApi)}`;
@@ -131,11 +133,10 @@ function initZenoPublicMetadata() {
                     }
                 }
             } catch (e) {
-                console.warn("AllOrigins Proxy for Primary API failed, trying status-json fallback...");
+                console.warn("AllOrigins Proxy for Primary API failed...");
             }
         }
 
-        // Stage 3: AllOrigins Proxy ke Fallback Status-JSON API
         if (!dataFetched) {
             try {
                 const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(fallbackApi)}`;
@@ -172,7 +173,6 @@ function updateRadioUI(data) {
     }
 
     let songString = "";
-
     if (data.now_playing && data.now_playing.song) {
         songString = data.now_playing.song;
     } else if (data.title) {
@@ -211,7 +211,7 @@ function processTrackInfo(rawTitle) {
     }
 }
 
-/* 2. AUTOMATIC ARTWORK FETCHING VIA ITUNES & ALLORIGINS PROXY */
+/* 2. AUTOMATIC ARTWORK FETCHING VIA ITUNES */
 async function fetchArtworkFromiTunes(artist, title) {
     const artworkEl = document.getElementById('track-artwork');
     if (!artworkEl) return;
@@ -244,61 +244,159 @@ async function fetchArtworkFromiTunes(artist, title) {
     }
 }
 
-/* 3. CHAT LOCAL */
-function initLocalChat() {
-    const chatForm = document.getElementById('chat-form');
-    const chatInput = document.getElementById('chat-input');
-    const chatBox = document.getElementById('chat-box');
+/* 3. FITUR ENDLESS FOR BEACON NEWS ENGINE (INTERNET AGGREGATOR) */
+function initBeaconNewsEngine() {
+    const newsGrid = document.getElementById('news-grid');
+    const searchInput = document.getElementById('news-search-input');
+    const searchBtn = document.getElementById('news-search-btn');
+    const catBtns = document.querySelectorAll('.news-cat-btn');
 
-    if (!chatBox || !chatForm) return;
+    if (!newsGrid) return;
 
-    chatBox.innerHTML = `
-        <div class="chat-msg">
-            <span class="user" style="color:#ff2a5f; font-weight:700;">System:</span> 
-            <span>Selamat datang di Live Chat Beacon FM Makassar! Login Google untuk mengobrol.</span>
-        </div>`;
+    async function fetchTopHeadlines(category = 'general') {
+        showNewsLoading();
+        const url = `https://newsapi.org/v2/top-headlines?country=id&category=${category}&apiKey=ce2268ceb997475eaf2158a70e04910a`;
 
-    chatForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        if (!currentUser) return alert("Login Google terlebih dahulu.");
-        
-        const msgText = chatInput.value.trim();
-        if (!msgText) return;
+        try {
+            const res = await fetch(url);
+            const data = await res.json();
 
-        appendChatMessageUI(currentUser.name, msgText, currentUser.picture, new Date().getTime());
-        chatInput.value = '';
+            if (data.status === 'ok' && data.articles.length > 0) {
+                renderNewsCards(data.articles);
+            } else {
+                showNewsStatus('Tidak ada berita ditemukan untuk kategori ini.');
+            }
+        } catch (error) {
+            showNewsStatus('Gagal memuat berita dari internet. Pastikan API Key valid.');
+        }
+    }
+
+    async function fetchNewsBySearch(query) {
+        showNewsLoading();
+        const url = `https://newsapi.org/v2/everything?q=${encodeURIComponent(query)}&sortBy=publishedAt&language=id&apiKey=ce2268ceb997475eaf2158a70e04910a`;
+
+        try {
+            const res = await fetch(url);
+            const data = await res.json();
+
+            if (data.status === 'ok' && data.articles.length > 0) {
+                renderNewsCards(data.articles);
+            } else {
+                showNewsStatus(`Tidak ada berita yang cocok dengan kata kunci "${query}".`);
+            }
+        } catch (error) {
+            showNewsStatus('Terjadi kesalahan saat mencari berita.');
+        }
+    }
+
+    function renderNewsCards(articles) {
+        newsGrid.innerHTML = '';
+
+        articles.forEach(article => {
+            if (article.title === '[Removed]') return;
+
+            const publishedDate = new Date(article.publishedAt).toLocaleDateString('id-ID', {
+                day: 'numeric',
+                month: 'short',
+                year: 'numeric'
+            });
+
+            const fallbackImage = 'Image/Logo.png';
+            const imageUrl = article.urlToImage || fallbackImage;
+
+            const card = document.createElement('article');
+            card.className = 'news-card';
+            card.innerHTML = `
+                <div class="news-img-wrapper">
+                    <img src="${imageUrl}" alt="Header Berita" onerror="this.src='${fallbackImage}'">
+                    <div class="news-badge">${article.source.name || 'BERITA'}</div>
+                </div>
+                <div class="news-body">
+                    <h3><a href="${article.url}" target="_blank" rel="noopener noreferrer">${article.title}</a></h3>
+                    <p>${article.description || 'Klik tautan judul di atas untuk membaca berita selengkapnya.'}</p>
+                    <span class="news-date"><i class="fa-regular fa-clock"></i> ${publishedDate}</span>
+                </div>
+            `;
+
+            newsGrid.appendChild(card);
+        });
+    }
+
+    function showNewsLoading() {
+        newsGrid.innerHTML = `<div class="news-status-msg"><i class="fa-solid fa-spinner fa-spin"></i> Memuat berita terbaru dari internet...</div>`;
+    }
+
+    function showNewsStatus(message) {
+        newsGrid.innerHTML = `<div class="news-status-msg">${message}</div>`;
+    }
+
+    // Filter Kategori
+    catBtns.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            catBtns.forEach(b => b.classList.remove('active'));
+            e.target.classList.add('active');
+
+            const category = e.target.getAttribute('data-category');
+            if (searchInput) searchInput.value = '';
+            fetchTopHeadlines(category);
+        });
     });
+
+    // Pencarian Berita
+    if (searchBtn && searchInput) {
+        searchBtn.addEventListener('click', () => {
+            const query = searchInput.value.trim();
+            if (query !== '') {
+                catBtns.forEach(b => b.classList.remove('active'));
+                fetchNewsBySearch(query);
+            }
+        });
+
+        searchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') searchBtn.click();
+        });
+    }
+
+    // Load Berita Utama saat pertama kali dibuka
+    fetchTopHeadlines();
 }
 
-function appendChatMessageUI(sender, text, avatarUrl, timestamp) {
-    const chatBox = document.getElementById('chat-box');
-    if (!chatBox) return;
+/* 4. SWITCH SFX VIA WEB AUDIO API */
+function playSwitchSoundEffect() {
+    try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
 
-    const msgDiv = document.createElement('div');
-    msgDiv.className = 'chat-msg';
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(120, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(800, ctx.currentTime + 0.08);
 
-    const date = new Date(timestamp);
-    const timeStr = `<small style="color:var(--text-secondary); float:right; font-size:0.7rem;">${date.getHours()}:${String(date.getMinutes()).padStart(2,'0')}</small>`;
-    const imgHtml = avatarUrl ? `<img src="${avatarUrl}" style="width:20px; height:20px; border-radius:50%; vertical-align:middle; margin-right:5px;">` : '';
+        gain.gain.setValueAtTime(0.3, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.08);
 
-    msgDiv.innerHTML = `${timeStr}${imgHtml}<span class="user" style="color:#ff2a5f; font-weight:700;">${sender}:</span> <span>${text}</span>`;
-    chatBox.appendChild(msgDiv);
-    chatBox.scrollTop = chatBox.scrollHeight;
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc.start();
+        osc.stop(ctx.currentTime + 0.08);
+    } catch(e) {
+        console.warn("SFX Error:", e);
+    }
 }
 
-/* 4. AUDIO PLAYER & VISUALIZER */
+/* 5. AUDIO PLAYER & SWITCH ON THE ULTIMATE WAVE */
 const audio = document.getElementById('audio-stream');
-const btnPlayPause = document.getElementById('btn-play-pause');
-const playIcon = document.getElementById('play-icon');
+const btnSwitch = document.getElementById('btn-switch-on');
 const volumeSlider = document.getElementById('volume-slider');
 
 function initAudioPlayerAndVisualizer() {
-    let isPlaying = false;
-
     if (volumeSlider && audio) audio.volume = parseFloat(volumeSlider.value);
 
-    if (btnPlayPause && audio) {
-        btnPlayPause.addEventListener('click', () => {
+    if (btnSwitch && audio) {
+        btnSwitch.addEventListener('click', () => {
+            playSwitchSoundEffect();
+
             if (!audioContext) setupAudioVisualizer();
             if (audioContext && audioContext.state === 'suspended') audioContext.resume();
 
@@ -306,12 +404,14 @@ function initAudioPlayerAndVisualizer() {
                 audio.load();
                 audio.play().then(() => {
                     isPlaying = true;
-                    if (playIcon) playIcon.className = 'fa-solid fa-pause';
-                }).catch(err => console.warn("Autoplay / Stream error:", err));
+                    document.body.classList.remove('power-off');
+                    document.body.classList.add('power-on');
+                }).catch(err => console.warn("Stream error:", err));
             } else {
                 audio.pause();
                 isPlaying = false;
-                if (playIcon) playIcon.className = 'fa-solid fa-play';
+                document.body.classList.remove('power-on');
+                document.body.classList.add('power-off');
             }
         });
     }
@@ -356,13 +456,66 @@ function renderVisualizer() {
 
     for (let i = 0; i < bufferLength; i++) {
         const barHeight = (dataArray[i] / 255) * canvas.height;
-        canvasCtx.fillStyle = '#ff2a5f'; 
+        canvasCtx.fillStyle = isPlaying ? '#00f3ff' : '#ff2a5f'; 
         canvasCtx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
         x += barWidth + 2;
     }
 }
 
-/* 5. JADWAL ACARA REAL-TIME */
+/* 6. MODAL AUTHENTICATION CONTROL */
+function openAuthModal() {
+    const modal = document.getElementById('modal-auth');
+    if (modal) modal.style.display = 'flex';
+}
+
+function closeAuthModal() {
+    const modal = document.getElementById('modal-auth');
+    if (modal) modal.style.display = 'none';
+}
+
+/* CHAT LOCAL */
+function initLocalChat() {
+    const chatForm = document.getElementById('chat-form');
+    const chatInput = document.getElementById('chat-input');
+    const chatBox = document.getElementById('chat-box');
+
+    if (!chatBox || !chatForm) return;
+
+    chatBox.innerHTML = `
+        <div class="chat-msg">
+            <span class="user" style="color:#ff2a5f; font-weight:700;">System:</span> 
+            <span>Selamat datang di Live Chat Beacon FM Makassar! Masuk untuk mulai berinteraksi.</span>
+        </div>`;
+
+    chatForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        if (!currentUser) return alert("Login Google terlebih dahulu.");
+        
+        const msgText = chatInput.value.trim();
+        if (!msgText) return;
+
+        appendChatMessageUI(currentUser.name, msgText, currentUser.picture, new Date().getTime());
+        chatInput.value = '';
+    });
+}
+
+function appendChatMessageUI(sender, text, avatarUrl, timestamp) {
+    const chatBox = document.getElementById('chat-box');
+    if (!chatBox) return;
+
+    const msgDiv = document.createElement('div');
+    msgDiv.className = 'chat-msg';
+
+    const date = new Date(timestamp);
+    const timeStr = `<small style="color:var(--text-secondary); float:right; font-size:0.7rem;">${date.getHours()}:${String(date.getMinutes()).padStart(2,'0')}</small>`;
+    const imgHtml = avatarUrl ? `<img src="${avatarUrl}" style="width:20px; height:20px; border-radius:50%; vertical-align:middle; margin-right:5px;">` : '';
+
+    msgDiv.innerHTML = `${timeStr}${imgHtml}<span class="user" style="color:#ff2a5f; font-weight:700;">${sender}:</span> <span>${text}</span>`;
+    chatBox.appendChild(msgDiv);
+    chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+/* JADWAL ACARA REAL-TIME */
 function initRealTimeSchedule() {
     function updateScheduleUI() {
         const makassarTime = getMakassarDate();
@@ -407,7 +560,7 @@ function initRealTimeSchedule() {
     setInterval(updateScheduleUI, 10000);
 }
 
-/* 6. FITUR COUNTDOWN EVENT MENDATANG */
+/* EVENT COUNTDOWN */
 function initEventCountdown() {
     const targetDate = new Date('2026-12-14T05:00:00+08:00').getTime();
 
@@ -443,7 +596,7 @@ function initEventCountdown() {
     setInterval(updateCountdown, 1000);
 }
 
-/* 7. REQUEST WA MODAL */
+/* REQUEST WA MODAL */
 function openRequestModal(programName) {
     currentProgramName = programName;
     const targetEl = document.getElementById('target-program-name');
@@ -475,12 +628,11 @@ if (formReq) {
     });
 }
 
-/* 8. JAM WIB, WITA, WIT */
+/* JAM INDONESIA */
 function initRealTimeClocks() {
     function updateClocks() {
         const now = new Date();
         const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
-
         const formatTime = (d) => d.toTimeString().split(' ')[0];
         
         const wibEl = document.getElementById('clock-wib');
@@ -495,7 +647,7 @@ function initRealTimeClocks() {
     setInterval(updateClocks, 1000);
 }
 
-/* 9. GOOGLE AUTH */
+/* GOOGLE AUTH HANDLER */
 function parseJwt(token) {
     var base64Url = token.split('.')[1];
     var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
@@ -506,8 +658,10 @@ function handleCredentialResponse(response) {
     const payload = parseJwt(response.credential);
     currentUser = { uid: payload.sub, name: payload.name, picture: payload.picture };
 
-    const gBtn = document.querySelector('.g_id_signin');
-    if (gBtn) gBtn.style.display = 'none';
+    closeAuthModal();
+
+    const authBtn = document.getElementById('btn-open-auth');
+    if (authBtn) authBtn.style.display = 'none';
 
     const profileBar = document.getElementById('user-profile');
     const avatarEl = document.getElementById('user-avatar');
@@ -526,10 +680,10 @@ function handleCredentialResponse(response) {
 function logoutGoogle() {
     currentUser = null;
     const profileBar = document.getElementById('user-profile');
-    const gBtn = document.querySelector('.g_id_signin');
+    const authBtn = document.getElementById('btn-open-auth');
 
     if (profileBar) profileBar.style.display = 'none';
-    if (gBtn) gBtn.style.display = 'block';
+    if (authBtn) authBtn.style.display = 'flex';
 
     const inputEl = document.getElementById('chat-input');
     const submitEl = document.getElementById('chat-submit');

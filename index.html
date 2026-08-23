@@ -5,28 +5,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Endless For Beacon FM</title>
     
-    <!-- Favicon / Shortcut Icon Logo Endless For Beacon FM -->
     <link rel="icon" type="image/png" href="Image/Logo.png">
     <link rel="shortcut icon" type="image/png" href="Image/Logo.png">
     <link rel="apple-touch-icon" href="Image/Logo.png">
 
-    <!-- CSS External -->
     <link rel="stylesheet" href="style.css">
     
-    <!-- Fonts & Icons -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700;800&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Google Identity Services -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
-<body>
+<body class="power-off">
 
     <div class="bg-overlay"></div>
 
-    <!-- Header / Navbar -->
     <header class="navbar">
         <div class="container nav-container">
             <a href="#" class="brand-logo">
@@ -41,21 +36,18 @@
                 <i class="fa-solid fa-bars"></i>
             </button>
 
-            <!-- Nav Menu -->
             <nav class="nav-menu" id="nav-menu">
                 <a href="#player" class="nav-link active">Live Stream</a>
+                <a href="#news" class="nav-link">News</a>
                 <a href="#jadwal" class="nav-link">Jadwal Acara</a>
                 <a href="#event" class="nav-link">Event</a>
                 <a href="#interaktif" class="nav-link">Live Chat & Kuis</a>
 
-                <!-- Google Auth Box -->
                 <div class="auth-box">
-                    <div id="g_id_onload"
-                         data-client_id="430104466152-t36mki680g22g8i1q6r6beph3skqptp6.apps.googleusercontent.com"
-                         data-callback="handleCredentialResponse"
-                         data-auto_prompt="false">
-                    </div>
-                    <div class="g_id_signin" data-type="standard" data-shape="pill" data-theme="filled_dark" data-text="signin_with" data-size="medium"></div>
+                    <button id="btn-open-auth" class="btn-auth-trigger" onclick="openAuthModal()">
+                        <i class="fa-solid fa-user-lock"></i> Masuk / Daftar
+                    </button>
+
                     <div id="user-profile" class="user-profile-bar" style="display: none;">
                         <img id="user-avatar" src="" alt="Avatar">
                         <span id="user-name"></span>
@@ -66,7 +58,6 @@
         </div>
     </header>
 
-    <!-- Main Hero / Audio Player -->
     <section id="player" class="hero-player-section">
         <div class="container player-container">
             <audio id="audio-stream" src="https://stream.zeno.fm/x1wrh2y4jj6uv" preload="none" crossorigin="anonymous"></audio>
@@ -91,9 +82,12 @@
                     <canvas id="visualizer" width="300" height="40"></canvas>
 
                     <div class="player-controls">
-                        <button id="btn-play-pause" class="btn-play">
-                            <i class="fa-solid fa-play" id="play-icon"></i>
+                        <button id="btn-switch-on" class="btn-switch-wave">
+                            <span class="switch-light"></span>
+                            <span class="switch-text">SWITCH ON THE ULTIMATE WAVE</span>
+                            <i class="fa-solid fa-power-off"></i>
                         </button>
+
                         <div class="volume-container">
                             <i class="fa-solid fa-volume-high" id="volume-icon"></i>
                             <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="0.8">
@@ -104,20 +98,41 @@
         </div>
     </section>
 
-    <!-- Content Grid -->
+    <!-- SECTION NEWS INTERNET AGGREGATOR -->
+    <section id="news" class="container news-section">
+        <div class="section-header news-header-wrapper">
+            <h2><i class="fa-solid fa-newspaper"></i> Endless For Beacon News</h2>
+            
+            <div class="news-controls">
+                <div class="news-search-box">
+                    <input type="text" id="news-search-input" placeholder="Cari topik berita...">
+                    <button id="news-search-btn"><i class="fa-solid fa-magnifying-glass"></i></button>
+                </div>
+
+                <div class="news-categories">
+                    <button class="news-cat-btn active" data-category="general">Utama</button>
+                    <button class="news-cat-btn" data-category="technology">Teknologi</button>
+                    <button class="news-cat-btn" data-category="entertainment">Hiburan</button>
+                    <button class="news-cat-btn" data-category="business">Bisnis</button>
+                    <button class="news-cat-btn" data-category="sports">Olahraga</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="news-grid" class="news-grid">
+            <!-- Berita Real-Time dari Internet Dibuat Lewat JavaScript -->
+        </div>
+    </section>
+
     <main class="container main-grid">
         <div class="left-column">
-            <!-- Jadwal Acara -->
             <section id="jadwal" class="content-section">
                 <div class="section-header">
                     <h2><i class="fa-regular fa-calendar-check"></i> Jadwal Program Acara (WITA)</h2>
                 </div>
-                <div class="schedule-list" id="schedule-container">
-                    <!-- Dynamic Schedule Rendering via JS -->
-                </div>
+                <div class="schedule-list" id="schedule-container"></div>
             </section>
 
-            <!-- Event & Countdown -->
             <section id="event" class="content-section">
                 <div class="section-header">
                     <h2><i class="fa-solid fa-bullhorn"></i> Event Mendatang</h2>
@@ -128,11 +143,10 @@
                             <div class="event-date"><i class="fa-regular fa-calendar"></i> 14 DES 2026</div>
                             <div class="event-details">
                                 <h3>Endless For Beacon FM: Switch On The Ultimate Wave - Non Stop Hits Era</h3>
-                                <p><i class="fa-solid fa-location-dot"></i>Disiarkan Lewat Radio Endless For Beacon FM & Live Stream Di YouTube Endless For Beacon</p>
+                                <p><i class="fa-solid fa-location-dot"></i> Disiarkan Lewat Radio Endless For Beacon FM & Live Stream Di YouTube Endless For Beacon</p>
                             </div>
                         </div>
 
-                        <!-- Fitur Countdown Event -->
                         <div class="countdown-container">
                             <span class="countdown-title"><i class="fa-solid fa-hourglass-start"></i> Dimulai Dalam:</span>
                             <div class="countdown-timer" id="event-countdown">
@@ -148,7 +162,16 @@
         </div>
 
         <div class="right-column" id="interaktif">
-            <!-- Live Chat -->
+            <aside class="ad-banner-box">
+                <span class="ad-label">SPONSORED ADVERTISEMENT</span>
+                <div class="ad-content">
+                    <i class="fa-solid fa-rectangle-ad ad-icon"></i>
+                    <h4>Ruang Iklan Digital</h4>
+                    <p>Pasang promosi bisnis atau produk kamu di Endless For Beacon FM Network.</p>
+                    <a href="https://wa.me/6285257448582?text=Halo%20Admin,%20saya%20tertarik%20pasang%20iklan" target="_blank" class="btn-ad">Hubungi Tim Marketing</a>
+                </div>
+            </aside>
+
             <section class="content-card chat-card">
                 <div class="chat-header">
                     <h3><i class="fa-regular fa-comments"></i> Live Chat Community</h3>
@@ -161,7 +184,6 @@
                 </form>
             </section>
 
-            <!-- Quiz Section -->
             <section class="content-card quiz-card">
                 <div class="quiz-header-bar">
                     <h3><i class="fa-solid fa-lightbulb"></i> Kuis Interaktif</h3>
@@ -179,7 +201,29 @@
         </div>
     </main>
 
-    <!-- Modal Request WhatsApp -->
+    <div id="modal-auth" class="modal">
+        <div class="modal-content auth-modal-content">
+            <span class="close-modal" onclick="closeAuthModal()">&times;</span>
+            <div class="auth-header">
+                <img src="Image/Logo.png" alt="Endless For Beacon FM Logo" class="auth-logo">
+                <h2>Endless For Beacon FM</h2>
+            </div>
+            <div class="auth-body">
+                <p class="auth-desc">
+                    Selamat datang di Portal Komunitas Endless For Beacon FM! Masuk atau mendaftar untuk dapat berpartisipasi aktif dalam Live Chat interaktif, kirim request lagu harian, serta mengikuti kuis berhadiah.
+                </p>
+                <div class="g-login-wrapper">
+                    <div id="g_id_onload"
+                         data-client_id="430104466152-t36mki680g22g8i1q6r6beph3skqptp6.apps.googleusercontent.com"
+                         data-callback="handleCredentialResponse"
+                         data-auto_prompt="false">
+                    </div>
+                    <div class="g_id_signin" data-type="standard" data-shape="pill" data-theme="filled_dark" data-text="continue_with" data-size="large"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div id="modal-request" class="modal">
         <div class="modal-content">
             <span class="close-modal" onclick="closeRequestModal()">&times;</span>
@@ -205,7 +249,6 @@
         </div>
     </div>
 
-    <!-- Footer -->
     <footer class="footer">
         <div class="container footer-grid">
             <div class="footer-col">
@@ -246,7 +289,6 @@
         </div>
     </footer>
 
-    <!-- JavaScript External -->
     <script src="script.js"></script>
 </body>
 </html>
