@@ -255,7 +255,7 @@ function initBeaconNewsEngine() {
     async function fetchNewsData(category = 'top', query = '') {
         showNewsLoading();
 
-        let url = `https://newsdata.io/api/1/news?apikey=ab11e44304d1451f90ba554b4d677da7&country=id&language=id`;
+        let url = `https://newsdata.io/api/1/news?apikey=pub_ab11e44304d1451f90ba554b4d677da7&country=id&language=id`;
         
         if (query) {
             url += `&q=${encodeURIComponent(query)}`;
