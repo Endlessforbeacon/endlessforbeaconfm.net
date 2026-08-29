@@ -17,6 +17,11 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <script src="https://accounts.google.com/gsi/client" async defer></script>
+
+    <!-- MONETAG AD NETWORK INTEGRATION (POPUNDER / IN-PAGE PUSH) -->
+    <!-- Ganti src di bawah dengan URL tag Monetag milik Anda dari Dashboard Monetag -->
+    <!-- Contoh Format: <script src="//thubanoa.com/1a/2b/3c/1a2b3c4d5e.js"></script> -->
+    <script src="sw.js" async data-cfasync="false"></script>
 </head>
 <body class="power-off">
 
@@ -98,7 +103,7 @@
         </div>
     </section>
 
-    <!-- SECTION NEWS INTERNET AGGREGATOR (NEWSDATA.IO) -->
+    <!-- SECTION NEWS INTERNET AGGREGATOR -->
     <section id="news" class="container news-section">
         <div class="section-header news-header-wrapper">
             <h2><i class="fa-solid fa-newspaper"></i> Endless For Beacon News</h2>
@@ -119,9 +124,7 @@
             </div>
         </div>
 
-        <div id="news-grid" class="news-grid">
-            <!-- Berita Real-Time dari Internet Dibuat Lewat JavaScript -->
-        </div>
+        <div id="news-grid" class="news-grid"></div>
     </section>
 
     <main class="container main-grid">
@@ -142,7 +145,7 @@
                         <div class="event-header-info">
                             <div class="event-date"><i class="fa-regular fa-calendar"></i> 14 DES 2026</div>
                             <div class="event-details">
-                                <h3>Endless For Beacon FM: Switch On The Ultimate Wave - Non Stop Hits Era</h3>
+                                <h3>Endless For Beacon FM: Switch On The Ultimate Wave - The Next Chapter</h3>
                                 <p><i class="fa-solid fa-location-dot"></i> Disiarkan Lewat Radio Endless For Beacon FM & Live Stream Di YouTube Endless For Beacon</p>
                             </div>
                         </div>
@@ -162,15 +165,47 @@
         </div>
 
         <div class="right-column" id="interaktif">
-            <aside class="ad-banner-box">
-                <span class="ad-label">SPONSORED ADVERTISEMENT</span>
-                <div class="ad-content">
-                    <i class="fa-solid fa-rectangle-ad ad-icon"></i>
-                    <h4>Ruang Iklan Digital</h4>
-                    <p>Pasang promosi bisnis atau produk kamu di Endless For Beacon FM Network.</p>
-                    <a href="https://wa.me/6285257448582?text=Halo%20Admin,%20saya%20tertarik%20pasang%20iklan" target="_blank" class="btn-ad">Hubungi Tim Marketing</a>
+            
+            <!-- SECTION AD NETWORK MONETAG -->
+            <div class="advertising-wrapper">
+                
+                <!-- SLOT IKLAN MONETAG NATIVE BANNER / SCRIPT -->
+                <div class="ad-network-card">
+                    <span class="ad-label-network">SPONSORED - MONETAG NETWORK</span>
+                    
+                    <!-- Tempat Script Widget Monetag (Misal Native Banner / Smart Link Banner) -->
+                    <div id="monetag-ad-container">
+                        <!-- Masukkan Script SDK Widget/Native Banner Monetag di sini -->
+                        <!-- <script async="async" data-cfasync="false" src="//thubanoa.com/zone_id/invoke.js"></script> -->
+                        <!-- <div id="container-zone_id"></div> -->
+                    </div>
+
+                    <!-- Fallback Direct Link Monetag -->
+                    <div class="ad-monetag-box">
+                        <i class="fa-solid fa-rectangle-ad"></i>
+                        <p>Dukung Siaran Radio Beacon FM</p>
+                        <small>Klik tombol di bawah untuk melihat penawaran sponsor kami.</small>
+                        <!-- Ganti href dengan URL Monetag SmartLink / Direct Link Anda -->
+                        <a href="https://thubanoa.com/direct_link_hash" target="_blank" rel="noopener noreferrer" class="btn-monetag-link">
+                            <i class="fa-solid fa-bolt"></i> Lihat Sponsor Monetag
+                        </a>
+                    </div>
                 </div>
-            </aside>
+
+                <!-- IKLAN MANDIRI LOKAL -->
+                <aside class="ad-banner-box">
+                    <span class="ad-label">SPONSORED ADVERTISEMENT</span>
+                    <div class="ad-content">
+                        <i class="fa-solid fa-bullhorn ad-icon"></i>
+                        <h4>Pasang Iklan Lokal Di Beacon FM</h4>
+                        <p>Promosikan bisnis/brand kamu secara langsung ke pendengar Endless For Beacon FM Network.</p>
+                        <a href="https://wa.me/6285257448582?text=Halo%20Admin,%20saya%20tertarik%20pasang%20iklan%20sponsor" target="_blank" class="btn-ad">
+                            <i class="fa-brands fa-whatsapp"></i> Hubungi Tim Marketing
+                        </a>
+                    </div>
+                </aside>
+
+            </div>
 
             <section class="content-card chat-card">
                 <div class="chat-header">

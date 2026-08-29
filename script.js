@@ -6,7 +6,6 @@ const ZENO_STREAM_KEY = "x1wrh2y4jj6uv";
 const RADIO_WA_NUMBER = "6285257448582"; 
 const DEFAULT_LOGO = "Image/Logo.png";
 
-// API Key NewsData.io (Dapatkan API Key gratis di https://newsdata.io)
 const NEWSDATA_API_KEY = "pub_ab11e44304d1451f90ba554b4d677da7"; 
 
 let currentUser = null;
@@ -60,7 +59,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initRealTimeClocks();
     initMobileNav();
     initEventCountdown();
-    initBeaconNewsEngine(); // Inisialisasi Fitur Agregator Berita Internet (NewsData.io)
+    initBeaconNewsEngine();
 
     const artworkEl = document.getElementById('track-artwork');
     if (artworkEl) {
@@ -255,7 +254,7 @@ function initBeaconNewsEngine() {
     async function fetchNewsData(category = 'top', query = '') {
         showNewsLoading();
 
-        let url = `https://newsdata.io/api/1/news?apikey=pub_ab11e44304d1451f90ba554b4d677da7&country=id&language=id`;
+        let url = `https://newsdata.io/api/1/news?apikey=${NEWSDATA_API_KEY}&country=id&language=id`;
         
         if (query) {
             url += `&q=${encodeURIComponent(query)}`;
@@ -318,7 +317,6 @@ function initBeaconNewsEngine() {
         newsGrid.innerHTML = `<div class="news-status-msg">${message}</div>`;
     }
 
-    // Filter Kategori
     catBtns.forEach(btn => {
         btn.addEventListener('click', (e) => {
             catBtns.forEach(b => b.classList.remove('active'));
@@ -330,7 +328,6 @@ function initBeaconNewsEngine() {
         });
     });
 
-    // Pencarian Berita
     if (searchBtn && searchInput) {
         searchBtn.addEventListener('click', () => {
             const query = searchInput.value.trim();
@@ -345,7 +342,6 @@ function initBeaconNewsEngine() {
         });
     }
 
-    // Load Berita Utama saat pertama kali dibuka
     fetchNewsData('top', '');
 }
 

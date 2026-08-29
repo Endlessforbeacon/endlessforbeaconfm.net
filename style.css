@@ -331,7 +331,7 @@ body.power-on .switch-light {
     cursor: pointer;
 }
 
-/* STYLING ENDLESS FOR BEACON NEWS AGGREGATOR */
+/* STYLING BEACON NEWS AGGREGATOR */
 .news-section {
     margin-bottom: 40px;
 }
@@ -524,12 +524,89 @@ body.power-on .switch-light {
     font-size: 1.2rem;
 }
 
+/* STYLING WIDGET IKLAN MONETAG */
+.advertising-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.ad-network-card {
+    background: rgba(15, 20, 32, 0.85);
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+    padding: 18px;
+    text-align: center;
+    position: relative;
+    min-height: 180px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+}
+
+.ad-label-network {
+    position: absolute;
+    top: 8px;
+    right: 12px;
+    font-size: 0.6rem;
+    color: var(--cyan-neon);
+    letter-spacing: 0.5px;
+    font-weight: 700;
+}
+
+.ad-monetag-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.ad-monetag-box i {
+    font-size: 2rem;
+    color: var(--cyan-neon);
+}
+
+.ad-monetag-box p {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #fff;
+}
+
+.ad-monetag-box small {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+
+.btn-monetag-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(135deg, #00f3ff, #0066ff);
+    color: #000;
+    font-weight: 800;
+    font-size: 0.85rem;
+    padding: 8px 18px;
+    border-radius: 20px;
+    text-decoration: none;
+    margin-top: 6px;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.btn-monetag-link:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 243, 255, 0.4);
+}
+
+/* Slot 2: Sponsored Advertisement (Mandiri Studio) */
 .ad-banner-box {
     background: linear-gradient(135deg, rgba(255, 42, 95, 0.1), rgba(18, 22, 36, 0.8));
     border: 1px dashed var(--accent-color);
     border-radius: 16px;
     padding: 18px;
-    margin-bottom: 24px;
     text-align: center;
     position: relative;
 }
