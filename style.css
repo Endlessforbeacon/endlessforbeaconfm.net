@@ -524,7 +524,7 @@ body.power-on .switch-light {
     font-size: 1.2rem;
 }
 
-/* STYLING WIDGET IKLAN MONETAG */
+/* STYLING WIDGET IKLAN ADSTERRA */
 .advertising-wrapper {
     display: flex;
     flex-direction: column;
@@ -557,7 +557,7 @@ body.power-on .switch-light {
     font-weight: 700;
 }
 
-.ad-monetag-box {
+.ad-adsterra-box {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -565,23 +565,23 @@ body.power-on .switch-light {
     margin-top: 10px;
 }
 
-.ad-monetag-box i {
+.ad-adsterra-box i {
     font-size: 2rem;
     color: var(--cyan-neon);
 }
 
-.ad-monetag-box p {
+.ad-adsterra-box p {
     font-size: 0.9rem;
     font-weight: 700;
     color: #fff;
 }
 
-.ad-monetag-box small {
+.ad-adsterra-box small {
     font-size: 0.75rem;
     color: var(--text-secondary);
 }
 
-.btn-monetag-link {
+.btn-adsterra-link {
     display: inline-flex;
     align-items: center;
     gap: 8px;
@@ -596,7 +596,7 @@ body.power-on .switch-light {
     transition: transform 0.2s, box-shadow 0.2s;
 }
 
-.btn-monetag-link:hover {
+.btn-adsterra-link:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 15px rgba(0, 243, 255, 0.4);
 }
