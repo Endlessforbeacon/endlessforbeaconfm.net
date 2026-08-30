@@ -524,6 +524,96 @@ body.power-on .switch-light {
     font-size: 1.2rem;
 }
 
+/* STYLING ASIA POP 40 CHART WIDGET */
+.chart-card-section {
+    background: linear-gradient(145deg, rgba(22, 27, 46, 0.8), rgba(12, 16, 28, 0.95));
+}
+
+.chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+}
+
+.ap40-badge {
+    background: rgba(0, 243, 255, 0.15);
+    color: var(--cyan-neon);
+    border: 1px solid var(--cyan-neon);
+    font-size: 0.65rem;
+    font-weight: 800;
+    padding: 3px 10px;
+    border-radius: 12px;
+    letter-spacing: 0.5px;
+}
+
+.ap40-subtext {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    margin-bottom: 16px;
+}
+
+.ap40-chart-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: 480px;
+    overflow-y: auto;
+    padding-right: 5px;
+}
+
+.ap40-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--card-border);
+    padding: 10px 14px;
+    border-radius: 12px;
+    transition: all 0.25s ease;
+}
+
+.ap40-item:hover {
+    background: rgba(0, 243, 255, 0.05);
+    border-color: rgba(0, 243, 255, 0.3);
+    transform: translateX(4px);
+}
+
+.ap40-rank {
+    font-family: var(--font-cyber);
+    font-size: 1.2rem;
+    font-weight: 900;
+    color: var(--text-secondary);
+    min-width: 28px;
+    text-align: center;
+}
+
+.ap40-item:nth-child(1) .ap40-rank { color: #ffd700; text-shadow: 0 0 10px rgba(255,215,0,0.5); }
+.ap40-item:nth-child(2) .ap40-rank { color: #c0c0c0; }
+.ap40-item:nth-child(3) .ap40-rank { color: #cd7f32; }
+
+.ap40-info {
+    flex-grow: 1;
+    overflow: hidden;
+}
+
+.ap40-title {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #fff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.ap40-artist {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 /* STYLING WIDGET IKLAN ADSTERRA */
 .advertising-wrapper {
     display: flex;

@@ -60,6 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initMobileNav();
     initEventCountdown();
     initBeaconNewsEngine();
+    initAsiaPop40Engine();
 
     const artworkEl = document.getElementById('track-artwork');
     if (artworkEl) {
@@ -242,7 +243,82 @@ async function fetchArtworkFromiTunes(artist, title) {
     }
 }
 
-/* 3. FITUR ENDLESS FOR BEACON NEWS ENGINE (NEWSDATA.IO AGGREGATOR) */
+/* 3. FITUR ASIA POP 40 AUTOMATIC CHART ENGINE */
+function initAsiaPop40Engine() {
+    const chartListContainer = document.getElementById('ap40-list');
+    if (!chartListContainer) return;
+
+    const fallbackChart = [
+        { rank: 1, title: "APT.", artist: "ROSE & Bruno Mars" },
+        { rank: 2, title: "Espresso", artist: "Sabrina Carpenter" },
+        { rank: 3, title: "Die With A Smile", artist: "Lady Gaga & Bruno Mars" },
+        { rank: 4, title: "Birds of a Feather", artist: "Billie Eilish" },
+        { rank: 5, title: "Good Luck, Babe!", artist: "Chappell Roan" },
+        { rank: 6, title: "Please Please Please", artist: "Sabrina Carpenter" },
+        { rank: 7, title: "Cruel Summer", artist: "Taylor Swift" },
+        { rank: 8, title: "Greedy", artist: "Tate McRae" },
+        { rank: 9, title: "Water", artist: "Tyla" },
+        { rank: 10, title: "Lose Control", artist: "Teddy Swims" }
+    ];
+
+    async function fetchAsiaPop40Data() {
+        chartListContainer.innerHTML = `<div class="news-status-msg"><i class="fa-solid fa-spinner fa-spin"></i> Mengambil data Top Chart Asia Pop 40...</div>`;
+
+        const targetUrl = 'https://asiapop40.com/';
+        const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`;
+
+        try {
+            const response = await fetch(proxyUrl);
+            if (!response.ok) throw new Error("HTTP error");
+            const data = await response.json();
+            
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(data.contents, 'text/html');
+
+            const chartItems = doc.querySelectorAll('.chart-item, .entry-title, .track-info, li.chart-row');
+            let parsedList = [];
+
+            if (chartItems.length > 0) {
+                chartItems.forEach((el, index) => {
+                    if (index < 10) {
+                        const title = el.querySelector('.song-title, .title')?.textContent.trim() || "Asia Pop Track";
+                        const artist = el.querySelector('.artist-name, .artist')?.textContent.trim() || "Various Artists";
+                        parsedList.push({ rank: index + 1, title, artist });
+                    }
+                });
+            }
+
+            if (parsedList.length >= 3) {
+                renderChartList(parsedList);
+            } else {
+                renderChartList(fallbackChart);
+            }
+        } catch (error) {
+            console.warn("Gagal scrape langsung asiapop40.com, menggunakan fallback chart:", error);
+            renderChartList(fallbackChart);
+        }
+    }
+
+    function renderChartList(items) {
+        chartListContainer.innerHTML = '';
+        items.forEach(item => {
+            const row = document.createElement('div');
+            row.className = 'ap40-item';
+            row.innerHTML = `
+                <div class="ap40-rank">${String(item.rank).padStart(2, '0')}</div>
+                <div class="ap40-info">
+                    <div class="ap40-title">${item.title}</div>
+                    <div class="ap40-artist">${item.artist}</div>
+                </div>
+            `;
+            chartListContainer.appendChild(row);
+        });
+    }
+
+    fetchAsiaPop40Data();
+}
+
+/* 4. FITUR ENDLESS FOR BEACON NEWS ENGINE (NEWSDATA.IO AGGREGATOR) */
 function initBeaconNewsEngine() {
     const newsGrid = document.getElementById('news-grid');
     const searchInput = document.getElementById('news-search-input');
@@ -345,7 +421,7 @@ function initBeaconNewsEngine() {
     fetchNewsData('top', '');
 }
 
-/* 4. SWITCH SFX VIA WEB AUDIO API */
+/* 5. SWITCH SFX VIA WEB AUDIO API */
 function playSwitchSoundEffect() {
     try {
         const ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -369,7 +445,7 @@ function playSwitchSoundEffect() {
     }
 }
 
-/* 5. AUDIO PLAYER & SWITCH ON THE ULTIMATE WAVE */
+/* 6. AUDIO PLAYER & SWITCH ON THE ULTIMATE WAVE */
 const audio = document.getElementById('audio-stream');
 const btnSwitch = document.getElementById('btn-switch-on');
 const volumeSlider = document.getElementById('volume-slider');
@@ -446,7 +522,7 @@ function renderVisualizer() {
     }
 }
 
-/* 6. MODAL AUTHENTICATION CONTROL */
+/* 7. MODAL AUTHENTICATION CONTROL */
 function openAuthModal() {
     const modal = document.getElementById('modal-auth');
     if (modal) modal.style.display = 'flex';
@@ -605,7 +681,7 @@ if (formReq) {
         const song = document.getElementById('req-song').value.trim();
         const msg = document.getElementById('req-message').value.trim();
 
-        let textMessage = `*REQUEST LAGU - BEACON FM MAKASSAR*\n-----------------------------------\n📻 *Program:* ${currentProgramName}\n👤 *Dari:* ${sender}\n🎵 *Lagu:* ${song}\n` + (msg ? `💬 *Pesan:* _"${msg}"_\n` : '') + `-----------------------------------`;
+        let textMessage = `*REQUEST LAGU - BEACON FM MAKASSAR*\n-----------------------------------\n *Program:* ${currentProgramName}\n *Dari:* ${sender}\n *Lagu:* ${song}\n` + (msg ? ` *Pesan:* _"${msg}"_\n` : '') + `-----------------------------------`;
 
         window.open(`https://wa.me/${RADIO_WA_NUMBER}?text=${encodeURIComponent(textMessage)}`, '_blank');
         closeRequestModal();
