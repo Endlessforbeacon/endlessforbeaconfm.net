@@ -8,6 +8,9 @@ const DEFAULT_LOGO = "Image/Logo.png";
 
 const NEWSDATA_API_KEY = "pub_ab11e44304d1451f90ba554b4d677da7"; 
 
+// URL Publikasi Google Sheets CSV
+const GOOGLE_SHEETS_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSMx6DIwB0BTp6J1NTvsVlmnmbt4phRMPArJS2wLXxaM6BilX0K-zNZ61GsNQDkqvrlOJTZkXHmBZVh/pub?gid=0&single=true&output=csv";
+
 let currentUser = null;
 let audioContext, audioAnalyser, audioSource;
 let currentProgramName = "";
@@ -248,77 +251,88 @@ function initAsiaPop40Engine() {
     const chartListContainer = document.getElementById('ap40-list');
     if (!chartListContainer) return;
 
-    const fallbackChart = [
-        { rank: 1, title: "APT.", artist: "ROSE & Bruno Mars" },
-        { rank: 2, title: "Espresso", artist: "Sabrina Carpenter" },
-        { rank: 3, title: "Die With A Smile", artist: "Lady Gaga & Bruno Mars" },
-        { rank: 4, title: "Birds of a Feather", artist: "Billie Eilish" },
-        { rank: 5, title: "Good Luck, Babe!", artist: "Chappell Roan" },
-        { rank: 6, title: "Please Please Please", artist: "Sabrina Carpenter" },
-        { rank: 7, title: "Cruel Summer", artist: "Taylor Swift" },
-        { rank: 8, title: "Greedy", artist: "Tate McRae" },
-        { rank: 9, title: "Water", artist: "Tyla" },
-        { rank: 10, title: "Lose Control", artist: "Teddy Swims" }
-    ];
-
-    async function fetchAsiaPop40Data() {
-        chartListContainer.innerHTML = `<div class="news-status-msg"><i class="fa-solid fa-spinner fa-spin"></i> Mengambil data Top Chart Asia Pop 40...</div>`;
-
-        const targetUrl = 'https://asiapop40.com/';
-        const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`;
+    async function fetchAsiaPop40FromGoogleSheets() {
+        chartListContainer.innerHTML = `<div class="news-status-msg"><i class="fa-solid fa-spinner fa-spin"></i> Memuat Chart Asia Pop 40...</div>`;
 
         try {
-            const response = await fetch(proxyUrl);
-            if (!response.ok) throw new Error("HTTP error");
-            const data = await response.json();
+            const response = await fetch(GOOGLE_SHEETS_CSV_URL);
+            if (!response.ok) throw new Error("Gagal mengambil data spreadsheet");
             
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(data.contents, 'text/html');
-
-            const chartItems = doc.querySelectorAll('.chart-item, .entry-title, .track-info, li.chart-row');
+            const csvText = await response.text();
+            const lines = csvText.split('\n').map(row => row.trim()).filter(row => row.length > 0);
+            
             let parsedList = [];
+            const startIndex = (lines.length > 0 && (lines[0].toLowerCase().includes('rank') || lines[0].toLowerCase().includes('posisi'))) ? 1 : 0;
+            const totalLines = lines.length;
 
-            if (chartItems.length > 0) {
-                chartItems.forEach((el, index) => {
-                    if (index < 10) {
-                        const title = el.querySelector('.song-title, .title')?.textContent.trim() || "Asia Pop Track";
-                        const artist = el.querySelector('.artist-name, .artist')?.textContent.trim() || "Various Artists";
-                        parsedList.push({ rank: index + 1, title, artist });
+            for (let i = startIndex; i < totalLines; i++) {
+                const cols = lines[i].split(',').map(col => col.replace(/^"|"$/g, '').trim());
+                
+                if (cols.length >= 2) {
+                    let rawRank = cols[0] || '';
+                    let titleVal = cols[1] || '';
+                    let artistVal = cols[2] || '';
+
+                    if (!artistVal && titleVal.includes('-')) {
+                        const parts = titleVal.split('-');
+                        artistVal = parts[0].trim();
+                        titleVal = parts.slice(1).join('-').trim();
                     }
-                });
+
+                    if (titleVal) {
+                        parsedList.push({
+                            rank: rawRank,
+                            title: titleVal,
+                            artist: artistVal
+                        });
+                    }
+                }
             }
 
-            if (parsedList.length >= 3) {
+            if (parsedList.length > 0) {
                 renderChartList(parsedList);
             } else {
-                renderChartList(fallbackChart);
+                chartListContainer.innerHTML = `<div class="news-status-msg">Tidak ada data chart.</div>`;
             }
         } catch (error) {
-            console.warn("Gagal scrape langsung asiapop40.com, menggunakan fallback chart:", error);
-            renderChartList(fallbackChart);
+            console.warn("Gagal memuat chart Google Sheets:", error);
+            chartListContainer.innerHTML = `<div class="news-status-msg">Gagal memuat data chart.</div>`;
         }
     }
 
     function renderChartList(items) {
         chartListContainer.innerHTML = '';
-        items.forEach(item => {
+        
+        const totalItems = items.length;
+        for (let j = 0; j < totalItems; j++) {
+            const item = items[j];
             const row = document.createElement('div');
             row.className = 'ap40-item';
+
+            let rankDisplay = item.rank;
+            let isSpecialTrack = false;
+
+            if (!isNaN(item.rank) && item.rank !== '') {
+                rankDisplay = String(item.rank).padStart(2, '0');
+            } else {
+                isSpecialTrack = true;
+            }
+
             row.innerHTML = `
-                <div class="ap40-rank">${String(item.rank).padStart(2, '0')}</div>
+                <div class="ap40-rank ${isSpecialTrack ? 'special-badge' : ''}">${rankDisplay}</div>
                 <div class="ap40-info">
                     <div class="ap40-title">${item.title}</div>
-                    <div class="ap40-artist">${item.artist}</div>
+                    <div class="ap40-artist">${item.artist || '-'}</div>
                 </div>
             `;
             chartListContainer.appendChild(row);
-        });
+        }
     }
 
-    fetchAsiaPop40Data();
+    fetchAsiaPop40FromGoogleSheets();
 }
 
-/* 4. FITUR ENDLESS FOR BEACON NEWS ENGINE (NEWSDATA.IO AGGREGATOR) */
+/* 4. FITUR ENDLESS FOR BEACON NEWS ENGINE */
 function initBeaconNewsEngine() {
     const newsGrid = document.getElementById('news-grid');
     const searchInput = document.getElementById('news-search-input');
