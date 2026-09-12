@@ -5,6 +5,8 @@
 const ZENO_STREAM_KEY = "x1wrh2y4jj6uv"; 
 const RADIO_WA_NUMBER = "6285257448582"; 
 const DEFAULT_LOGO = "Image/Logo.png";
+const GOOGLE_CLIENT_ID = "969783269309-99n69ig4hfbcpnvkn2dr0k86stbfejs2.apps.googleusercontent.com";
+const FACEBOOK_APP_ID = "1778082900045504"; // Ganti dengan App ID Facebook kamu
 
 const NEWSDATA_API_KEY = "pub_ab11e44304d1451f90ba554b4d677da7"; 
 
@@ -64,6 +66,8 @@ document.addEventListener('DOMContentLoaded', () => {
     initEventCountdown();
     initBeaconNewsEngine();
     initAsiaPop40Engine();
+    initFacebookSDK();
+    checkStoredUserSession();
 
     const artworkEl = document.getElementById('track-artwork');
     if (artworkEl) {
@@ -332,7 +336,7 @@ function initAsiaPop40Engine() {
     fetchAsiaPop40FromGoogleSheets();
 }
 
-/* 4. FITUR ENDLESS FOR BEACON NEWS ENGINE */
+/* 4. FITUR ENDLESS FOR BEACON NEWS ENGINE (TANPA KONVERSI AUDIO MP3) */
 function initBeaconNewsEngine() {
     const newsGrid = document.getElementById('news-grid');
     const searchInput = document.getElementById('news-search-input');
@@ -365,38 +369,6 @@ function initBeaconNewsEngine() {
             console.error('NewsData Fetch Error:', error);
             showNewsStatus('Gagal memuat berita dari internet. Pastikan API Key NewsData.io valid.');
         }
-    }
-
-    function renderNewsCards(articles) {
-        newsGrid.innerHTML = '';
-
-        articles.forEach(article => {
-            const publishedDate = article.pubDate ? new Date(article.pubDate).toLocaleDateString('id-ID', {
-                day: 'numeric',
-                month: 'short',
-                year: 'numeric'
-            }) : 'Terbaru';
-
-            const fallbackImage = DEFAULT_LOGO;
-            const imageUrl = article.image_url || fallbackImage;
-            const sourceName = article.source_id ? article.source_id.toUpperCase() : 'BERITA';
-
-            const card = document.createElement('article');
-            card.className = 'news-card';
-            card.innerHTML = `
-                <div class="news-img-wrapper">
-                    <img src="${imageUrl}" alt="Header Berita" onerror="this.src='${fallbackImage}'">
-                    <div class="news-badge">${sourceName}</div>
-                </div>
-                <div class="news-body">
-                    <h3><a href="${article.link}" target="_blank" rel="noopener noreferrer">${article.title}</a></h3>
-                    <p>${article.description ? article.description.substring(0, 120) + '...' : 'Klik tautan judul di atas untuk membaca berita selengkapnya.'}</p>
-                    <span class="news-date"><i class="fa-regular fa-clock"></i> ${publishedDate}</span>
-                </div>
-            `;
-
-            newsGrid.appendChild(card);
-        });
     }
 
     function showNewsLoading() {
@@ -433,6 +405,44 @@ function initBeaconNewsEngine() {
     }
 
     fetchNewsData('top', '');
+}
+
+function renderNewsCards(articles) {
+    const newsGrid = document.getElementById('news-grid');
+    if (!newsGrid) return;
+
+    newsGrid.innerHTML = '';
+
+    articles.forEach((article, index) => {
+        const publishedDate = article.pubDate ? new Date(article.pubDate).toLocaleDateString('id-ID', {
+            day: 'numeric',
+            month: 'short',
+            year: 'numeric'
+        }) : 'Terbaru';
+
+        const fallbackImage = DEFAULT_LOGO;
+        const imageUrl = article.image_url || fallbackImage;
+        const sourceName = article.source_id ? article.source_id.toUpperCase() : 'BERITA';
+
+        const card = document.createElement('article');
+        card.className = 'news-card';
+        card.innerHTML = `
+            <div class="news-img-wrapper">
+                <img src="${imageUrl}" alt="Header Berita" onerror="this.src='${fallbackImage}'">
+                <div class="news-badge">${sourceName}</div>
+            </div>
+            <div class="news-body">
+                <h3><a href="${article.link}" target="_blank" rel="noopener noreferrer">${article.title}</a></h3>
+                <p id="news-desc-${index}">${article.description ? article.description.substring(0, 140) + '...' : 'Klik tautan judul di atas untuk membaca berita selengkapnya.'}</p>
+                
+                <div class="news-action-bar">
+                    <span class="news-date"><i class="fa-regular fa-clock"></i> ${publishedDate}</span>
+                </div>
+            </div>
+        `;
+
+        newsGrid.appendChild(card);
+    });
 }
 
 /* 5. SWITCH SFX VIA WEB AUDIO API */
@@ -536,15 +546,154 @@ function renderVisualizer() {
     }
 }
 
-/* 7. MODAL AUTHENTICATION CONTROL */
+/* 7. MODAL AUTHENTICATION CONTROL (GOOGLE & FACEBOOK SIGN-IN) */
 function openAuthModal() {
     const modal = document.getElementById('modal-auth');
-    if (modal) modal.style.display = 'flex';
+    if (modal) {
+        modal.style.display = 'flex';
+        renderGoogleButton();
+    }
 }
 
 function closeAuthModal() {
     const modal = document.getElementById('modal-auth');
     if (modal) modal.style.display = 'none';
+}
+
+function renderGoogleButton() {
+    if (window.google && window.google.accounts && window.google.accounts.id) {
+        window.google.accounts.id.initialize({
+            client_id: GOOGLE_CLIENT_ID,
+            callback: handleCredentialResponse
+        });
+
+        const btnContainer = document.getElementById('google-btn-container');
+        if (btnContainer) {
+            btnContainer.innerHTML = '';
+            window.google.accounts.id.renderButton(
+                btnContainer,
+                { theme: "filled_dark", size: "large", type: "standard", shape: "pill", text: "continue_with" }
+            );
+        }
+    } else {
+        setTimeout(renderGoogleButton, 500);
+    }
+}
+
+function parseJwt(token) {
+    try {
+        var base64Url = token.split('.')[1];
+        var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        var jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
+            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        }).join(''));
+        return JSON.parse(jsonPayload);
+    } catch (e) {
+        console.error("Gagal parse JWT Token:", e);
+        return null;
+    }
+}
+
+function handleCredentialResponse(response) {
+    const payload = parseJwt(response.credential);
+    if (!payload) return;
+
+    currentUser = { 
+        uid: payload.sub, 
+        name: payload.name, 
+        picture: payload.picture,
+        provider: 'google'
+    };
+
+    localStorage.setItem('beacon_user', JSON.stringify(currentUser));
+    updateUserSessionUI();
+    closeAuthModal();
+}
+
+/* INITIALIZATION FACEBOOK SDK & LOGIN */
+function initFacebookSDK() {
+    window.fbAsyncInit = function() {
+        FB.init({
+            appId      : FACEBOOK_APP_ID,
+            cookie     : true,
+            xfbml      : true,
+            version    : 'v18.0'
+        });
+    };
+}
+
+function loginFacebook() {
+    if (typeof FB === 'undefined') {
+        alert("SDK Facebook belum siap. Silakan coba beberapa saat lagi.");
+        return;
+    }
+
+    FB.login(function(response) {
+        if (response.authResponse) {
+            FB.api('/me', { fields: 'name, picture.width(100).height(100)' }, function(profile) {
+                currentUser = {
+                    uid: profile.id,
+                    name: profile.name,
+                    picture: profile.picture ? profile.picture.data.url : DEFAULT_LOGO,
+                    provider: 'facebook'
+                };
+
+                localStorage.setItem('beacon_user', JSON.stringify(currentUser));
+                updateUserSessionUI();
+                closeAuthModal();
+            });
+        }
+    }, { scope: 'public_profile' });
+}
+
+function checkStoredUserSession() {
+    const storedUser = localStorage.getItem('beacon_user');
+    if (storedUser) {
+        try {
+            currentUser = JSON.parse(storedUser);
+            updateUserSessionUI();
+        } catch (e) {
+            localStorage.removeItem('beacon_user');
+        }
+    }
+}
+
+function updateUserSessionUI() {
+    const authBtn = document.getElementById('btn-open-auth');
+    const profileBar = document.getElementById('user-profile');
+    const avatarEl = document.getElementById('user-avatar');
+    const nameEl = document.getElementById('user-name');
+    const inputEl = document.getElementById('chat-input');
+    const submitEl = document.getElementById('chat-submit');
+
+    if (currentUser) {
+        if (authBtn) authBtn.style.display = 'none';
+        if (avatarEl) avatarEl.src = currentUser.picture;
+        if (nameEl) nameEl.textContent = currentUser.name;
+        if (profileBar) profileBar.style.display = 'flex';
+        if (inputEl) {
+            inputEl.disabled = false;
+            inputEl.placeholder = "Tulis pesan di sini...";
+        }
+        if (submitEl) submitEl.disabled = false;
+    } else {
+        if (profileBar) profileBar.style.display = 'none';
+        if (authBtn) authBtn.style.display = 'flex';
+        if (inputEl) {
+            inputEl.disabled = true;
+            inputEl.placeholder = "Masuk untuk mulai chat...";
+        }
+        if (submitEl) submitEl.disabled = true;
+    }
+}
+
+function logoutUser() {
+    if (currentUser && currentUser.provider === 'facebook' && typeof FB !== 'undefined') {
+        FB.logout();
+    }
+    currentUser = null;
+    localStorage.removeItem('beacon_user');
+    updateUserSessionUI();
 }
 
 /* CHAT LOCAL */
@@ -563,7 +712,7 @@ function initLocalChat() {
 
     chatForm.addEventListener('submit', (e) => {
         e.preventDefault();
-        if (!currentUser) return alert("Login Google terlebih dahulu.");
+        if (!currentUser) return alert("Silakan login terlebih dahulu.");
         
         const msgText = chatInput.value.trim();
         if (!msgText) return;
@@ -719,48 +868,4 @@ function initRealTimeClocks() {
     }
     updateClocks();
     setInterval(updateClocks, 1000);
-}
-
-/* GOOGLE AUTH HANDLER */
-function parseJwt(token) {
-    var base64Url = token.split('.')[1];
-    var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-    return JSON.parse(decodeURIComponent(window.atob(base64).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join('')));
-}
-
-function handleCredentialResponse(response) {
-    const payload = parseJwt(response.credential);
-    currentUser = { uid: payload.sub, name: payload.name, picture: payload.picture };
-
-    closeAuthModal();
-
-    const authBtn = document.getElementById('btn-open-auth');
-    if (authBtn) authBtn.style.display = 'none';
-
-    const profileBar = document.getElementById('user-profile');
-    const avatarEl = document.getElementById('user-avatar');
-    const nameEl = document.getElementById('user-name');
-
-    if (avatarEl) avatarEl.src = currentUser.picture;
-    if (nameEl) nameEl.textContent = currentUser.name;
-    if (profileBar) profileBar.style.display = 'flex';
-
-    const inputEl = document.getElementById('chat-input');
-    const submitEl = document.getElementById('chat-submit');
-    if (inputEl) inputEl.disabled = false;
-    if (submitEl) submitEl.disabled = false;
-}
-
-function logoutGoogle() {
-    currentUser = null;
-    const profileBar = document.getElementById('user-profile');
-    const authBtn = document.getElementById('btn-open-auth');
-
-    if (profileBar) profileBar.style.display = 'none';
-    if (authBtn) authBtn.style.display = 'flex';
-
-    const inputEl = document.getElementById('chat-input');
-    const submitEl = document.getElementById('chat-submit');
-    if (inputEl) inputEl.disabled = true;
-    if (submitEl) submitEl.disabled = true;
 }

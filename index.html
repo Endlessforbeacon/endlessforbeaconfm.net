@@ -19,7 +19,11 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700;800&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
+    <!-- Google Identity Services Library -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
+    
+    <!-- Facebook SDK -->
+    <script async defer crossorigin="anonymous" src="https://connect.facebook.net/id_ID/sdk.js"></script>
 </head>
 <body class="power-off">
 
@@ -55,7 +59,7 @@
                     <div id="user-profile" class="user-profile-bar" style="display: none;">
                         <img id="user-avatar" src="" alt="Avatar">
                         <span id="user-name"></span>
-                        <button onclick="logoutGoogle()" class="btn-logout" title="Keluar"><i class="fa-solid fa-right-from-bracket"></i></button>
+                        <button onclick="logoutUser()" class="btn-logout" title="Keluar"><i class="fa-solid fa-right-from-bracket"></i></button>
                     </div>
                 </div>
             </nav>
@@ -67,7 +71,7 @@
         <span class="ad-label-adsense">SPONSORED ADVERTISEMENT</span>
         <ins class="adsbygoogle"
              style="display:block"
-             data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+             data-ad-client="ca-pub-3868499384073071"
              data-ad-slot="1234567890"
              data-ad-format="auto"
              data-full-width-responsive="true"></ins>
@@ -189,13 +193,13 @@
                 <div id="ap40-list" class="ap40-chart-list"></div>
             </section>
 
-            <!-- GOOGLE ADSENSE INTEGRATION (SIDEBAR RECTANGLE & RESPONSIVE) -->
+            <!-- GOOGLE ADSENSE INTEGRATION -->
             <div class="advertising-wrapper">
                 <div class="ad-network-card">
                     <span class="ad-label-network">SPONSORED - GOOGLE ADSENSE</span>
                     <ins class="adsbygoogle"
                          style="display:block"
-                         data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+                         data-ad-client="ca-pub-3868499384073071"
                          data-ad-slot="0987654321"
                          data-ad-format="rectangle"
                          data-full-width-responsive="true"></ins>
@@ -224,7 +228,7 @@
                 </div>
                 <div id="chat-box" class="chat-messages"></div>
                 <form id="chat-form" class="chat-input-area">
-                    <input type="text" id="chat-input" placeholder="Masuk dengan Google untuk chat..." required autocomplete="off" disabled>
+                    <input type="text" id="chat-input" placeholder="Masuk untuk mulai chat..." required autocomplete="off" disabled>
                     <button type="submit" id="chat-submit" disabled><i class="fa-solid fa-paper-plane"></i></button>
                 </form>
             </section>
@@ -246,6 +250,7 @@
         </div>
     </main>
 
+    <!-- MODAL AUTHENTICATION (GOOGLE & FACEBOOK LOGIN) -->
     <div id="modal-auth" class="modal">
         <div class="modal-content auth-modal-content">
             <span class="close-modal" onclick="closeAuthModal()">&times;</span>
@@ -257,13 +262,16 @@
                 <p class="auth-desc">
                     Selamat datang di Portal Komunitas Endless For Beacon FM! Masuk atau mendaftar untuk dapat berpartisipasi aktif dalam Live Chat interaktif, kirim request lagu harian, serta mengikuti kuis berhadiah.
                 </p>
-                <div class="g-login-wrapper">
-                    <div id="g_id_onload"
-                         data-client_id="430104466152-t36mki680g22g8i1q6r6beph3skqptp6.apps.googleusercontent.com"
-                         data-callback="handleCredentialResponse"
-                         data-auto_prompt="false">
-                    </div>
-                    <div class="g_id_signin" data-type="standard" data-shape="pill" data-theme="filled_dark" data-text="continue_with" data-size="large"></div>
+                <div class="auth-buttons-group">
+                    <!-- Container Google Sign-In -->
+                    <div id="google-btn-container" class="g-login-wrapper"></div>
+                    
+                    <div class="auth-divider">atau</div>
+
+                    <!-- Tombol Facebook Login -->
+                    <button class="btn-fb-login" onclick="loginFacebook()">
+                        <i class="fa-brands fa-facebook-f"></i> Masuk dengan Facebook
+                    </button>
                 </div>
             </div>
         </div>
