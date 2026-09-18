@@ -1,17 +1,25 @@
 /**
- * BEACON FM - REAL-TIME ENGINE (MAKASSAR HQ TIME - WITA)
+ * BEACON FM - REAL-TIME ENGINE WITH FIREBASE LIVE CHAT & Y2K UI
  */
 
 const ZENO_STREAM_KEY = "x1wrh2y4jj6uv"; 
 const RADIO_WA_NUMBER = "6285257448582"; 
 const DEFAULT_LOGO = "Image/Logo.png";
 const GOOGLE_CLIENT_ID = "969783269309-99n69ig4hfbcpnvkn2dr0k86stbfejs2.apps.googleusercontent.com";
-const FACEBOOK_APP_ID = "1778082900045504"; // Ganti dengan App ID Facebook kamu
-
+const FACEBOOK_APP_ID = "1778082900045504"; 
 const NEWSDATA_API_KEY = "pub_ab11e44304d1451f90ba554b4d677da7"; 
 
-// URL Publikasi Google Sheets CSV
-const GOOGLE_SHEETS_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSMx6DIwB0BTp6J1NTvsVlmnmbt4phRMPArJS2wLXxaM6BilX0K-zNZ61GsNQDkqvrlOJTZkXHmBZVh/pub?gid=0&single=true&output=csv";
+// Konfigurasi Firebase Realtime Database
+const firebaseConfig = {
+    databaseURL: "https://beacon-fm-chat-default-rtdb.asia-southeast1.firebasedatabase.app"
+};
+
+// Inisialisasi Firebase
+if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+}
+const db = firebase.database();
+const chatRef = db.ref("live_chat_messages");
 
 let currentUser = null;
 let audioContext, audioAnalyser, audioSource;
@@ -58,14 +66,13 @@ const schedules = [
 
 document.addEventListener('DOMContentLoaded', () => {
     initZenoPublicMetadata();
-    initLocalChat();
+    initFirebaseRealtimeChat();
     initAudioPlayerAndVisualizer();
     initRealTimeSchedule();
     initRealTimeClocks();
     initMobileNav();
     initEventCountdown();
     initBeaconNewsEngine();
-    initAsiaPop40Engine();
     initFacebookSDK();
     checkStoredUserSession();
 
@@ -250,93 +257,7 @@ async function fetchArtworkFromiTunes(artist, title) {
     }
 }
 
-/* 3. FITUR ASIA POP 40 AUTOMATIC CHART ENGINE */
-function initAsiaPop40Engine() {
-    const chartListContainer = document.getElementById('ap40-list');
-    if (!chartListContainer) return;
-
-    async function fetchAsiaPop40FromGoogleSheets() {
-        chartListContainer.innerHTML = `<div class="news-status-msg"><i class="fa-solid fa-spinner fa-spin"></i> Memuat Chart Asia Pop 40...</div>`;
-
-        try {
-            const response = await fetch(GOOGLE_SHEETS_CSV_URL);
-            if (!response.ok) throw new Error("Gagal mengambil data spreadsheet");
-            
-            const csvText = await response.text();
-            const lines = csvText.split('\n').map(row => row.trim()).filter(row => row.length > 0);
-            
-            let parsedList = [];
-            const startIndex = (lines.length > 0 && (lines[0].toLowerCase().includes('rank') || lines[0].toLowerCase().includes('posisi'))) ? 1 : 0;
-            const totalLines = lines.length;
-
-            for (let i = startIndex; i < totalLines; i++) {
-                const cols = lines[i].split(',').map(col => col.replace(/^"|"$/g, '').trim());
-                
-                if (cols.length >= 2) {
-                    let rawRank = cols[0] || '';
-                    let titleVal = cols[1] || '';
-                    let artistVal = cols[2] || '';
-
-                    if (!artistVal && titleVal.includes('-')) {
-                        const parts = titleVal.split('-');
-                        artistVal = parts[0].trim();
-                        titleVal = parts.slice(1).join('-').trim();
-                    }
-
-                    if (titleVal) {
-                        parsedList.push({
-                            rank: rawRank,
-                            title: titleVal,
-                            artist: artistVal
-                        });
-                    }
-                }
-            }
-
-            if (parsedList.length > 0) {
-                renderChartList(parsedList);
-            } else {
-                chartListContainer.innerHTML = `<div class="news-status-msg">Tidak ada data chart.</div>`;
-            }
-        } catch (error) {
-            console.warn("Gagal memuat chart Google Sheets:", error);
-            chartListContainer.innerHTML = `<div class="news-status-msg">Gagal memuat data chart.</div>`;
-        }
-    }
-
-    function renderChartList(items) {
-        chartListContainer.innerHTML = '';
-        
-        const totalItems = items.length;
-        for (let j = 0; j < totalItems; j++) {
-            const item = items[j];
-            const row = document.createElement('div');
-            row.className = 'ap40-item';
-
-            let rankDisplay = item.rank;
-            let isSpecialTrack = false;
-
-            if (!isNaN(item.rank) && item.rank !== '') {
-                rankDisplay = String(item.rank).padStart(2, '0');
-            } else {
-                isSpecialTrack = true;
-            }
-
-            row.innerHTML = `
-                <div class="ap40-rank ${isSpecialTrack ? 'special-badge' : ''}">${rankDisplay}</div>
-                <div class="ap40-info">
-                    <div class="ap40-title">${item.title}</div>
-                    <div class="ap40-artist">${item.artist || '-'}</div>
-                </div>
-            `;
-            chartListContainer.appendChild(row);
-        }
-    }
-
-    fetchAsiaPop40FromGoogleSheets();
-}
-
-/* 4. FITUR ENDLESS FOR BEACON NEWS ENGINE (TANPA KONVERSI AUDIO MP3) */
+/* 3. FITUR ENDLESS FOR BEACON NEWS ENGINE */
 function initBeaconNewsEngine() {
     const newsGrid = document.getElementById('news-grid');
     const searchInput = document.getElementById('news-search-input');
@@ -434,7 +355,6 @@ function renderNewsCards(articles) {
             <div class="news-body">
                 <h3><a href="${article.link}" target="_blank" rel="noopener noreferrer">${article.title}</a></h3>
                 <p id="news-desc-${index}">${article.description ? article.description.substring(0, 140) + '...' : 'Klik tautan judul di atas untuk membaca berita selengkapnya.'}</p>
-                
                 <div class="news-action-bar">
                     <span class="news-date"><i class="fa-regular fa-clock"></i> ${publishedDate}</span>
                 </div>
@@ -445,7 +365,7 @@ function renderNewsCards(articles) {
     });
 }
 
-/* 5. SWITCH SFX VIA WEB AUDIO API */
+/* 4. SWITCH SFX VIA WEB AUDIO API */
 function playSwitchSoundEffect() {
     try {
         const ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -469,7 +389,7 @@ function playSwitchSoundEffect() {
     }
 }
 
-/* 6. AUDIO PLAYER & SWITCH ON THE ULTIMATE WAVE */
+/* 5. AUDIO PLAYER & VISUALIZER */
 const audio = document.getElementById('audio-stream');
 const btnSwitch = document.getElementById('btn-switch-on');
 const volumeSlider = document.getElementById('volume-slider');
@@ -546,7 +466,7 @@ function renderVisualizer() {
     }
 }
 
-/* 7. MODAL AUTHENTICATION CONTROL (GOOGLE & FACEBOOK SIGN-IN) */
+/* 6. MODAL AUTHENTICATION CONTROL */
 function openAuthModal() {
     const modal = document.getElementById('modal-auth');
     if (modal) {
@@ -610,7 +530,6 @@ function handleCredentialResponse(response) {
     closeAuthModal();
 }
 
-/* INITIALIZATION FACEBOOK SDK & LOGIN */
 function initFacebookSDK() {
     window.fbAsyncInit = function() {
         FB.init({
@@ -673,7 +592,7 @@ function updateUserSessionUI() {
         if (profileBar) profileBar.style.display = 'flex';
         if (inputEl) {
             inputEl.disabled = false;
-            inputEl.placeholder = "Tulis pesan di sini...";
+            inputEl.placeholder = "Tulis pesan Y2K di sini...";
         }
         if (submitEl) submitEl.disabled = false;
     } else {
@@ -681,7 +600,7 @@ function updateUserSessionUI() {
         if (authBtn) authBtn.style.display = 'flex';
         if (inputEl) {
             inputEl.disabled = true;
-            inputEl.placeholder = "Masuk untuk mulai chat...";
+            inputEl.placeholder = "Gunakan akun Google/FB untuk chat...";
         }
         if (submitEl) submitEl.disabled = true;
     }
@@ -696,20 +615,21 @@ function logoutUser() {
     updateUserSessionUI();
 }
 
-/* CHAT LOCAL */
-function initLocalChat() {
+/* 7. LIVE CHAT ENGINE REAL-TIME VIA FIREBASE DATABASE */
+function initFirebaseRealtimeChat() {
     const chatForm = document.getElementById('chat-form');
     const chatInput = document.getElementById('chat-input');
     const chatBox = document.getElementById('chat-box');
 
     if (!chatBox || !chatForm) return;
 
-    chatBox.innerHTML = `
-        <div class="chat-msg">
-            <span class="user" style="color:#ff2a5f; font-weight:700;">System:</span> 
-            <span>Selamat datang di Live Chat Beacon FM Makassar! Masuk untuk mulai berinteraksi.</span>
-        </div>`;
+    // Mendengarkan data pesan baru dari Firebase Realtime Database
+    chatRef.limitToLast(50).on("child_added", (snapshot) => {
+        const msg = snapshot.val();
+        appendY2KChatMessageUI(msg.uid, msg.sender, msg.text, msg.avatar, msg.timestamp);
+    });
 
+    // Form Submit ke Firebase
     chatForm.addEventListener('submit', (e) => {
         e.preventDefault();
         if (!currentUser) return alert("Silakan login terlebih dahulu.");
@@ -717,25 +637,56 @@ function initLocalChat() {
         const msgText = chatInput.value.trim();
         if (!msgText) return;
 
-        appendChatMessageUI(currentUser.name, msgText, currentUser.picture, new Date().getTime());
+        // Push data ke server Firebase
+        chatRef.push({
+            uid: currentUser.uid,
+            sender: currentUser.name,
+            avatar: currentUser.picture,
+            text: msgText,
+            timestamp: firebase.database.ServerValue.TIMESTAMP
+        });
+
         chatInput.value = '';
     });
 }
 
-function appendChatMessageUI(sender, text, avatarUrl, timestamp) {
+function appendY2KChatMessageUI(senderUid, senderName, text, avatarUrl, timestamp) {
     const chatBox = document.getElementById('chat-box');
     if (!chatBox) return;
 
+    const isMine = currentUser && currentUser.uid === senderUid;
     const msgDiv = document.createElement('div');
-    msgDiv.className = 'chat-msg';
+    msgDiv.className = `y2k-msg-item ${isMine ? 'my-msg' : ''}`;
 
-    const date = new Date(timestamp);
-    const timeStr = `<small style="color:var(--text-secondary); float:right; font-size:0.7rem;">${date.getHours()}:${String(date.getMinutes()).padStart(2,'0')}</small>`;
-    const imgHtml = avatarUrl ? `<img src="${avatarUrl}" style="width:20px; height:20px; border-radius:50%; vertical-align:middle; margin-right:5px;">` : '';
+    const date = timestamp ? new Date(timestamp) : new Date();
+    const timeStr = `${String(date.getHours()).padStart(2,'0')}:${String(date.getMinutes()).padStart(2,'0')}`;
+    const avatarSrc = avatarUrl || DEFAULT_LOGO;
 
-    msgDiv.innerHTML = `${timeStr}${imgHtml}<span class="user" style="color:#ff2a5f; font-weight:700;">${sender}:</span> <span>${text}</span>`;
+    msgDiv.innerHTML = `
+        <img src="${avatarSrc}" class="y2k-avatar" alt="${senderName}">
+        <div class="y2k-bubble">
+            <div class="y2k-msg-header">
+                <span class="y2k-username">${senderName}</span>
+                <span class="y2k-timestamp">${timeStr}</span>
+            </div>
+            <div class="y2k-msg-body">${escapeHTML(text)}</div>
+        </div>
+    `;
+
     chatBox.appendChild(msgDiv);
     chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+function escapeHTML(str) {
+    return str.replace(/[&<>'"]/g, 
+        tag => ({
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            "'": '&#39;',
+            '"': '&quot;'
+        }[tag] || tag)
+    );
 }
 
 /* JADWAL ACARA REAL-TIME */
@@ -784,40 +735,36 @@ function initRealTimeSchedule() {
 }
 
 /* EVENT COUNTDOWN */
-function initEventCountdown() {
-    const targetDate = new Date('2026-12-14T05:00:00+08:00').getTime();
+function updateEventCountdown() {
+    const targetDate = new Date("December 14, 2026 00:00:00").getTime();
+    const now = new Date().getTime();
+    const difference = targetDate - now;
 
-    const daysEl = document.getElementById('cd-days');
-    const hoursEl = document.getElementById('cd-hours');
-    const minutesEl = document.getElementById('cd-minutes');
-    const secondsEl = document.getElementById('cd-seconds');
-    const containerEl = document.getElementById('event-countdown');
+    const daysEl = document.getElementById('event-days');
+    const hoursEl = document.getElementById('event-hours');
+    const minutesEl = document.getElementById('event-minutes');
+    const secondsEl = document.getElementById('event-seconds');
 
-    if (!daysEl || !hoursEl || !minutesEl || !secondsEl || !containerEl) return;
+    if (difference > 0) {
+        const days = Math.floor(difference / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((difference % (1000 * 60)) / 1000);
 
-    function updateCountdown() {
-        const now = new Date().getTime();
-        const timeDiff = targetDate - now;
-
-        if (timeDiff <= 0) {
-            containerEl.innerHTML = `<div class="event-started-msg"><i class="fa-solid fa-circle-play"></i> Event Sedang Berlangsung / Telah Dimulai!</div>`;
-            return;
-        }
-
-        const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
-        const hours = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
-        const seconds = Math.floor((timeDiff % (1000 * 60)) / 1000);
-
-        daysEl.textContent = String(days).padStart(2, '0');
-        hoursEl.textContent = String(hours).padStart(2, '0');
-        minutesEl.textContent = String(minutes).padStart(2, '0');
-        secondsEl.textContent = String(seconds).padStart(2, '0');
+        if (daysEl) daysEl.textContent = String(days).padStart(2, '0');
+        if (hoursEl) hoursEl.textContent = String(hours).padStart(2, '0');
+        if (minutesEl) minutesEl.textContent = String(minutes).padStart(2, '0');
+        if (secondsEl) secondsEl.textContent = String(seconds).padStart(2, '0');
+    } else {
+        if (daysEl) daysEl.textContent = '00';
+        if (hoursEl) hoursEl.textContent = '00';
+        if (minutesEl) minutesEl.textContent = '00';
+        if (secondsEl) secondsEl.textContent = '00';
     }
-
-    updateCountdown();
-    setInterval(updateCountdown, 1000);
 }
+
+setInterval(updateEventCountdown, 1000);
+updateEventCountdown();
 
 /* REQUEST WA MODAL */
 function openRequestModal(programName) {
@@ -851,21 +798,21 @@ if (formReq) {
     });
 }
 
-/* JAM INDONESIA */
-function initRealTimeClocks() {
-    function updateClocks() {
-        const now = new Date();
-        const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
-        const formatTime = (d) => d.toTimeString().split(' ')[0];
-        
-        const wibEl = document.getElementById('clock-wib');
-        const witaEl = document.getElementById('clock-wita');
-        const witEl = document.getElementById('clock-wit');
+function updateIndonesiaClocks() {
+    const now = new Date();
 
-        if (wibEl) wibEl.textContent = formatTime(new Date(utc + (3600000 * 7)));
-        if (witaEl) witaEl.textContent = formatTime(new Date(utc + (3600000 * 8)));
-        if (witEl) witEl.textContent = formatTime(new Date(utc + (3600000 * 9)));
-    }
-    updateClocks();
-    setInterval(updateClocks, 1000);
+    const optionsWIB = { timeZone: 'Asia/Jakarta', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
+    const optionsWITA = { timeZone: 'Asia/Makassar', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
+    const optionsWIT = { timeZone: 'Asia/Jayapura', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
+
+    const wibEl = document.getElementById('time-wib');
+    const witaEl = document.getElementById('time-wita');
+    const witEl = document.getElementById('time-wit');
+
+    if (wibEl) wibEl.textContent = new Intl.DateTimeFormat('id-ID', optionsWIB).format(now).replace(/\./g, ':');
+    if (witaEl) witaEl.textContent = new Intl.DateTimeFormat('id-ID', optionsWITA).format(now).replace(/\./g, ':');
+    if (witEl) witEl.textContent = new Intl.DateTimeFormat('id-ID', optionsWIT).format(now).replace(/\./g, ':');
 }
+
+setInterval(updateIndonesiaClocks, 1000);
+updateIndonesiaClocks();

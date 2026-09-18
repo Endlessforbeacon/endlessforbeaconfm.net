@@ -16,7 +16,7 @@
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700;800&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700;800&family=Orbitron:wght@700;900&family=VT323&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <!-- Google Identity Services Library -->
@@ -24,6 +24,10 @@
     
     <!-- Facebook SDK -->
     <script async defer crossorigin="anonymous" src="https://connect.facebook.net/id_ID/sdk.js"></script>
+
+    <!-- Firebase SDK (Modular App & Realtime Database) -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 </head>
 <body class="power-off">
 
@@ -47,7 +51,6 @@
                 <a href="#player" class="nav-link active">Live Stream</a>
                 <a href="#news" class="nav-link">News</a>
                 <a href="#jadwal" class="nav-link">Jadwal Acara</a>
-                <a href="#ap40-chart" class="nav-link">Asia Pop 40</a>
                 <a href="#event" class="nav-link">Event</a>
                 <a href="#interaktif" class="nav-link">Live Chat & Kuis</a>
 
@@ -167,13 +170,22 @@
                             </div>
                         </div>
 
-                        <div class="countdown-container">
-                            <span class="countdown-title"><i class="fa-solid fa-hourglass-start"></i> Dimulai Dalam:</span>
-                            <div class="countdown-timer" id="event-countdown">
-                                <div class="timer-box"><span id="cd-days">00</span><small>Hari</small></div>
-                                <div class="timer-box"><span id="cd-hours">00</span><small>Jam</small></div>
-                                <div class="timer-box"><span id="cd-minutes">00</span><small>Menit</small></div>
-                                <div class="timer-box"><span id="cd-seconds">00</span><small>Detik</small></div>
+                        <div class="countdown-timer">
+                            <div class="timer-box">
+                                <span id="event-days">00</span>
+                                <small>HARI</small>
+                            </div>
+                            <div class="timer-box">
+                                <span id="event-hours">00</span>
+                                <small>JAM</small>
+                            </div>
+                            <div class="timer-box">
+                                <span id="event-minutes">00</span>
+                                <small>MENIT</small>
+                            </div>
+                            <div class="timer-box">
+                                <span id="event-seconds">00</span>
+                                <small>DETIK</small>
                             </div>
                         </div>
                     </div>
@@ -182,17 +194,6 @@
         </div>
 
         <div class="right-column" id="interaktif">
-            
-            <!-- SECTION FITUR TOP CHART ASIA POP 40 -->
-            <section id="ap40-chart" class="content-card chart-card-section">
-                <div class="chart-header">
-                    <h3><i class="fa-solid fa-ranking-star"></i> Asia Pop 40 Official Chart</h3>
-                    <span class="ap40-badge">TOP 10 TRACKS</span>
-                </div>
-                <p class="ap40-subtext">Berikut Ini Ada Daftar 10 Yang Masuk Chart Asia Pop 40. Tangga lagu terpopuler se-Asia disinkronkan langsung via Google Sheets & Datanya Kami Dapat Lewat Situs Web Resmi Asia Pop 40. Yang Kami Tampilkan Itu Hanya Top 10 Besar Lagu Yang Masuk Di Chart Asia Pop 40. Jika Beacon Listeners Mau Lihat Selengkapnya, Beacon Listeners Bisa Lihat Di <a href="https://asiapop40.com/" target="_blank">asiapop40.com</a></p>
-                <div id="ap40-list" class="ap40-chart-list"></div>
-            </section>
-
             <!-- GOOGLE ADSENSE INTEGRATION -->
             <div class="advertising-wrapper">
                 <div class="ad-network-card">
@@ -221,15 +222,23 @@
                 </aside>
             </div>
 
-            <section class="content-card chat-card">
-                <div class="chat-header">
-                    <h3><i class="fa-regular fa-comments"></i> Live Chat Community</h3>
-                    <span class="socket-status" id="db-status"><i class="fa-solid fa-circle" style="color:var(--status-green)"></i> Aktif</span>
+            <!-- LIVE CHAT MODERN Y2K STYLING -->
+            <section class="content-card chat-card y2k-chat-container">
+                <div class="chat-header y2k-header">
+                    <div class="y2k-header-title">
+                        <i class="fa-solid fa-comments pulse-y2k"></i> 
+                        <span>BEACON CHAT v2.0</span>
+                    </div>
+                    <span class="socket-status y2k-status" id="db-status">
+                        <i class="fa-solid fa-wifi"></i> ONLINE
+                    </span>
                 </div>
-                <div id="chat-box" class="chat-messages"></div>
-                <form id="chat-form" class="chat-input-area">
-                    <input type="text" id="chat-input" placeholder="Masuk untuk mulai chat..." required autocomplete="off" disabled>
-                    <button type="submit" id="chat-submit" disabled><i class="fa-solid fa-paper-plane"></i></button>
+                <div id="chat-box" class="chat-messages y2k-messages"></div>
+                <form id="chat-form" class="chat-input-area y2k-input-box">
+                    <input type="text" id="chat-input" placeholder="Gunakan akun Google/FB untuk chat..." required autocomplete="off" disabled>
+                    <button type="submit" id="chat-submit" disabled>
+                        <span>SEND</span> <i class="fa-solid fa-paper-plane"></i>
+                    </button>
                 </form>
             </section>
 
@@ -263,12 +272,8 @@
                     Selamat datang di Portal Komunitas Endless For Beacon FM! Masuk atau mendaftar untuk dapat berpartisipasi aktif dalam Live Chat interaktif, kirim request lagu harian, serta mengikuti kuis berhadiah.
                 </p>
                 <div class="auth-buttons-group">
-                    <!-- Container Google Sign-In -->
                     <div id="google-btn-container" class="g-login-wrapper"></div>
-                    
                     <div class="auth-divider">atau</div>
-
-                    <!-- Tombol Facebook Login -->
                     <button class="btn-fb-login" onclick="loginFacebook()">
                         <i class="fa-brands fa-facebook-f"></i> Masuk dengan Facebook
                     </button>
@@ -304,27 +309,40 @@
 
     <footer class="footer">
         <div class="container footer-grid">
-            <div class="footer-col">
-                <a href="#" class="brand-logo footer-logo-wrapper">
-                    <img src="Image/Logo.png" alt="Beacon FM Logo" class="footer-logo-img">
+            <div class="footer-brand">
+                <div class="footer-logo-wrapper">
+                    <img src="Image/Logo.png" alt="Endless For Beacon FM" class="footer-logo-img">
                     <span class="footer-site-name">Endless For Beacon FM</span>
-                </a>
-                <p class="footer-desc">Jaringan radio siaran digital langsung terintegrasi secara real-time dengan musik terbaik 24/7.</p>
-                <p class="copyright">&copy; 2026 Endless For Beacon Corp. All Rights Reserved.</p>
+                </div>
+                <p class="footer-desc">
+                    Jaringan radio siaran digital langsung terintegrasi secara real-time dengan musik terbaik 24/7.
+                </p>
+                <p class="footer-copyright">
+                    &copy; 2026 Endless For Beacon Corp. All Rights Reserved.
+                </p>
             </div>
 
             <div class="footer-col">
                 <h4><i class="fa-regular fa-clock"></i> Jam Indonesia</h4>
-                <div class="clocks-wrapper">
-                    <div class="clock-item"><span class="clock-label">WIB</span><span id="clock-wib" class="clock-time">00:00:00</span></div>
-                    <div class="clock-item"><span class="clock-label">WITA (Makassar)</span><span id="clock-wita" class="clock-time">00:00:00</span></div>
-                    <div class="clock-item"><span class="clock-label">WIT</span><span id="clock-wit" class="clock-time">00:00:00</span></div>
+                <div class="time-cards-wrapper">
+                    <div class="time-card">
+                        <span>WIB</span>
+                        <span id="time-wib" class="time-val">00:00:00</span>
+                    </div>
+                    <div class="time-card">
+                        <span>WITA (Makassar)</span>
+                        <span id="time-wita" class="time-val">00:00:00</span>
+                    </div>
+                    <div class="time-card">
+                        <span>WIT</span>
+                        <span id="time-wit" class="time-val">00:00:00</span>
+                    </div>
                 </div>
             </div>
 
             <div class="footer-col">
-                <h4><i class="fa-solid fa-network-wired"></i> Our Station</h4>
-                <ul class="station-list">
+                <h4><i class="fa-solid fa-sitemap"></i> Our Station</h4>
+                <ul class="footer-links">
                     <li><a href="#"><i class="fa-solid fa-tower-cell"></i> Makassar (HQ)</a></li>
                     <li><a href="#"><i class="fa-solid fa-tower-cell"></i> Denpasar</a></li>
                     <li><a href="#"><i class="fa-solid fa-tower-cell"></i> Surabaya</a></li>
@@ -332,11 +350,11 @@
             </div>
 
             <div class="footer-col">
-                <h4><i class="fa-solid fa-hashtag"></i> Ikuti Kami</h4>
-                <div class="social-links">
-                    <a href="#" class="social-btn"><i class="fa-brands fa-instagram"></i></a>
-                    <a href="#" class="social-btn"><i class="fa-brands fa-youtube"></i></a>
-                    <a href="#" class="social-btn"><i class="fa-brands fa-tiktok"></i></a>
+                <h4># Ikuti Kami</h4>
+                <div class="footer-socials">
+                    <a href="#" class="social-box"><i class="fa-brands fa-instagram"></i></a>
+                    <a href="#" class="social-box"><i class="fa-brands fa-youtube"></i></a>
+                    <a href="#" class="social-box"><i class="fa-brands fa-tiktok"></i></a>
                 </div>
             </div>
         </div>
