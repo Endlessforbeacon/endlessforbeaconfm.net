@@ -257,7 +257,7 @@ async function fetchArtworkFromiTunes(artist, title) {
     }
 }
 
-/* 3. FITUR ENDLESS FOR BEACON NEWS ENGINE */
+/* 3. FITUR ENDLESS FOR BEACON NEWS ENGINE (FIXED CATEGORY & CORS) */
 function initBeaconNewsEngine() {
     const newsGrid = document.getElementById('news-grid');
     const searchInput = document.getElementById('news-search-input');
@@ -266,65 +266,111 @@ function initBeaconNewsEngine() {
 
     if (!newsGrid) return;
 
+    let currentCategory = 'top';
+    let currentQuery = '';
+
     async function fetchNewsData(category = 'top', query = '') {
         showNewsLoading();
 
-        let url = `https://newsdata.io/api/1/news?apikey=${NEWSDATA_API_KEY}&country=id&language=id`;
-        
+        // Menyusun URL dasar API Newsdata.io
+        let apiUrl = `https://newsdata.io/api/1/news?apikey=${NEWSDATA_API_KEY}&country=id&language=id`;
+
         if (query) {
-            url += `&q=${encodeURIComponent(query)}`;
+            apiUrl += `&q=${encodeURIComponent(query)}`;
         } else if (category) {
-            url += `&category=${category}`;
+            apiUrl += `&category=${category}`;
         }
 
-        try {
-            const res = await fetch(url);
-            const data = await res.json();
+        let success = false;
 
-            if (data.status === 'success' && data.results && data.results.length > 0) {
-                renderNewsCards(data.results);
-            } else {
-                showNewsStatus('Tidak ada berita ditemukan.');
+        // Attempt 1: Fetch Langsung
+        try {
+            const res = await fetch(apiUrl);
+            if (res.ok) {
+                const data = await res.json();
+                if (data.status === 'success' && data.results && data.results.length > 0) {
+                    renderNewsCards(data.results);
+                    success = true;
+                }
             }
-        } catch (error) {
-            console.error('NewsData Fetch Error:', error);
-            showNewsStatus('Gagal memuat berita dari internet.');
+        } catch (e) {
+            console.warn("Direct fetch failed, trying proxy...", e);
+        }
+
+        // Attempt 2: Fallback via AllOrigins Proxy jika diblokir Browser/CORS
+        if (!success) {
+            try {
+                const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(apiUrl)}`;
+                const res = await fetch(proxyUrl);
+                if (res.ok) {
+                    const proxyData = await res.json();
+                    if (proxyData.contents) {
+                        const data = JSON.parse(proxyData.contents);
+                        if (data.status === 'success' && data.results && data.results.length > 0) {
+                            renderNewsCards(data.results);
+                            success = true;
+                        } else {
+                            showNewsStatus('Tidak ada berita ditemukan untuk kategori/pencarian ini.');
+                            return;
+                        }
+                    }
+                }
+            } catch (e) {
+                console.error("Proxy fetch failed:", e);
+            }
+        }
+
+        if (!success) {
+            showNewsStatus('Gagal memuat berita. Pastikan kuota harian API Key NewsData.io masih tersedia.');
         }
     }
 
     function showNewsLoading() {
-        newsGrid.innerHTML = `<div class="news-status-msg"><i class="fa-solid fa-spinner fa-spin"></i> Memuat berita terbaru dari internet...</div>`;
+        newsGrid.innerHTML = `<div class="news-status-msg"><i class="fa-solid fa-spinner fa-spin"></i> Memuat berita terbaru...</div>`;
     }
 
     function showNewsStatus(message) {
         newsGrid.innerHTML = `<div class="news-status-msg">${message}</div>`;
     }
 
+    // Event Listener Tombol Kategori
     catBtns.forEach(btn => {
         btn.addEventListener('click', (e) => {
+            const targetBtn = e.currentTarget;
+            
+            // Highlight tombol aktif
             catBtns.forEach(b => b.classList.remove('active'));
-            e.target.classList.add('active');
+            targetBtn.classList.add('active');
 
-            const category = e.target.getAttribute('data-category');
+            // Reset input pencarian saat kategori diklik
             if (searchInput) searchInput.value = '';
-            fetchNewsData(category, '');
+            currentQuery = '';
+
+            // Ambil kategori dari atribut data-category
+            currentCategory = targetBtn.getAttribute('data-category') || 'top';
+            fetchNewsData(currentCategory, '');
         });
     });
 
+    // Event Listener Pencarian
     if (searchBtn && searchInput) {
-        searchBtn.addEventListener('click', () => {
+        const handleSearch = () => {
             const query = searchInput.value.trim();
             if (query !== '') {
                 catBtns.forEach(b => b.classList.remove('active'));
-                fetchNewsData('', query);
+                currentQuery = query;
+                currentCategory = '';
+                fetchNewsData('', currentQuery);
             }
-        });
+        };
 
+        searchBtn.addEventListener('click', handleSearch);
         searchInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') searchBtn.click();
+            if (e.key === 'Enter') handleSearch();
         });
     }
 
+    // Load berita pertama kali (Kategori 'top' / Utama)
     fetchNewsData('top', '');
 }
 
@@ -335,26 +381,34 @@ function renderNewsCards(articles) {
     newsGrid.innerHTML = '';
 
     articles.forEach((article, index) => {
-        const publishedDate = article.pubDate ? new Date(article.pubDate).toLocaleDateString('id-ID', {
-            day: 'numeric',
-            month: 'short',
-            year: 'numeric'
-        }) : 'Terbaru';
+        let publishedDate = 'Terbaru';
+        if (article.pubDate) {
+            try {
+                publishedDate = new Date(article.pubDate).toLocaleDateString('id-ID', {
+                    day: 'numeric',
+                    month: 'short',
+                    year: 'numeric'
+                });
+            } catch (e) {}
+        }
 
         const fallbackImage = DEFAULT_LOGO;
         const imageUrl = article.image_url || fallbackImage;
-        const sourceName = article.source_id ? article.source_id.toUpperCase() : 'BERITA';
+        const sourceName = article.source_id ? String(article.source_id).toUpperCase() : 'BERITA';
+        const titleText = article.title || 'Berita Tanpa Judul';
+        const articleLink = article.link || '#';
+        const descText = article.description ? article.description.substring(0, 130) + '...' : 'Klik tautan judul di atas untuk membaca selengkapnya.';
 
         const card = document.createElement('article');
         card.className = 'news-card';
         card.innerHTML = `
             <div class="news-img-wrapper">
-                <img src="${imageUrl}" alt="Header Berita" onerror="this.src='${fallbackImage}'">
+                <img src="${imageUrl}" alt="Header Berita" onerror="this.onerror=null; this.src='${fallbackImage}';">
                 <div class="news-badge">${sourceName}</div>
             </div>
             <div class="news-body">
-                <h3><a href="${article.link}" target="_blank" rel="noopener noreferrer">${article.title}</a></h3>
-                <p id="news-desc-${index}">${article.description ? article.description.substring(0, 140) + '...' : 'Klik tautan judul di atas untuk membaca berita selengkapnya.'}</p>
+                <h3><a href="${articleLink}" target="_blank" rel="noopener noreferrer">${escapeHTML(titleText)}</a></h3>
+                <p id="news-desc-${index}">${escapeHTML(descText)}</p>
                 <div class="news-action-bar">
                     <span class="news-date"><i class="fa-regular fa-clock"></i> ${publishedDate}</span>
                 </div>
