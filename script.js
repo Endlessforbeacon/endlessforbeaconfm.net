@@ -11,7 +11,7 @@ const NEWSDATA_API_KEY = "pub_ab11e44304d1451f90ba554b4d677da7";
 
 // Konfigurasi Firebase Realtime Database
 const firebaseConfig = {
-    databaseURL: "https://beacon-fm-chat-default-rtdb.asia-southeast1.firebasedatabase.app"
+    databaseURL: "https://endless-for-beacon-fm-dedd2-default-rtdb.asia-southeast1.firebasedatabase.app"
 };
 
 // Inisialisasi Firebase
@@ -65,6 +65,7 @@ const schedules = [
 ];
 
 document.addEventListener('DOMContentLoaded', () => {
+    checkStoredUserSession(); // Cek sesi user pertama kali
     initZenoPublicMetadata();
     initFirebaseRealtimeChat();
     initAudioPlayerAndVisualizer();
@@ -74,7 +75,6 @@ document.addEventListener('DOMContentLoaded', () => {
     initEventCountdown();
     initBeaconNewsEngine();
     initFacebookSDK();
-    checkStoredUserSession();
 
     const artworkEl = document.getElementById('track-artwork');
     if (artworkEl) {
@@ -288,7 +288,7 @@ function initBeaconNewsEngine() {
             }
         } catch (error) {
             console.error('NewsData Fetch Error:', error);
-            showNewsStatus('Gagal memuat berita dari internet. Pastikan API Key NewsData.io valid.');
+            showNewsStatus('Gagal memuat berita dari internet.');
         }
     }
 
@@ -573,7 +573,12 @@ function checkStoredUserSession() {
             updateUserSessionUI();
         } catch (e) {
             localStorage.removeItem('beacon_user');
+            currentUser = null;
+            updateUserSessionUI();
         }
+    } else {
+        currentUser = null;
+        updateUserSessionUI();
     }
 }
 
@@ -585,9 +590,9 @@ function updateUserSessionUI() {
     const inputEl = document.getElementById('chat-input');
     const submitEl = document.getElementById('chat-submit');
 
-    if (currentUser) {
+    if (currentUser && currentUser.uid) {
         if (authBtn) authBtn.style.display = 'none';
-        if (avatarEl) avatarEl.src = currentUser.picture;
+        if (avatarEl) avatarEl.src = currentUser.picture || DEFAULT_LOGO;
         if (nameEl) nameEl.textContent = currentUser.name;
         if (profileBar) profileBar.style.display = 'flex';
         if (inputEl) {
@@ -608,7 +613,7 @@ function updateUserSessionUI() {
 
 function logoutUser() {
     if (currentUser && currentUser.provider === 'facebook' && typeof FB !== 'undefined') {
-        FB.logout();
+        try { FB.logout(); } catch(e){}
     }
     currentUser = null;
     localStorage.removeItem('beacon_user');
@@ -623,10 +628,17 @@ function initFirebaseRealtimeChat() {
 
     if (!chatBox || !chatForm) return;
 
+    // Bersihkan chat box sebelum memuat data
+    chatBox.innerHTML = '';
+
     // Mendengarkan data pesan baru dari Firebase Realtime Database
     chatRef.limitToLast(50).on("child_added", (snapshot) => {
         const msg = snapshot.val();
-        appendY2KChatMessageUI(msg.uid, msg.sender, msg.text, msg.avatar, msg.timestamp);
+        if (msg) {
+            appendY2KChatMessageUI(msg.uid, msg.sender, msg.text, msg.avatar, msg.timestamp);
+        }
+    }, (error) => {
+        console.error("Firebase Chat Read Error:", error);
     });
 
     // Form Submit ke Firebase
@@ -641,12 +653,15 @@ function initFirebaseRealtimeChat() {
         chatRef.push({
             uid: currentUser.uid,
             sender: currentUser.name,
-            avatar: currentUser.picture,
+            avatar: currentUser.picture || DEFAULT_LOGO,
             text: msgText,
             timestamp: firebase.database.ServerValue.TIMESTAMP
+        }).then(() => {
+            chatInput.value = '';
+        }).catch((err) => {
+            console.error("Gagal mengirim pesan ke Firebase:", err);
+            alert("Gagal mengirim pesan. Pastikan Firebase Rules sudah diatur ke '.read': true, '.write': true");
         });
-
-        chatInput.value = '';
     });
 }
 
@@ -678,6 +693,7 @@ function appendY2KChatMessageUI(senderUid, senderName, text, avatarUrl, timestam
 }
 
 function escapeHTML(str) {
+    if (!str) return '';
     return str.replace(/[&<>'"]/g, 
         tag => ({
             '&': '&amp;',
