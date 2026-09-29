@@ -43,15 +43,16 @@
                 </div>
             </a>
             
-            <button class="mobile-menu-btn" id="mobile-menu-toggle" aria-label="Toggle Menu">
+            <button class="mobile-menu-btn" id="mobile-menu-toggle" aria-label="Toggle Menu" type="button">
                 <i class="fa-solid fa-bars"></i>
             </button>
 
             <nav class="nav-menu" id="nav-menu">
                 <a href="#player" class="nav-link active">Live Stream</a>
+                <a href="#catchup" class="nav-link">Catch Up</a>
                 <a href="#news" class="nav-link">News</a>
+                <a href="#shop" class="nav-link">Shop</a>
                 <a href="#jadwal" class="nav-link">Jadwal Acara</a>
-                <a href="#event" class="nav-link">Event</a>
                 <a href="#interaktif" class="nav-link">Live Chat & Kuis</a>
 
                 <div class="auth-box">
@@ -78,11 +79,10 @@
              data-ad-slot="1234567890"
              data-ad-format="auto"
              data-full-width-responsive="true"></ins>
-        <script>
-             (adsbygoogle = window.adsbygoogle || []).push({});
-        </script>
+        <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
     </div>
 
+    <!-- HERO PLAYER WITH COMMUNITY LYRICS & SING-ALONG SYNC -->
     <section id="player" class="hero-player-section">
         <div class="container player-container">
             <audio id="audio-stream" src="https://stream.zeno.fm/x1wrh2y4jj6uv" preload="none" crossorigin="anonymous"></audio>
@@ -106,6 +106,15 @@
 
                     <canvas id="visualizer" width="300" height="40"></canvas>
 
+                    <!-- COMMUNITY LYRICS & SING-ALONG SECTION -->
+                    <div class="lyric-sync-box">
+                        <div class="lyric-header">
+                            <span><i class="fa-solid fa-music"></i> COMMUNITY LYRIC SYNC</span>
+                            <button id="btn-sing-along" class="btn-sing" onclick="triggerSingAlong()"><i class="fa-solid fa-microphone"></i> Sing Along!</button>
+                        </div>
+                        <div id="lyric-content" class="lyric-body">Mencari lirik lagu...</div>
+                    </div>
+
                     <div class="player-controls">
                         <button id="btn-switch-on" class="btn-switch-wave">
                             <span class="switch-light"></span>
@@ -123,28 +132,74 @@
         </div>
     </section>
 
-    <!-- SECTION NEWS INTERNET AGGREGATOR -->
+    <!-- SECTION CATCH UP THE WAVE (PODCAST & SIARAN ULANG OTOMATIS) -->
+    <section id="catchup" class="container content-section">
+        <div class="section-header">
+            <h2><i class="fa-solid fa-podcast"></i> Catch Up The Wave</h2>
+            <p style="font-size:0.85rem; color: var(--text-secondary);">Dengarkan kembali siaran ulang yang direkam secara otomatis dari program Endless For Beacon FM.</p>
+        </div>
+        
+        <!-- STATUS PEREKAMAN SIARAN -->
+        <div id="recording-status-bar" class="recording-status-box" style="display: none;">
+            <i class="fa-solid fa-circle-dot rec-dot pulse-rec"></i>
+            <span id="rec-program-name">Sistem sedang merekam program yang berlangsung...</span>
+        </div>
+
+        <div id="catchup-grid" class="catchup-grid">
+            <div class="catchup-empty-msg">Belum ada siaran ulang yang tersimpan hari ini. Siaran akan otomatis terekam dan muncul di sini setelah program selesai tayang.</div>
+        </div>
+    </section>
+
+    <!-- SECTION NEWS AGGREGATOR -->
     <section id="news" class="container news-section">
         <div class="section-header news-header-wrapper">
             <h2><i class="fa-solid fa-newspaper"></i> Endless For Beacon News</h2>
-            
             <div class="news-controls">
                 <div class="news-search-box">
                     <input type="text" id="news-search-input" placeholder="Cari topik berita...">
-                    <button id="news-search-btn"><i class="fa-solid fa-magnifying-glass"></i></button>
+                    <button id="news-search-btn" type="button"><i class="fa-solid fa-magnifying-glass"></i></button>
                 </div>
-
                 <div class="news-categories">
-                    <button class="news-cat-btn active" data-category="top">Utama</button>
-                    <button class="news-cat-btn" data-category="technology">Teknologi</button>
-                    <button class="news-cat-btn" data-category="entertainment">Hiburan</button>
-                    <button class="news-cat-btn" data-category="business">Bisnis</button>
-                    <button class="news-cat-btn" data-category="sports">Olahraga</button>
+                    <button class="news-cat-btn active" data-category="terbaru">Utama</button>
+                    <button class="news-cat-btn" data-category="teknologi">Teknologi</button>
+                    <button class="news-cat-btn" data-category="hiburan">Hiburan</button>
+                    <button class="news-cat-btn" data-category="ekonomi">Bisnis</button>
+                    <button class="news-cat-btn" data-category="olahraga">Olahraga</button>
                 </div>
             </div>
         </div>
-
         <div id="news-grid" class="news-grid"></div>
+    </section>
+
+    <!-- SECTION SHOP MERCHANDISE & ADS -->
+    <section id="shop" class="container content-section">
+        <div class="section-header">
+            <h2><i class="fa-solid fa-bag-shopping"></i> Beacon Official Store</h2>
+            <p style="font-size:0.85rem; color: var(--text-secondary);">Official Merchandise & Jasa Sponsor Iklan Radio.</p>
+        </div>
+        <div class="shop-grid">
+            <div class="shop-card">
+                <span class="shop-tag">MERCHANDISE</span>
+                <img src="Image/Logo.png" alt="Beacon Tee" class="shop-img">
+                <h4>Official Y2K Beacon Tee</h4>
+                <p class="shop-price">Rp 125.000</p>
+                <button class="btn-shop-buy" onclick="orderShopItem('Official Y2K Beacon Tee')"><i class="fa-brands fa-whatsapp"></i> Beli via WA</button>
+            </div>
+            <div class="shop-card">
+                <span class="shop-tag">MERCHANDISE</span>
+                <img src="Image/Logo.png" alt="Cyber Hoodie" class="shop-img">
+                <h4>Cyber Wave Hoodie</h4>
+                <p class="shop-price">Rp 245.000</p>
+                <button class="btn-shop-buy" onclick="orderShopItem('Cyber Wave Hoodie')"><i class="fa-brands fa-whatsapp"></i> Beli via WA</button>
+            </div>
+            <div class="shop-card">
+                <span class="shop-tag">SPONSORSHIP</span>
+                <img src="Image/Logo.png" alt="Slot Iklan" class="shop-img">
+                <h4>Slot Ad-Libs Radio (1 Bulan)</h4>
+                <p class="shop-price">Rp 500.000</p>
+                <button class="btn-shop-buy" onclick="orderShopItem('Slot Ad-Libs Radio 1 Bulan')"><i class="fa-brands fa-whatsapp"></i> Pasang Iklan</button>
+            </div>
+        </div>
     </section>
 
     <main class="container main-grid">
@@ -171,22 +226,10 @@
                         </div>
 
                         <div class="countdown-timer">
-                            <div class="timer-box">
-                                <span id="event-days">00</span>
-                                <small>HARI</small>
-                            </div>
-                            <div class="timer-box">
-                                <span id="event-hours">00</span>
-                                <small>JAM</small>
-                            </div>
-                            <div class="timer-box">
-                                <span id="event-minutes">00</span>
-                                <small>MENIT</small>
-                            </div>
-                            <div class="timer-box">
-                                <span id="event-seconds">00</span>
-                                <small>DETIK</small>
-                            </div>
+                            <div class="timer-box"><span id="event-days">00</span><small>HARI</small></div>
+                            <div class="timer-box"><span id="event-hours">00</span><small>JAM</small></div>
+                            <div class="timer-box"><span id="event-minutes">00</span><small>MENIT</small></div>
+                            <div class="timer-box"><span id="event-seconds">00</span><small>DETIK</small></div>
                         </div>
                     </div>
                 </div>
@@ -194,7 +237,6 @@
         </div>
 
         <div class="right-column" id="interaktif">
-            <!-- GOOGLE ADSENSE INTEGRATION -->
             <div class="advertising-wrapper">
                 <div class="ad-network-card">
                     <span class="ad-label-network">SPONSORED - GOOGLE ADSENSE</span>
@@ -204,22 +246,8 @@
                          data-ad-slot="0987654321"
                          data-ad-format="rectangle"
                          data-full-width-responsive="true"></ins>
-                    <script>
-                         (adsbygoogle = window.adsbygoogle || []).push({});
-                    </script>
+                    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
                 </div>
-
-                <aside class="ad-banner-box">
-                    <span class="ad-label">SPONSORED ADVERTISEMENT</span>
-                    <div class="ad-content">
-                        <i class="fa-solid fa-bullhorn ad-icon"></i>
-                        <h4>Pasang Iklan Lokal Di Beacon FM</h4>
-                        <p>Promosikan bisnis/brand kamu secara langsung ke pendengar Endless For Beacon FM Network.</p>
-                        <a href="https://wa.me/6285257448582?text=Halo%20Admin,%20saya%20tertarik%20pasang%20iklan%20sponsor" target="_blank" class="btn-ad">
-                            <i class="fa-brands fa-whatsapp"></i> Hubungi Tim Marketing
-                        </a>
-                    </div>
-                </aside>
             </div>
 
             <!-- LIVE CHAT MODERN Y2K STYLING -->
@@ -242,17 +270,20 @@
                 </form>
             </section>
 
+            <!-- KUIS BOX INTERAKTIF DENGAN KETERANGAN KHUSUS -->
             <section class="content-card quiz-card">
                 <div class="quiz-header-bar">
                     <h3><i class="fa-solid fa-lightbulb"></i> Kuis Interaktif</h3>
-                    <span class="status-badge coming-soon">COMING SOON</span>
+                    <span class="status-badge info-badge">INFORMASI KUIS</span>
                 </div>
                 
                 <div id="quiz-container">
                     <div class="quiz-state-box">
-                        <i class="fa-solid fa-hourglass-half quiz-state-icon"></i>
-                        <h4>Fitur Kuis Segera Hadir!</h4>
-                        <p class="quiz-info-text">Kuis interaktif berhadiah sedang dalam tahap penyiapan. Tetap dengarkan siaran Endless For Beacon FM untuk info terbaru.</p>
+                        <i class="fa-solid fa-circle-info quiz-state-icon"></i>
+                        <h4>Kuis Belum Tersedia</h4>
+                        <p class="quiz-info-text">
+                            Saat ini belum ada program kuis interaktif yang dibuka untuk pendengar. Tetap dengarkan siaran langsung Endless For Beacon FM untuk mendapatkan info pembaruan acara menarik lainnya!
+                        </p>
                     </div>
                 </div>
             </section>
@@ -268,9 +299,7 @@
                 <h2>Endless For Beacon FM</h2>
             </div>
             <div class="auth-body">
-                <p class="auth-desc">
-                    Selamat datang di Portal Komunitas Endless For Beacon FM! Masuk atau mendaftar untuk dapat berpartisipasi aktif dalam Live Chat interaktif, kirim request lagu harian, serta mengikuti kuis berhadiah.
-                </p>
+                <p class="auth-desc">Selamat datang di Portal Komunitas Endless For Beacon FM!</p>
                 <div class="auth-buttons-group">
                     <div id="google-btn-container" class="g-login-wrapper"></div>
                     <div class="auth-divider">atau</div>
@@ -282,6 +311,7 @@
         </div>
     </div>
 
+    <!-- MODAL REQUEST LAGU -->
     <div id="modal-request" class="modal">
         <div class="modal-content">
             <span class="close-modal" onclick="closeRequestModal()">&times;</span>
@@ -307,6 +337,7 @@
         </div>
     </div>
 
+    <!-- FOOTER SECTION -->
     <footer class="footer">
         <div class="container footer-grid">
             <div class="footer-brand">
@@ -314,47 +345,33 @@
                     <img src="Image/Logo.png" alt="Endless For Beacon FM" class="footer-logo-img">
                     <span class="footer-site-name">Endless For Beacon FM</span>
                 </div>
-                <p class="footer-desc">
-                    Jaringan radio siaran digital langsung terintegrasi secara real-time dengan musik terbaik 24/7.
-                </p>
-                <p class="footer-copyright">
-                    &copy; 2026 Endless For Beacon Corp. All Rights Reserved.
-                </p>
+                <p class="footer-desc">Jaringan radio siaran digital langsung terintegrasi secara real-time dengan musik terbaik 24/7.</p>
+                <p class="footer-copyright">&copy; 2026 Endless For Beacon Corp. All Rights Reserved.</p>
             </div>
-
             <div class="footer-col">
                 <h4><i class="fa-regular fa-clock"></i> Jam Indonesia</h4>
                 <div class="time-cards-wrapper">
-                    <div class="time-card">
-                        <span>WIB</span>
-                        <span id="time-wib" class="time-val">00:00:00</span>
-                    </div>
-                    <div class="time-card">
-                        <span>WITA (Makassar)</span>
-                        <span id="time-wita" class="time-val">00:00:00</span>
-                    </div>
-                    <div class="time-card">
-                        <span>WIT</span>
-                        <span id="time-wit" class="time-val">00:00:00</span>
-                    </div>
+                    <div class="time-card"><span>WIB (Jakarta)</span><span id="time-wib" class="time-val">00:00:00</span></div>
+                    <div class="time-card"><span>WITA (Makassar)</span><span id="time-wita" class="time-val">00:00:00</span></div>
+                    <div class="time-card"><span>WIT (Jayapura)</span><span id="time-wit" class="time-val">00:00:00</span></div>
                 </div>
             </div>
-
             <div class="footer-col">
                 <h4><i class="fa-solid fa-sitemap"></i> Our Station</h4>
                 <ul class="footer-links">
                     <li><a href="#"><i class="fa-solid fa-tower-cell"></i> Makassar (HQ)</a></li>
                     <li><a href="#"><i class="fa-solid fa-tower-cell"></i> Denpasar</a></li>
                     <li><a href="#"><i class="fa-solid fa-tower-cell"></i> Surabaya</a></li>
+                    <li><a href="#"><i class="fa-solid fa-tower-cell"></i> Bandung</a></li>
+                    <li><a href="#"><i class="fa-solid fa-tower-cell"></i> Jakarta</a></li>
                 </ul>
             </div>
-
             <div class="footer-col">
                 <h4># Ikuti Kami</h4>
                 <div class="footer-socials">
-                    <a href="#" class="social-box"><i class="fa-brands fa-instagram"></i></a>
-                    <a href="#" class="social-box"><i class="fa-brands fa-youtube"></i></a>
-                    <a href="#" class="social-box"><i class="fa-brands fa-tiktok"></i></a>
+                    <a href="https://www.instagram.com/endless_for.beacon/" class="social-box"><i class="fa-brands fa-instagram"></i></a>
+                    <a href="https://www.youtube.com/@EndlessForBeacon" class="social-box"><i class="fa-brands fa-youtube"></i></a>
+                    <a href="https://www.tiktok.com/@endless.for_beacon06/" class="social-box"><i class="fa-brands fa-tiktok"></i></a>
                 </div>
             </div>
         </div>

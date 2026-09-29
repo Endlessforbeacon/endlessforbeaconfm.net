@@ -7,7 +7,6 @@ const RADIO_WA_NUMBER = "6285257448582";
 const DEFAULT_LOGO = "Image/Logo.png";
 const GOOGLE_CLIENT_ID = "969783269309-99n69ig4hfbcpnvkn2dr0k86stbfejs2.apps.googleusercontent.com";
 const FACEBOOK_APP_ID = "1778082900045504"; 
-const NEWSDATA_API_KEY = "pub_ab11e44304d1451f90ba554b4d677da7"; 
 
 // Konfigurasi Firebase Realtime Database
 const firebaseConfig = {
@@ -26,6 +25,12 @@ let audioContext, audioAnalyser, audioSource;
 let currentProgramName = "";
 let lastPlayingTrack = "";
 let isPlaying = false;
+
+// Variabel Perekam Siaran Otomatis (Catch Up Engine)
+let mediaRecorder = null;
+let recordedChunks = [];
+let activeRecordingProgram = null;
+let savedCatchupRecordings = [];
 
 const dayNames = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
 
@@ -65,14 +70,13 @@ const schedules = [
 ];
 
 document.addEventListener('DOMContentLoaded', () => {
-    checkStoredUserSession(); // Cek sesi user pertama kali
+    checkStoredUserSession();
     initZenoPublicMetadata();
     initFirebaseRealtimeChat();
     initAudioPlayerAndVisualizer();
     initRealTimeSchedule();
     initRealTimeClocks();
     initMobileNav();
-    initEventCountdown();
     initBeaconNewsEngine();
     initFacebookSDK();
 
@@ -98,18 +102,27 @@ function formatDaysText(daysArray) {
     return daysArray.map(d => dayNames[d]).join(', ');
 }
 
-/* Navigasi Mobile */
+/* Navigasi Mobile (3 Baris Menu) */
 function initMobileNav() {
     const toggleBtn = document.getElementById('mobile-menu-toggle');
     const navMenu = document.getElementById('nav-menu');
 
     if (toggleBtn && navMenu) {
-        toggleBtn.addEventListener('click', () => {
+        toggleBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
             navMenu.classList.toggle('active');
         });
 
-        document.querySelectorAll('.nav-link').forEach(link => {
-            link.addEventListener('click', () => navMenu.classList.remove('active'));
+        document.querySelectorAll('.nav-link, .btn-auth-trigger').forEach(link => {
+            link.addEventListener('click', () => {
+                navMenu.classList.remove('active');
+            });
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!navMenu.contains(e.target) && !toggleBtn.contains(e.target)) {
+                navMenu.classList.remove('active');
+            }
         });
     }
 }
@@ -130,43 +143,22 @@ function initZenoPublicMetadata() {
                 dataFetched = true;
             }
         } catch (e) {
-            console.warn("Direct Zeno V2 API blocked, trying proxy...");
+            console.warn("Direct Zeno V2 API blocked, trying fallback...");
         }
 
         if (!dataFetched) {
             try {
-                const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(primaryApi)}`;
-                const res = await fetch(proxyUrl);
+                const res = await fetch(fallbackApi);
                 if (res.ok) {
-                    const proxyData = await res.json();
-                    if (proxyData.contents) {
-                        const data = JSON.parse(proxyData.contents);
-                        updateRadioUI(data);
-                        dataFetched = true;
-                    }
-                }
-            } catch (e) {
-                console.warn("AllOrigins Proxy for Primary API failed...");
-            }
-        }
-
-        if (!dataFetched) {
-            try {
-                const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(fallbackApi)}`;
-                const res = await fetch(proxyUrl);
-                if (res.ok) {
-                    const proxyData = await res.json();
-                    if (proxyData.contents) {
-                        const data = JSON.parse(proxyData.contents);
-                        if (data.icestats && data.icestats.source) {
-                            const source = data.icestats.source;
-                            processTrackInfo(source.title || "Endless For Beacon FM");
-                            if (source.listeners !== undefined) {
-                                const listenerEl = document.getElementById('listener-counter');
-                                if (listenerEl) listenerEl.textContent = source.listeners;
-                            }
-                            dataFetched = true;
+                    const data = await res.json();
+                    if (data.icestats && data.icestats.source) {
+                        const source = data.icestats.source;
+                        processTrackInfo(source.title || "Endless For Beacon FM");
+                        if (source.listeners !== undefined) {
+                            const listenerEl = document.getElementById('listener-counter');
+                            if (listenerEl) listenerEl.textContent = source.listeners;
                         }
+                        dataFetched = true;
                     }
                 }
             } catch (e) {
@@ -221,6 +213,7 @@ function processTrackInfo(rawTitle) {
     if (lastPlayingTrack !== fullTrackKey) {
         lastPlayingTrack = fullTrackKey;
         fetchArtworkFromiTunes(artistName, songTitle);
+        fetchLyrics(artistName, songTitle);
     }
 }
 
@@ -236,13 +229,11 @@ async function fetchArtworkFromiTunes(artist, title) {
 
     const searchQuery = `${artist} ${title}`.replace(/[^\w\s]/gi, '');
     const iTunesUrl = `https://itunes.apple.com/search?term=${encodeURIComponent(searchQuery)}&media=music&limit=1`;
-    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(iTunesUrl)}`;
 
     try {
-        const response = await fetch(proxyUrl);
+        const response = await fetch(iTunesUrl);
         if (response.ok) {
-            const result = await response.json();
-            const data = JSON.parse(result.contents);
+            const data = await response.json();
             if (data.results && data.results.length > 0) {
                 let highResArtwork = data.results[0].artworkUrl100.replace('100x100bb', '600x600bb');
                 artworkEl.src = highResArtwork;
@@ -257,7 +248,148 @@ async function fetchArtworkFromiTunes(artist, title) {
     }
 }
 
-/* 3. FITUR ENDLESS FOR BEACON NEWS ENGINE */
+/* 3. SINKRONISASI LIRIK & SING-ALONG SYNC */
+async function fetchLyrics(artist, title) {
+    const lyricEl = document.getElementById('lyric-content');
+    if (!lyricEl) return;
+
+    if (!title || artist === "Beacon FM Network" || title === "Endless For Beacon FM") {
+        lyricEl.textContent = "Lirik belum tersedia untuk siaran ini.";
+        return;
+    }
+
+    lyricEl.textContent = "Memuat lirik lagu...";
+
+    try {
+        const res = await fetch(`https://api.lyrics.ovh/v1/${encodeURIComponent(artist)}/${encodeURIComponent(title)}`);
+        if (res.ok) {
+            const data = await res.json();
+            if (data.lyrics) {
+                lyricEl.textContent = data.lyrics.substring(0, 300) + "...";
+                return;
+            }
+        }
+        lyricEl.textContent = `Sing along bareng Endless For Beacon FM!`;
+    } catch (e) {
+        lyricEl.textContent = `Sing along bareng Endless For Beacon FM!`;
+    }
+}
+
+function triggerSingAlong() {
+    if (!currentUser) {
+        alert("Silakan login terlebih dahulu untuk ikut Sing Along!");
+        openAuthModal();
+        return;
+    }
+
+    const title = document.getElementById('track-title')?.textContent || "lagu favorit";
+    const msgText = `🎤 *IKUT SING ALONG!* Lagi nyanyi lagu "${title}" bareng Endless For Beacon FM! 🎉`;
+
+    chatRef.push({
+        uid: currentUser.uid,
+        sender: currentUser.name,
+        avatar: currentUser.picture || DEFAULT_LOGO,
+        text: msgText,
+        timestamp: firebase.database.ServerValue.TIMESTAMP
+    });
+}
+
+/* 4. SHOP ORDER VIA WHATSAPP */
+function orderShopItem(itemName) {
+    const waText = `Halo Admin Beacon FM, saya mau beli/pesan *${itemName}* dari Beacon Official Store.`;
+    window.open(`https://wa.me/${RADIO_WA_NUMBER}?text=${encodeURIComponent(waText)}`, '_blank');
+}
+
+/* 5. AUTOMATIC CATCH UP RECORDING ENGINE */
+function startProgramRecording(programName) {
+    if (mediaRecorder && mediaRecorder.state === "recording") return;
+    if (!audioSource) return;
+
+    try {
+        const dest = audioContext.createMediaStreamDestination();
+        audioSource.connect(dest);
+
+        recordedChunks = [];
+        mediaRecorder = new MediaRecorder(dest.stream);
+
+        mediaRecorder.ondataavailable = (event) => {
+            if (event.data.size > 0) {
+                recordedChunks.push(event.data);
+            }
+        };
+
+        mediaRecorder.onstop = () => {
+            const blob = new Blob(recordedChunks, { type: 'audio/mp3' });
+            const audioUrl = URL.createObjectURL(blob);
+            const now = getMakassarDate();
+            const timeFormatted = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')} WITA`;
+
+            savedCatchupRecordings.unshift({
+                title: activeRecordingProgram,
+                time: timeFormatted,
+                url: audioUrl
+            });
+
+            renderCatchUpUI();
+            activeRecordingProgram = null;
+            updateRecordingStatusBar(null);
+        };
+
+        activeRecordingProgram = programName;
+        mediaRecorder.start();
+        updateRecordingStatusBar(programName);
+    } catch (e) {
+        console.warn("Gagal memulai perekaman otomatis Catch Up:", e);
+    }
+}
+
+function stopProgramRecording() {
+    if (mediaRecorder && mediaRecorder.state === "recording") {
+        mediaRecorder.stop();
+    }
+}
+
+function updateRecordingStatusBar(programName) {
+    const statusBox = document.getElementById('recording-status-bar');
+    const programText = document.getElementById('rec-program-name');
+
+    if (programName && statusBox && programText) {
+        statusBox.style.display = 'flex';
+        programText.textContent = `Sistem sedang merekam siaran langsung: "${programName}"... Rekaman akan tersedia di bawah begitu program selesai.`;
+    } else if (statusBox) {
+        statusBox.style.display = 'none';
+    }
+}
+
+function renderCatchUpUI() {
+    const catchupGrid = document.getElementById('catchup-grid');
+    if (!catchupGrid) return;
+
+    if (savedCatchupRecordings.length === 0) {
+        catchupGrid.innerHTML = `<div class="catchup-empty-msg">Belum ada siaran ulang yang tersimpan hari ini. Siaran akan otomatis terekam dan muncul di sini setelah program selesai tayang.</div>`;
+        return;
+    }
+
+    catchupGrid.innerHTML = '';
+
+    savedCatchupRecordings.forEach((rec) => {
+        const card = document.createElement('div');
+        card.className = 'catchup-card';
+        card.innerHTML = `
+            <div class="catchup-card-header">
+                <i class="fa-solid fa-circle-play catchup-icon"></i>
+                <div class="catchup-info">
+                    <h4>${escapeHTML(rec.title)}</h4>
+                    <small>Siaran Ulang — Selesai Tayang ${rec.time}</small>
+                </div>
+            </div>
+            <audio controls class="catchup-audio-player" src="${rec.url}"></audio>
+        `;
+        catchupGrid.appendChild(card);
+    });
+}
+
+/* 6. FITUR NEWS AGGREGATOR ENGINE */
 function initBeaconNewsEngine() {
     const newsGrid = document.getElementById('news-grid');
     const searchInput = document.getElementById('news-search-input');
@@ -266,61 +398,55 @@ function initBeaconNewsEngine() {
 
     if (!newsGrid) return;
 
-    let currentCategory = 'top';
-    let currentQuery = '';
+    const rssSources = {
+        'terbaru': 'https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Fwww.antara-news.com%2Frss%2Fterbaru.xml',
+        'teknologi': 'https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Fwww.antara-news.com%2Frss%2Ftekno.xml',
+        'hiburan': 'https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Fwww.antara-news.com%2Frss%2Fhiburan.xml',
+        'ekonomi': 'https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Fwww.antara-news.com%2Frss%2Fekonomi.xml',
+        'olahraga': 'https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Fwww.antara-news.com%2Frss%2Folahraga.xml'
+    };
 
-    async function fetchNewsData(category = 'top', query = '') {
+    let allItems = [];
+
+    async function loadNewsCategory(categoryKey = 'terbaru') {
         showNewsLoading();
+        const endpoint = rssSources[categoryKey] || rssSources['terbaru'];
 
-        let apiUrl = `https://newsdata.io/api/1/news?apikey=pub_ab11e44304d1451f90ba554b4d677da7&country=id&language=id`;
-
-        if (query) {
-            apiUrl += `&q=${encodeURIComponent(query)}`;
-        } else if (category && category !== 'top') {
-            apiUrl += `&category=${category}`;
-        }
-
-        let success = false;
-
-        // Try 1: Request Langsung
         try {
-            const res = await fetch(apiUrl);
+            const res = await fetch(endpoint);
             if (res.ok) {
                 const data = await res.json();
-                if (data.status === 'success' && data.results && data.results.length > 0) {
-                    renderNewsCards(data.results);
-                    success = true;
+                if (data.status === 'ok' && data.items && data.items.length > 0) {
+                    allItems = data.items;
+                    renderNewsCards(allItems);
+                } else {
+                    showNewsStatus('Tidak ada artikel berita ditemukan.');
                 }
+            } else {
+                showNewsStatus('Gagal menghubungkan ke portal berita.');
             }
         } catch (e) {
-            console.warn("Fetch langsung gagal, mencoba proxy...", e);
+            console.error("Gagal load berita:", e);
+            showNewsStatus('Gagal memuat berita.');
+        }
+    }
+
+    function filterNewsBySearch(query) {
+        if (!query) {
+            renderNewsCards(allItems);
+            return;
         }
 
-        // Try 2: Gunakan Proxy AllOrigins jika diblokir CORS browser
-        if (!success) {
-            try {
-                const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(apiUrl)}`;
-                const res = await fetch(proxyUrl);
-                if (res.ok) {
-                    const proxyData = await res.json();
-                    if (proxyData.contents) {
-                        const data = JSON.parse(proxyData.contents);
-                        if (data.status === 'success' && data.results && data.results.length > 0) {
-                            renderNewsCards(data.results);
-                            success = true;
-                        } else {
-                            showNewsStatus('Tidak ada berita ditemukan untuk kategori/pencarian ini.');
-                            return;
-                        }
-                    }
-                }
-            } catch (e) {
-                console.error("Fetch Proxy gagal:", e);
-            }
-        }
+        const filtered = allItems.filter(item => {
+            const titleMatch = item.title && item.title.toLowerCase().includes(query.toLowerCase());
+            const descMatch = item.description && item.description.toLowerCase().includes(query.toLowerCase());
+            return titleMatch || descMatch;
+        });
 
-        if (!success) {
-            showNewsStatus('Gagal memuat berita. Pastikan kuota harian API Key NewsData.io masih ada.');
+        if (filtered.length > 0) {
+            renderNewsCards(filtered);
+        } else {
+            showNewsStatus(`Tidak ada berita yang cocok dengan kata kunci "${query}".`);
         }
     }
 
@@ -339,22 +465,16 @@ function initBeaconNewsEngine() {
             targetBtn.classList.add('active');
 
             if (searchInput) searchInput.value = '';
-            currentQuery = '';
 
-            currentCategory = targetBtn.getAttribute('data-category') || 'top';
-            fetchNewsData(currentCategory, '');
+            const catKey = targetBtn.getAttribute('data-category') || 'terbaru';
+            loadNewsCategory(catKey);
         });
     });
 
     if (searchBtn && searchInput) {
         const handleSearch = () => {
             const query = searchInput.value.trim();
-            if (query !== '') {
-                catBtns.forEach(b => b.classList.remove('active'));
-                currentQuery = query;
-                currentCategory = '';
-                fetchNewsData('', currentQuery);
-            }
+            filterNewsBySearch(query);
         };
 
         searchBtn.addEventListener('click', handleSearch);
@@ -363,10 +483,70 @@ function initBeaconNewsEngine() {
         });
     }
 
-    fetchNewsData('top', '');
+    loadNewsCategory('terbaru');
 }
 
-/* 4. SWITCH SFX VIA WEB AUDIO API */
+function renderNewsCards(items) {
+    const newsGrid = document.getElementById('news-grid');
+    if (!newsGrid) return;
+
+    newsGrid.innerHTML = '';
+
+    items.forEach((item, index) => {
+        let publishedDate = 'Terbaru';
+        if (item.pubDate) {
+            try {
+                publishedDate = new Date(item.pubDate).toLocaleDateString('id-ID', {
+                    day: 'numeric',
+                    month: 'short',
+                    year: 'numeric'
+                });
+            } catch (e) {}
+        }
+
+        const fallbackImage = DEFAULT_LOGO;
+        
+        let imageUrl = item.thumbnail || (item.enclosure && item.enclosure.link) || fallbackImage;
+        if (imageUrl === fallbackImage && item.description) {
+            const imgMatch = item.description.match(/<img[^>]+src="([^">]+)"/);
+            if (imgMatch && imgMatch[1]) {
+                imageUrl = imgMatch[1];
+            }
+        }
+
+        let cleanDesc = 'Klik tautan judul di atas untuk membaca selengkapnya.';
+        if (item.description) {
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = item.description;
+            cleanDesc = tempDiv.textContent || tempDiv.innerText || '';
+            cleanDesc = cleanDesc.trim().substring(0, 120) + '...';
+        }
+
+        const titleText = item.title || 'Berita Tanpa Judul';
+        const articleLink = item.link || '#';
+        const sourceName = 'ANTARA NEWS';
+
+        const card = document.createElement('article');
+        card.className = 'news-card';
+        card.innerHTML = `
+            <div class="news-img-wrapper">
+                <img src="${imageUrl}" alt="Header Berita" onerror="this.onerror=null; this.src='${fallbackImage}';">
+                <div class="news-badge">${sourceName}</div>
+            </div>
+            <div class="news-body">
+                <h3><a href="${articleLink}" target="_blank" rel="noopener noreferrer">${escapeHTML(titleText)}</a></h3>
+                <p id="news-desc-${index}">${escapeHTML(cleanDesc)}</p>
+                <div class="news-action-bar">
+                    <span class="news-date"><i class="fa-regular fa-clock"></i> ${publishedDate}</span>
+                </div>
+            </div>
+        `;
+
+        newsGrid.appendChild(card);
+    });
+}
+
+/* 7. SWITCH SFX VIA WEB AUDIO API */
 function playSwitchSoundEffect() {
     try {
         const ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -390,7 +570,7 @@ function playSwitchSoundEffect() {
     }
 }
 
-/* 5. AUDIO PLAYER & VISUALIZER */
+/* 8. AUDIO PLAYER & VISUALIZER */
 const audio = document.getElementById('audio-stream');
 const btnSwitch = document.getElementById('btn-switch-on');
 const volumeSlider = document.getElementById('volume-slider');
@@ -417,6 +597,7 @@ function initAudioPlayerAndVisualizer() {
                 isPlaying = false;
                 document.body.classList.remove('power-on');
                 document.body.classList.add('power-off');
+                stopProgramRecording();
             }
         });
     }
@@ -467,7 +648,7 @@ function renderVisualizer() {
     }
 }
 
-/* 6. MODAL AUTHENTICATION CONTROL */
+/* 9. MODAL AUTHENTICATION CONTROL */
 function openAuthModal() {
     const modal = document.getElementById('modal-auth');
     if (modal) {
@@ -621,7 +802,7 @@ function logoutUser() {
     updateUserSessionUI();
 }
 
-/* 7. LIVE CHAT ENGINE REAL-TIME VIA FIREBASE DATABASE */
+/* 10. LIVE CHAT ENGINE REAL-TIME VIA FIREBASE DATABASE */
 function initFirebaseRealtimeChat() {
     const chatForm = document.getElementById('chat-form');
     const chatInput = document.getElementById('chat-input');
@@ -629,10 +810,8 @@ function initFirebaseRealtimeChat() {
 
     if (!chatBox || !chatForm) return;
 
-    // Bersihkan chat box sebelum memuat data
     chatBox.innerHTML = '';
 
-    // Mendengarkan data pesan baru dari Firebase Realtime Database
     chatRef.limitToLast(50).on("child_added", (snapshot) => {
         const msg = snapshot.val();
         if (msg) {
@@ -642,7 +821,6 @@ function initFirebaseRealtimeChat() {
         console.error("Firebase Chat Read Error:", error);
     });
 
-    // Form Submit ke Firebase
     chatForm.addEventListener('submit', (e) => {
         e.preventDefault();
         if (!currentUser) return alert("Silakan login terlebih dahulu.");
@@ -650,7 +828,6 @@ function initFirebaseRealtimeChat() {
         const msgText = chatInput.value.trim();
         if (!msgText) return;
 
-        // Push data ke server Firebase
         chatRef.push({
             uid: currentUser.uid,
             sender: currentUser.name,
@@ -666,6 +843,31 @@ function initFirebaseRealtimeChat() {
     });
 }
 
+function formatY2KTimestamp(timestamp) {
+    if (!timestamp) return '';
+    
+    const msgDate = new Date(timestamp);
+    const nowDate = new Date();
+
+    const days = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+    const months = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
+
+    const dayName = days[msgDate.getDay()];
+    const dateNum = msgDate.getDate();
+    const monthName = months[msgDate.getMonth()];
+    const year = msgDate.getFullYear();
+    const hours = String(msgDate.getHours()).padStart(2, '0');
+    const minutes = String(msgDate.getMinutes()).padStart(2, '0');
+
+    const isDifferentYear = msgDate.getFullYear() !== nowDate.getFullYear();
+
+    if (isDifferentYear) {
+        return `${dayName}, ${dateNum} ${monthName} ${year} — ${hours}:${minutes}`;
+    }
+
+    return `${dayName}, ${dateNum} ${monthName} — ${hours}:${minutes}`;
+}
+
 function appendY2KChatMessageUI(senderUid, senderName, text, avatarUrl, timestamp) {
     const chatBox = document.getElementById('chat-box');
     if (!chatBox) return;
@@ -674,8 +876,7 @@ function appendY2KChatMessageUI(senderUid, senderName, text, avatarUrl, timestam
     const msgDiv = document.createElement('div');
     msgDiv.className = `y2k-msg-item ${isMine ? 'my-msg' : ''}`;
 
-    const date = timestamp ? new Date(timestamp) : new Date();
-    const timeStr = `${String(date.getHours()).padStart(2,'0')}:${String(date.getMinutes()).padStart(2,'0')}`;
+    const formattedTime = formatY2KTimestamp(timestamp);
     const avatarSrc = avatarUrl || DEFAULT_LOGO;
 
     msgDiv.innerHTML = `
@@ -683,7 +884,7 @@ function appendY2KChatMessageUI(senderUid, senderName, text, avatarUrl, timestam
         <div class="y2k-bubble">
             <div class="y2k-msg-header">
                 <span class="y2k-username">${senderName}</span>
-                <span class="y2k-timestamp">${timeStr}</span>
+                <span class="y2k-timestamp">${formattedTime}</span>
             </div>
             <div class="y2k-msg-body">${escapeHTML(text)}</div>
         </div>
@@ -706,7 +907,7 @@ function escapeHTML(str) {
     );
 }
 
-/* JADWAL ACARA REAL-TIME */
+/* JADWAL ACARA REAL-TIME & CATCH UP PEREKAMAN SIARAN */
 function initRealTimeSchedule() {
     function updateScheduleUI() {
         const makassarTime = getMakassarDate();
@@ -717,11 +918,16 @@ function initRealTimeSchedule() {
         if (!container) return;
         
         container.innerHTML = '';
+        let activeProgramFound = null;
 
         schedules.forEach(prog => {
             const isToday = prog.days.includes(currentDay);
             const isTime = currentHour >= prog.startHour && currentHour < prog.endHour;
             const isNow = isToday && isTime;
+
+            if (isNow) {
+                activeProgramFound = prog.title;
+            }
 
             const daysFormatted = formatDaysText(prog.days);
 
@@ -745,6 +951,15 @@ function initRealTimeSchedule() {
             `;
             container.appendChild(card);
         });
+
+        if (isPlaying) {
+            if (activeProgramFound && activeRecordingProgram !== activeProgramFound) {
+                stopProgramRecording();
+                startProgramRecording(activeProgramFound);
+            } else if (!activeProgramFound && activeRecordingProgram) {
+                stopProgramRecording();
+            }
+        }
     }
 
     updateScheduleUI();
@@ -815,21 +1030,23 @@ if (formReq) {
     });
 }
 
-function updateIndonesiaClocks() {
-    const now = new Date();
+function initRealTimeClocks() {
+    function updateIndonesiaClocks() {
+        const now = new Date();
 
-    const optionsWIB = { timeZone: 'Asia/Jakarta', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
-    const optionsWITA = { timeZone: 'Asia/Makassar', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
-    const optionsWIT = { timeZone: 'Asia/Jayapura', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
+        const optionsWIB = { timeZone: 'Asia/Jakarta', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
+        const optionsWITA = { timeZone: 'Asia/Makassar', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
+        const optionsWIT = { timeZone: 'Asia/Jayapura', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
 
-    const wibEl = document.getElementById('time-wib');
-    const witaEl = document.getElementById('time-wita');
-    const witEl = document.getElementById('time-wit');
+        const wibEl = document.getElementById('time-wib');
+        const witaEl = document.getElementById('time-wita');
+        const witEl = document.getElementById('time-wit');
 
-    if (wibEl) wibEl.textContent = new Intl.DateTimeFormat('id-ID', optionsWIB).format(now).replace(/\./g, ':');
-    if (witaEl) witaEl.textContent = new Intl.DateTimeFormat('id-ID', optionsWITA).format(now).replace(/\./g, ':');
-    if (witEl) witEl.textContent = new Intl.DateTimeFormat('id-ID', optionsWIT).format(now).replace(/\./g, ':');
+        if (wibEl) wibEl.textContent = new Intl.DateTimeFormat('id-ID', optionsWIB).format(now).replace(/\./g, ':');
+        if (witaEl) witaEl.textContent = new Intl.DateTimeFormat('id-ID', optionsWITA).format(now).replace(/\./g, ':');
+        if (witEl) witEl.textContent = new Intl.DateTimeFormat('id-ID', optionsWIT).format(now).replace(/\./g, ':');
+    }
+
+    setInterval(updateIndonesiaClocks, 1000);
+    updateIndonesiaClocks();
 }
-
-setInterval(updateIndonesiaClocks, 1000);
-updateIndonesiaClocks();
