@@ -1,5 +1,5 @@
 /**
- * BEACON FM - REAL-TIME ENGINE WITH FIREBASE LIVE CHAT & Y2K UI
+ * BEACON FM - REAL-TIME ENGINE WITH FIREBASE LIVE CHAT & MODERN Y2K UI
  */
 
 const ZENO_STREAM_KEY = "x1wrh2y4jj6uv"; 
@@ -674,7 +674,7 @@ function renderGoogleButton() {
             btnContainer.innerHTML = '';
             window.google.accounts.id.renderButton(
                 btnContainer,
-                { theme: "filled_dark", size: "large", type: "standard", shape: "pill", text: "continue_with" }
+                { theme: "filled_dark", size: "large", type: "standard", shape: "pill", text: "continue_with", width: "360" }
             );
         }
     } else {
@@ -907,7 +907,7 @@ function escapeHTML(str) {
     );
 }
 
-/* JADWAL ACARA REAL-TIME & CATCH UP PEREKAMAN SIARAN */
+/* JADWAL ACARA REAL-TIME */
 function initRealTimeSchedule() {
     function updateScheduleUI() {
         const makassarTime = getMakassarDate();

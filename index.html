@@ -132,14 +132,13 @@
         </div>
     </section>
 
-    <!-- SECTION CATCH UP THE WAVE (PODCAST & SIARAN ULANG OTOMATIS) -->
+    <!-- SECTION CATCH UP THE WAVE -->
     <section id="catchup" class="container content-section">
         <div class="section-header">
             <h2><i class="fa-solid fa-podcast"></i> Catch Up The Wave</h2>
             <p style="font-size:0.85rem; color: var(--text-secondary);">Dengarkan kembali siaran ulang yang direkam secara otomatis dari program Endless For Beacon FM.</p>
         </div>
         
-        <!-- STATUS PEREKAMAN SIARAN -->
         <div id="recording-status-bar" class="recording-status-box" style="display: none;">
             <i class="fa-solid fa-circle-dot rec-dot pulse-rec"></i>
             <span id="rec-program-name">Sistem sedang merekam program yang berlangsung...</span>
@@ -270,7 +269,7 @@
                 </form>
             </section>
 
-            <!-- KUIS BOX INTERAKTIF DENGAN KETERANGAN KHUSUS -->
+            <!-- KUIS BOX INTERAKTIF -->
             <section class="content-card quiz-card">
                 <div class="quiz-header-bar">
                     <h3><i class="fa-solid fa-lightbulb"></i> Kuis Interaktif</h3>
@@ -290,22 +289,31 @@
         </div>
     </main>
 
-    <!-- MODAL AUTHENTICATION (GOOGLE & FACEBOOK LOGIN) -->
+    <!-- MODAL AUTHENTICATION MODERN REDESIGN -->
     <div id="modal-auth" class="modal">
         <div class="modal-content auth-modal-content">
-            <span class="close-modal" onclick="closeAuthModal()">&times;</span>
+            <button type="button" class="close-modal" onclick="closeAuthModal()" aria-label="Tutup">&times;</button>
             <div class="auth-header">
-                <img src="Image/Logo.png" alt="Endless For Beacon FM Logo" class="auth-logo">
+                <div class="auth-logo-badge">
+                    <img src="Image/Logo.png" alt="Endless For Beacon FM Logo" class="auth-logo">
+                </div>
                 <h2>Endless For Beacon FM</h2>
+                <p class="auth-subtitle">The Smile Of The Stand Out For The Radio</p>
             </div>
             <div class="auth-body">
-                <p class="auth-desc">Selamat datang di Portal Komunitas Endless For Beacon FM!</p>
+                <p class="auth-desc">Selamat Datang Di Endless For Beacon FM, Silahkan Masuk untuk Berbelanja Segala Macam Produk Yang Dijual Disini Serta bergabung dalam Live Chat, kirim Sing-Along, dan request lagu Favorit Beacon Listeners!</p>
                 <div class="auth-buttons-group">
                     <div id="google-btn-container" class="g-login-wrapper"></div>
-                    <div class="auth-divider">atau</div>
-                    <button class="btn-fb-login" onclick="loginFacebook()">
-                        <i class="fa-brands fa-facebook-f"></i> Masuk dengan Facebook
+                    <div class="auth-divider">
+                        <span>atau</span>
+                    </div>
+                    <button type="button" class="btn-fb-login" onclick="loginFacebook()">
+                        <i class="fa-brands fa-facebook-f"></i>
+                        <span>Lanjutkan dengan Facebook</span>
                     </button>
+                </div>
+                <div class="auth-footer-note">
+                    <i class="fa-solid fa-shield-halved"></i> Login aman & instan via akun resmi Anda
                 </div>
             </div>
         </div>
